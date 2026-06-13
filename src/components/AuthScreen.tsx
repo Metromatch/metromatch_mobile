@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import {
     View,
     Text,
@@ -17,7 +17,7 @@ import { BlurView } from 'expo-blur'
 
 import Ionicons from '@expo/vector-icons/Ionicons'
 
-export const COLORS = {
+const COLORS = {
     primary: '#2F6BFF',
     primaryDark: '#1E4ED8',
     primaryLight: '#6EA8FF',
@@ -37,18 +37,20 @@ export const COLORS = {
 }
 
 export default function AuthScreen() {
+    const [isLogin, setIsLogin] = useState(false)
+
     return (
         <View style={{ height: Dimensions.get('window').height, width: Dimensions.get('window').width, position: 'relative' }}>
 
 
-            {/* <LinearGradient
+            <LinearGradient
                 colors={[
                     COLORS.backgroundStart,
                     COLORS.backgroundMiddle,
                     COLORS.backgroundEnd,
                 ]}
                 style={StyleSheet.absoluteFill}
-            /> */}
+            />
 
             <ImageBackground
                 source={require('@/assets/images/couple_bg.png')}
@@ -94,19 +96,25 @@ export default function AuthScreen() {
 
 
                     <View style={styles.toggle}>
-                        <TouchableOpacity style={styles.inactiveTab}>
-                            <Text style={styles.inactiveText}>
-                                Login
-                            </Text>
-                        </TouchableOpacity>
+                        {isLogin ? (
+                            <LinearGradient colors={['#5EA3FF', '#2F6BFF']} style={styles.activeTab}>
+                                <Text style={styles.activeText}>Login</Text>
+                            </LinearGradient>
+                        ) : (
+                            <TouchableOpacity style={styles.inactiveTab} onPress={() => setIsLogin(true)}>
+                                <Text style={styles.inactiveText}>Login</Text>
+                            </TouchableOpacity>
+                        )}
 
-                        <LinearGradient
-                            colors={['#5EA3FF', '#2F6BFF']}
-                            style={styles.activeTab}>
-                            <Text style={styles.activeText}>
-                                Sign Up
-                            </Text>
-                        </LinearGradient>
+                        {!isLogin ? (
+                            <LinearGradient colors={['#5EA3FF', '#2F6BFF']} style={styles.activeTab}>
+                                <Text style={styles.activeText}>Sign Up</Text>
+                            </LinearGradient>
+                        ) : (
+                            <TouchableOpacity style={styles.inactiveTab} onPress={() => setIsLogin(false)}>
+                                <Text style={styles.inactiveText}>Sign Up</Text>
+                            </TouchableOpacity>
+                        )}
                     </View>
 
 
@@ -150,31 +158,35 @@ export default function AuthScreen() {
 
 
 
-                    <View style={styles.inputContainer}>
-                        <Ionicons
-                            name="lock-closed-outline"
-                            size={22}
-                            color="#7E89AA"
-                        />
+                    {!isLogin && (
+                        <>
+                            <View style={styles.inputContainer}>
+                                <Ionicons
+                                    name="lock-closed-outline"
+                                    size={22}
+                                    color="#7E89AA"
+                                />
 
-                        <TextInput
-                            placeholder="Confirm Password"
-                            secureTextEntry
-                            placeholderTextColor="#9AA4C0"
-                            style={styles.input}
-                        />
-                    </View>
+                                <TextInput
+                                    placeholder="Confirm Password"
+                                    secureTextEntry
+                                    placeholderTextColor="#9AA4C0"
+                                    style={styles.input}
+                                />
+                            </View>
 
-                    <Text style={styles.terms}>
-                        By signing up, you agree to our
-                        <Text style={styles.link}>
-                            {' '}Terms
-                        </Text>
-                        {' & '}
-                        <Text style={styles.link}>
-                            Privacy Policy
-                        </Text>
-                    </Text>
+                            <Text style={styles.terms}>
+                                By signing up, you agree to our
+                                <Text style={styles.link}>
+                                    {' '}Terms
+                                </Text>
+                                {' & '}
+                                <Text style={styles.link}>
+                                    Privacy Policy
+                                </Text>
+                            </Text>
+                        </>
+                    )}
 
 
 
@@ -189,7 +201,7 @@ export default function AuthScreen() {
                             />
 
                             <Text style={styles.createText}>
-                                Create My Account
+                                {isLogin ? 'Login to Account' : 'Create My Account'}
                             </Text>
                         </LinearGradient>
                     </TouchableOpacity>
