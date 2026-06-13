@@ -43,14 +43,14 @@ export default function AuthScreen() {
         <View style={{ height: Dimensions.get('window').height, width: Dimensions.get('window').width, position: 'relative' }}>
 
 
-            <LinearGradient
+            {/* <LinearGradient
                 colors={[
                     COLORS.backgroundStart,
                     COLORS.backgroundMiddle,
                     COLORS.backgroundEnd,
                 ]}
                 style={StyleSheet.absoluteFill}
-            />
+            /> */}
 
             <ImageBackground
                 source={require('@/assets/images/couple_bg.png')}
