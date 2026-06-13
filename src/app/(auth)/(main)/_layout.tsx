@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { Link, router, Slot, usePathname } from 'expo-router'
+import { router, Slot, usePathname } from 'expo-router'
 import { Image, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { COLORS } from '@/constants/theme'
 import { BlurView } from 'expo-blur'
 import VerticalTabs from '@/components/general/molecules/vertical_tabs'
+import { responsiveSize } from '@/utils/responsive'
 
 const MainAuthLayout = () => {
     const tabList = [{
@@ -11,7 +12,7 @@ const MainAuthLayout = () => {
         label: 'Login'
     }, {
         id: '/signup',
-        label: 'Sign Up'
+        label: 'Sign up'
     }]
     const pathname = usePathname()
 
@@ -80,8 +81,8 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(58, 76, 139, 0.5)',
     },
     logo: {
-        width: 280,
-        height: 200,
+        width: responsiveSize(280),
+        height: responsiveSize(200),
         resizeMode: 'contain',
     },
     logoContainer: {
@@ -93,27 +94,24 @@ const styles = StyleSheet.create({
         marginTop: -100
     },
     card: {
-        marginHorizontal: 20,
-        borderRadius: 36,
-        padding: 24,
+        marginHorizontal: responsiveSize(20),
+        borderRadius: responsiveSize(36),
+        padding: responsiveSize(24),
         overflow: 'hidden',
         backgroundColor: 'rgba(255,255,255,0.96)',
     },
     welcome: {
         textAlign: 'center',
-        fontSize: 34,
+        fontSize: responsiveSize(34),
         color: COLORS.primary,
-        // marginBottom: 10,
-
         fontFamily: 'ImperialScript_400Regular',
 
     },
     title: {
         textAlign: 'center',
-        fontSize: 18,
-        // fontWeight: '700',
+        fontSize: responsiveSize(18),
         color: COLORS.textPrimary,
-        marginBottom: 25,
+        marginBottom: responsiveSize(25),
         fontFamily: 'Poppins_600SemiBold',
     },
 })

@@ -4,6 +4,7 @@
  */
 
 import '@/global.css';
+import { responsiveSize } from '@/utils/responsive';
 
 import { Platform } from 'react-native';
 
@@ -82,3 +83,27 @@ export const COLORS = {
 
   white: '#FFFFFF',
 }
+
+export const TYPOGRAPHY = {
+  regular: 'Poppins_400Regular',
+  medium: 'Poppins_500Medium',
+  bold: 'Poppins_700Bold',
+  semibold: 'Poppins_600SemiBold',
+  fontSize: {
+    xs: responsiveSize(12),
+    sm: responsiveSize(14),
+    md: responsiveSize(16),
+    lg: responsiveSize(18),
+    xl: responsiveSize(20),
+    xxl: responsiveSize(24),
+    xxxl: responsiveSize(30),
+  },
+  lineHeight: {
+    xs: responsiveSize(18),
+    sm: responsiveSize(20),
+    md: responsiveSize(22),
+    lg: responsiveSize(24),
+    xl: responsiveSize(28),
+    xxl: responsiveSize(32),
+  },
+};

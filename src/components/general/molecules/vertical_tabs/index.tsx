@@ -1,6 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react'
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { StyleSheet, TouchableOpacity, View } from 'react-native'
+import { B2 } from '../../atoms/body_text';
+import { responsiveSize } from '@/utils/responsive';
 
 interface VerticalTabsProps {
     tabList: Array<{ id: string; label: string }>;
@@ -13,13 +15,11 @@ const VerticalTabs = ({ tabList, activeTab, onTabChange }: VerticalTabsProps) =>
         <View style={styles.toggle}>
             {tabList.map((tab) => (
                 activeTab === tab.id ? (
-                    <LinearGradient style={styles.activeTab} colors={["#5EA3FF", "#2F6BFF"]}>
-                        <Text style={styles.activeText}>
-                            {tab.label}
-                        </Text>
+                    <LinearGradient key={tab.id} style={styles.activeTab} colors={["#5EA3FF", "#2F6BFF"]}>
+                        <B2 text={tab.label} type="semibold" textColor='white' />
                     </LinearGradient>) : (
-                    <TouchableOpacity style={styles.inactiveTab} onPress={() => onTabChange(tab.id)}>
-                        <Text style={styles.inactiveText}>{tab.label}</Text>
+                    <TouchableOpacity key={tab.id} style={styles.inactiveTab} onPress={() => onTabChange(tab.id)}>
+                        <B2 text={tab.label} type="medium" />
                     </TouchableOpacity>
                 )
             ))}
@@ -33,9 +33,9 @@ const styles = StyleSheet.create({
     toggle: {
         flexDirection: 'row',
         backgroundColor: '#EEF3FF',
-        borderRadius: 18,
-        padding: 5,
-        marginBottom: 20,
+        borderRadius: responsiveSize(18),
+        padding: responsiveSize(5),
+        marginBottom: responsiveSize(20),
     },
     inactiveTab: {
         flex: 1,
@@ -45,20 +45,9 @@ const styles = StyleSheet.create({
 
     activeTab: {
         flex: 1,
-        height: 40,
-        borderRadius: 15,
+        height: responsiveSize(40),
+        borderRadius: responsiveSize(15),
         justifyContent: 'center',
         alignItems: 'center',
-    },
-    inactiveText: {
-        fontSize: 16,
-        fontWeight: '600',
-        color: 'grey'
-    },
-
-    activeText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: '700',
     },
 })

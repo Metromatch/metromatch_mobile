@@ -1,10 +1,25 @@
+import FormInput from '@/components/shared/atoms/form_input'
 import React from 'react'
 import { Text, View } from 'react-native'
 
 const Login = () => {
     return (
         <View>
-            <Text>Login</Text>
+            <FormInput
+                value=''
+                onChangeText={() => { }}
+                label="Email address"
+                placeholder='Enter your email address'
+                required
+            />
+            <FormInput
+                value=''
+                onChangeText={() => { }}
+                label="Password"
+                placeholder='Enter your password'
+                containerStyle={{ marginTop: 20 }}
+                required
+            />
         </View>
     )
 }
