@@ -1,5 +1,5 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+
 import AuthScreen from '@/components/AuthScreen';
 import { useFonts } from 'expo-font';
 import {
