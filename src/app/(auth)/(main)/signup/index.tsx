@@ -3,7 +3,11 @@ import FormInput from '@/components/shared/atoms/form_input'
 import { responsiveSize } from '@/utils/responsive'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import React, { useState } from 'react'
-import { Text, View, StyleSheet } from 'react-native'
+import { Text, View, StyleSheet, Alert } from 'react-native'
+import useAuthService from '@/hooks/services/useAuthService'
+import { useAuthStore } from '@/store/authStore'
+import { getDeviceDetails } from '@/utils/authUtils'
+import { router } from 'expo-router'
 
 const Signup = () => {
     const [passwordVisible, setPasswordVisible] = useState(false)
@@ -11,6 +15,42 @@ const Signup = () => {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
+
+    const { setAuthDetails } = useAuthStore();
+    const { signup, isSignupLoading } = useAuthService();
+
+    const onPressSignup = async () => {
+        if (password !== confirmPassword) {
+            Alert.alert("Error", "Passwords do not match");
+            return;
+        }
+
+        try {
+            const { deviceId, deviceName } = await getDeviceDetails();
+            const res = await signup({
+                payload: {
+                    email,
+                    password,
+                    deviceId,
+                    deviceName
+                }
+            });
+
+            const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, onboardingCompleted } = res.data.data;
+            if (accessToken) {
+                setAuthDetails({
+                    accessToken,
+                    refreshToken: refreshToken || '',
+                    accessTokenExpiresAt: accessTokenExpiresAt || '',
+                    refreshTokenExpiresAt: refreshTokenExpiresAt || '',
+                    isLoggedIn: true
+                });
+                router.replace('/onboarding/onboarding_basic_info');
+            }
+        } catch (error: any) {
+            Alert.alert("Signup Failed", error?.response?.data?.message || "An error occurred during signup");
+        }
+    }
 
     return (
         <View>
@@ -90,7 +130,8 @@ const Signup = () => {
             <PrimaryButton
                 title="Create My Account"
                 containerStyle={{ marginTop: responsiveSize(10) }}
-                onPress={() => { }}
+                onPress={onPressSignup}
+                loading={isSignupLoading}
                 addonLeft={(
                     <Ionicons
                         name="heart"

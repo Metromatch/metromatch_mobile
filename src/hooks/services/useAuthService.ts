@@ -8,6 +8,14 @@ interface LoginPayload {
     deviceName: string | null;
 }
 
+interface SignupPayload {
+    email: string;
+    password: string;
+    deviceId: string | null;
+    deviceName: string | null;
+    phone?: string;
+}
+
 const useAuthService = () => {
     const {
         mutateAsync: login,
@@ -16,9 +24,18 @@ const useAuthService = () => {
         mutationFn: ({ payload }: { payload: LoginPayload }) => Auth.login('', payload),
     });
 
+    const {
+        mutateAsync: signup,
+        isPending: isSignupLoading,
+    } = useMutation({
+        mutationFn: ({ payload }: { payload: SignupPayload }) => Auth.signup('', payload),
+    });
+
     return {
         login,
         isLoginLoading,
+        signup,
+        isSignupLoading,
     }
 }
 

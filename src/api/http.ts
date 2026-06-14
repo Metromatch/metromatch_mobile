@@ -1,5 +1,6 @@
 import { useAuthStore } from '@/store/authStore';
 import axios from 'axios';
+import { Alert } from 'react-native';
 
 const http = axios.create({
   baseURL: "http://localhost:3000",
@@ -19,7 +20,10 @@ http.interceptors.request.use(
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => {
+    Alert.alert("Error", error?.response?.data?.message || "Something went wrong");
+    return Promise.reject(error)
+  }
 );
 
 
