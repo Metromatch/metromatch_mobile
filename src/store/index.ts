@@ -1,18 +1,28 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import authSlice from '../slices/authSlice';
-import deviceInfoSlice from '../slices/deviceInfoSlice';
+import profileSlice from '@/slices/profileSlice';
+
+const storageAdapter = {
+  getItem: async (name: string) => {
+    return await AsyncStorage.getItem(name);
+  },
+  setItem: async (name: string, value: string) => {
+    await AsyncStorage.setItem(name, value);
+  },
+  removeItem: async (name: string) => {
+    await AsyncStorage.removeItem(name);
+  },
+};
 
 export const useWorkBuddyStore: any = create(
   persist(
     (set) => ({
-      // ...authSlice(set),
-      // ...deviceInfoSlice(set),
+      ...profileSlice(set),
     }),
     {
       name: 'metromatch-store',
-      storage: createJSONStorage(() => AsyncStorage),
+      storage: createJSONStorage(() => storageAdapter),
     }
   ),
 )

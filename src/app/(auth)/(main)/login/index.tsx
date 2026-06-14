@@ -32,7 +32,6 @@ const Login = () => {
                 deviceName
             }
         });
-        console.log(res.data.data);
 
         const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, onboardingCompleted } = res.data.data
         if (accessToken) {
