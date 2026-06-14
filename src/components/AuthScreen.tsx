@@ -66,6 +66,7 @@ export default function AuthScreen() {
                     <Image
                         source={require('@/assets/images/metromatch_logo.png')}
                         style={styles.logo}
+                        resizeMode="contain"
                     />
                     <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
                         <Text style={styles.tagLine}>
@@ -263,7 +264,6 @@ const styles = StyleSheet.create({
     logo: {
         width: 180,
         height: 100,
-        resizeMode: 'contain',
     },
 
     tagLine: {

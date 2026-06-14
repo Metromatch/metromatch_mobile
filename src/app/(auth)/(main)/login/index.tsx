@@ -1,16 +1,20 @@
 import PrimaryButton from '@/components/general/atoms/primary_button'
 import FormInput from '@/components/shared/atoms/form_input'
 import useAuthService from '@/hooks/services/useAuthService'
+import { useAuthStore } from '@/store/authStore'
 import { getDeviceDetails } from '@/utils/authUtils'
 import { responsiveSize } from '@/utils/responsive'
 import Ionicons from '@expo/vector-icons/Ionicons'
+import { router } from 'expo-router'
 import React, { useState } from 'react'
-import { Text, View } from 'react-native'
+import { View } from 'react-native'
 
 const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+
+    const { setAuthDetails } = useAuthStore();
 
     const handlePasswordVisibility = () => {
         setPasswordVisible(!passwordVisible)
@@ -28,7 +32,19 @@ const Login = () => {
                 deviceName
             }
         });
-        console.log(res.data.data)
+        console.log(res.data.data);
+
+        const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, onboardingCompleted } = res.data.data
+        if (accessToken) {
+            setAuthDetails({
+                accessToken,
+                refreshToken: refreshToken || '',
+                accessTokenExpiresAt: accessTokenExpiresAt || '',
+                refreshTokenExpiresAt: refreshTokenExpiresAt || '',
+                isLoggedIn: true
+            })
+            router.replace(onboardingCompleted ? '/dsd' : '/onboarding/onboarding_basic_info');
+        }
 
     }
 

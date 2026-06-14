@@ -1,15 +1,17 @@
 export const authConfigurationInitialValues = {
-  isLoggedIn: null,
-  token: '',
-  expirationTimestamp: null,
+  isLoggedIn: false,
+  accessToken: '',
+  accessTokenExpiresAt: '',
   refreshToken: '',
+  refreshTokenExpiresAt: '',
 }
 
 type Properties = {
-  isLoggedIn: boolean | null,
-  token: string,
-  expirationTimestamp: number | null,
+  isLoggedIn: boolean,
+  accessToken: string,
+  accessTokenExpiresAt: string,
   refreshToken: string,
+  refreshTokenExpiresAt: string,
 }
 const authSlice = (set: any) => {
   const Set = (data: Partial<Properties>) => {
@@ -25,14 +27,17 @@ const authSlice = (set: any) => {
     setIsLoggedIn: (isLoggedIn: boolean) => {
       Set({ isLoggedIn });
     },
-    setToken: (token: string) => {
-      Set({ token });
+    setAccessToken: (accessToken: string) => {
+      Set({ accessToken });
     },
     setRefreshToken: (refreshToken: string) => {
       Set({ refreshToken });
     },
-    setExpirationTimestamp: (expirationTimestamp: number) => {
-      Set({ expirationTimestamp });
+    setAccessTokenExpiresAt: (accessTokenExpiresAt: string) => {
+      Set({ accessTokenExpiresAt });
+    },
+    setRefreshTokenExpiresAt: (refreshTokenExpiresAt: string) => {
+      Set({ refreshTokenExpiresAt });
     },
     setAuthDetails: (data: Properties) => {
       Set(data);
