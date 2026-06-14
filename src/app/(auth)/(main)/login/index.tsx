@@ -42,7 +42,7 @@ const Login = () => {
                 refreshTokenExpiresAt: refreshTokenExpiresAt || '',
                 isLoggedIn: true
             })
-            router.replace(onboardingCompleted ? '/dsd' : '/onboarding/onboarding_basic_info');
+            router.replace(onboardingCompleted ? '/main/sessions' : '/onboarding/onboarding_basic_info');
         }
 
     }
