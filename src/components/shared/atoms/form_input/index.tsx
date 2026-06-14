@@ -1,4 +1,4 @@
-import { View, StyleSheet, TextInput, StyleProp, ViewStyle, Platform, TextInputProps, TextStyle } from 'react-native'
+import { View, StyleSheet, TextInput, StyleProp, ViewStyle, Platform, TextInputProps, TextStyle, TouchableOpacity } from 'react-native'
 import React, { useRef, useState } from 'react'
 import Label from '@/components/general/molecules/label'
 import { responsiveSize } from '@/utils/responsive'
@@ -17,6 +17,8 @@ interface InputType extends Omit<TextInputProps, 'error'> {
   flex1?: boolean
   inputStyle?: StyleProp<TextStyle>
   disabled?: boolean
+  addonLeft?: React.ReactNode
+  onPressAddonRight?: () => void
 }
 
 const FormInput = ({
@@ -29,6 +31,8 @@ const FormInput = ({
   flex1,
   inputStyle,
   disabled = false,
+  addonLeft,
+  onPressAddonRight,
   ...props
 }: InputType) => {
 
@@ -41,6 +45,7 @@ const FormInput = ({
           backgroundColor: disabled ? '#f0efefff' : '#fff',
         }]}
       >
+        {addonLeft && <View style={styles.addonLeft}>{addonLeft}</View>}
         <TextInput
           {...props}
           editable={!disabled}
@@ -57,11 +62,13 @@ const FormInput = ({
                 ? responsiveSize(26) * (props.numberOfLines || 5) + responsiveSize(29)
                 : '100%',
               textAlignVertical: props.multiline ? 'top' : 'center',
+              paddingLeft: addonLeft ? responsiveSize(33) : responsiveSize(20),
+              paddingRight: addonRight ? responsiveSize(48) : responsiveSize(20),
             },
             inputStyle,
           ]}
         />
-        {addonRight && <View style={styles.addonRight}>{addonRight}</View>}
+        {addonRight && <TouchableOpacity onPress={onPressAddonRight} style={styles.addonRight}>{addonRight}</TouchableOpacity>}
       </View>
 
       {error && (
@@ -83,7 +90,6 @@ const styles = StyleSheet.create({
   inputStyle: {
     borderWidth: 1,
     borderRadius: responsiveSize(10),
-    paddingHorizontal: responsiveSize(20),
     fontSize: responsiveSize(14),
     fontFamily: TYPOGRAPHY.regular,
     borderColor: COLORS.border
@@ -91,6 +97,13 @@ const styles = StyleSheet.create({
   error: {
     paddingLeft: responsiveSize(10),
     color: 'red'
+  },
+  addonLeft: {
+    position: 'absolute',
+    left: responsiveSize(10),
+    height: '100%',
+    justifyContent: 'center',
+    // top: responsiveSize(10),
   },
   addonRight: {
     position: 'absolute',

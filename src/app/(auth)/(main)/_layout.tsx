@@ -5,6 +5,7 @@ import { COLORS } from '@/constants/theme'
 import { BlurView } from 'expo-blur'
 import VerticalTabs from '@/components/general/molecules/vertical_tabs'
 import { responsiveSize } from '@/utils/responsive'
+import { Span } from '@/components/general/atoms/span'
 
 const MainAuthLayout = () => {
     const tabList = [{
@@ -39,7 +40,7 @@ const MainAuthLayout = () => {
                         </Text>
                     </View> */}
                 </View>
-                <BlurView intensity={70} tint="light" style={styles.card}>
+                <BlurView intensity={80} tint="light" style={styles.card}>
                     <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
                         <Text style={styles.welcome}>Welcome</Text>
                         <Text style={[styles.welcome, { fontSize: 18, fontStyle: 'italic', marginTop: 1 }]}> ♡</Text>
@@ -60,6 +61,12 @@ const MainAuthLayout = () => {
                     />
                     <Slot />
                 </BlurView>
+                <View>
+                    <Span style={styles.footer}>
+                        🔒 Secure metropolitan transit-based matching
+                    </Span>
+
+                </View>
             </ScrollView>
 
         </View>
@@ -112,6 +119,13 @@ const styles = StyleSheet.create({
         fontSize: responsiveSize(18),
         color: COLORS.textPrimary,
         marginBottom: responsiveSize(25),
-        fontFamily: 'Poppins_600SemiBold',
+        fontFamily: 'Poppins_500Medium',
+    },
+    footer: {
+        textAlign: 'center',
+        color: 'white',
+        marginTop: 25,
+        fontSize: responsiveSize(10)
+        // marginBottom: 20,
     },
 })

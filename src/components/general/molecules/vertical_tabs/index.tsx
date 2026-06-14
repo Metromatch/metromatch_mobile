@@ -16,7 +16,7 @@ const VerticalTabs = ({ tabList, activeTab, onTabChange }: VerticalTabsProps) =>
             {tabList.map((tab) => (
                 activeTab === tab.id ? (
                     <LinearGradient key={tab.id} style={styles.activeTab} colors={["#5EA3FF", "#2F6BFF"]}>
-                        <B2 text={tab.label} type="semibold" textColor='white' />
+                        <B2 text={tab.label} type="medium" textColor='white' />
                     </LinearGradient>) : (
                     <TouchableOpacity key={tab.id} style={styles.inactiveTab} onPress={() => onTabChange(tab.id)}>
                         <B2 text={tab.label} type="medium" />
