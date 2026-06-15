@@ -14,12 +14,12 @@ export default function OnboardingLayout() {
   if (pathname.includes('details')) {
     currentStep = 2;
     stepLabel = "More About You"; // The image for step 2 doesn't have a label under the stepper, or maybe it's just "About You" again. Let's use empty string or "About You". I'll use empty string to match the image where there is no label under the stepper.
-  } else if (pathname.includes('photos')) {
-    currentStep = 3;
-    stepLabel = "Photos";
   } else if (pathname.includes('preferences')) {
+    currentStep = 3;
+    stepLabel = "Partner Preferences";
+  } else if (pathname.includes('photos')) {
     currentStep = 4;
-    stepLabel = "Preferences";
+    stepLabel = "Photos";
   }
 
   return (

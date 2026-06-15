@@ -1,16 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { responsiveSize } from '@/utils/responsive';
-import { COLORS, TYPOGRAPHY } from '@/constants/theme';
-import FormInput from '@/components/shared/atoms/form_input';
 import FormSelect from '@/components/shared/molecules/form_select';
 import ChipSelector, { ChipOption } from '@/components/shared/molecules/chip_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
-import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
 
 const dietOptions: ChipOption[] = [
     { label: 'Vegetarian', value: 'vegetarian', icon: 'leaf-outline' },
@@ -32,10 +29,9 @@ const smokingOptions: ChipOption[] = [
     { label: 'Yes', value: 'yes' },
 ];
 
-const OnboardingDetails = () => {
+const OnboardingPreferences = () => {
     const router = useRouter();
 
-    const [profession, setProfession] = useState('');
     const [height, setHeight] = useState('');
     const [religion, setReligion] = useState('');
     const [diet, setDiet] = useState<string | null>(null);
@@ -43,8 +39,8 @@ const OnboardingDetails = () => {
     const [smoking, setSmoking] = useState<string | null>(null);
 
     const handleNext = () => {
-        console.log('Next step with:', { profession, height, religion, diet, drinking, smoking });
-        router.push('/onboarding/preferences');
+        console.log('Next step with:', { height, religion, diet, drinking, smoking });
+        router.push('/onboarding/photos');
     };
 
     const handleBack = () => {
@@ -53,20 +49,11 @@ const OnboardingDetails = () => {
 
     return (
         <View style={styles.formContainer}>
-            <FormInput
-                label="Profession"
-                placeholder="Engineer, Student, Doctor, etc."
-                value={profession}
-                onChangeText={setProfession}
-                addonLeft={<Ionicons name="briefcase-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
-                containerStyle={styles.inputSpacing}
-            />
-
             <View style={styles.row}>
                 <FormSelect
                     flex1
                     label="Height"
-                    placeholder="Select your height"
+                    placeholder="Preferred height"
                     value={height}
                     onPress={() => console.log('Open height picker')}
                     icon="person-outline"
@@ -74,15 +61,15 @@ const OnboardingDetails = () => {
                 <FormSelect
                     flex1
                     label="Religion"
-                    placeholder="Select religion"
+                    placeholder="Preferred religion"
                     value={religion}
                     onPress={() => console.log('Open religion picker')}
-                    icon="leaf-outline" // Placeholder icon since leaf is close to what's in image
+                    icon="leaf-outline"
                 />
             </View>
 
             <ChipSelector
-                label="Diet"
+                label="Diet Preferences"
                 options={dietOptions}
                 value={diet}
                 onChange={setDiet}
@@ -98,6 +85,7 @@ const OnboardingDetails = () => {
                     style={{ flex: 1 }}
                     direction="vertical"
                 />
+
                 <ChipSelector
                     label="Smoking"
                     options={smokingOptions}
@@ -108,42 +96,6 @@ const OnboardingDetails = () => {
                     direction="vertical"
                 />
             </View>
-
-            <ChipSelector
-                label="Yout Vibe"
-                options={dietOptions}
-                value={diet}
-                onChange={setDiet}
-            />
-
-            <View style={styles.row}>
-                <ChipSelector
-                    label="Looking For"
-                    options={drinkingOptions}
-                    value={drinking}
-                    onChange={setDrinking}
-                    activeIconMode="check"
-                    style={{ flex: 1 }}
-                    direction="vertical"
-                />
-
-                <ChipSelector
-                    label="Interested In"
-                    options={smokingOptions}
-                    value={smoking}
-                    onChange={setSmoking}
-                    activeIconMode="check"
-                    style={{ flex: 1 }}
-                    direction="vertical"
-                />
-            </View>
-
-            <ChipSelector
-                label="Places You Want To Visit"
-                options={dietOptions}
-                value={diet}
-                onChange={setDiet}
-            />
 
             <View style={styles.footerButtons}>
                 <IconButton
@@ -158,28 +110,21 @@ const OnboardingDetails = () => {
                     containerStyle={styles.nextButton}
                 />
             </View>
-
         </View>
     );
 };
 
-export default OnboardingDetails;
+export default OnboardingPreferences;
 
 const styles = StyleSheet.create({
     formContainer: {
         gap: responsiveSize(15),
     },
-    inputSpacing: {
-        // marginBottom: responsiveSize(20),
-    },
     row: {
         flexDirection: 'row',
-        // justifyContent: 'space-between',
-        // marginBottom: responsiveSize(20),
         gap: responsiveSize(15),
         width: '100%'
     },
-
     footerButtons: {
         marginTop: responsiveSize(10),
         flexDirection: 'row',

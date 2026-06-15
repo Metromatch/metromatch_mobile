@@ -79,7 +79,7 @@ const ChipSelector: React.FC<ChipSelectorProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: responsiveSize(15),
+    // marginBottom: responsiveSize(15),
   },
   chipContainer: {
     // flexDirection: 'row',
