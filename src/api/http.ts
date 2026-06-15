@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Alert } from 'react-native';
 
 const http = axios.create({
-  baseURL: "http://localhost:3000",
+  baseURL: "https://metromatchindia.vercel.app",
   timeout: 10_000,
   headers: {
     'Content-Type': 'application/json',
@@ -13,14 +13,15 @@ const http = axios.create({
 });
 
 http.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().token;
+  (config,) => {
+    const token = useAuthStore.getState().authConfiguration?.accessToken;
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
   (error) => {
+    console.log('error', error.response.data.message)
     Alert.alert("Error", error?.response?.data?.message || "Something went wrong");
     return Promise.reject(error)
   }

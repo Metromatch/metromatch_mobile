@@ -11,13 +11,14 @@ import ChipSelector, { ChipOption } from '@/components/shared/molecules/chip_sel
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
+import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 
 const dietOptions: ChipOption[] = [
-    { label: 'Vegetarian', value: 'vegetarian', icon: 'leaf-outline' },
-    { label: 'Non-Veg', value: 'non_veg', icon: 'restaurant-outline' },
-    { label: 'Vegan', value: 'vegan', icon: 'leaf-outline' },
-    { label: 'Eggetarian', value: 'eggetarian', icon: 'egg-outline' },
-    { label: 'Jain', value: 'jain', icon: 'hand-left-outline' },
+    { label: 'Vegetarian', value: 'vegetarian', icon: 'leaf-outline', iconColor: 'green' },
+    { label: 'Non-Veg', value: 'non_veg', icon: 'restaurant-outline', iconColor: 'red' },
+    { label: 'Vegan', value: 'vegan', icon: 'leaf-outline', iconColor: 'green' },
+    { label: 'Eggetarian', value: 'eggetarian', icon: 'egg-outline', iconColor: 'yellow' },
+    { label: 'Jain', value: 'jain', icon: 'hand-left-outline', iconColor: 'blue' },
 ];
 
 const drinkingOptions: ChipOption[] = [
@@ -41,7 +42,7 @@ const OnboardingDetails = () => {
     const [diet, setDiet] = useState<string | null>(null);
     const [drinking, setDrinking] = useState<string | null>(null);
     const [smoking, setSmoking] = useState<string | null>(null);
-
+    const { masterlist } = useMasterListQuery();
     const handleNext = () => {
         console.log('Next step with:', { profession, height, religion, diet, drinking, smoking });
         router.push('/onboarding/preferences');
@@ -119,7 +120,7 @@ const OnboardingDetails = () => {
             <View style={styles.row}>
                 <ChipSelector
                     label="Looking For"
-                    options={drinkingOptions}
+                    options={masterlist.diet}
                     value={drinking}
                     onChange={setDrinking}
                     activeIconMode="check"
@@ -129,7 +130,7 @@ const OnboardingDetails = () => {
 
                 <ChipSelector
                     label="Interested In"
-                    options={smokingOptions}
+                    options={masterlist.gender}
                     value={smoking}
                     onChange={setSmoking}
                     activeIconMode="check"

@@ -23,7 +23,7 @@ const Login = () => {
     const { login, isLoginLoading } = useAuthService();
 
     const onPressLogin = async () => {
-        router.replace('/onboarding/basic_info');
+        // router.replace('/onboarding/basic_info');
         const { deviceId, deviceName } = await getDeviceDetails();
         const res = await login({
             payload: {

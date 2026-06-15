@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -9,17 +9,27 @@ import FormInput from '@/components/shared/atoms/form_input';
 import GenderSelector, { GenderType } from '@/components/shared/molecules/gender_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
+import useMetromatchStore from '@/store';
 
 const OnboardingBasicInfo = () => {
     const router = useRouter();
+    const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
 
-    const [name, setName] = useState('');
-    const [dob, setDob] = useState('');
-    const [gender, setGender] = useState<GenderType>(null);
+    const [name, setName] = useState<string>(formValues.name);
+    const [dob, setDob] = useState<string>(formValues.dob);
+    const [gender, setGender] = useState<GenderType>(formValues.gender);
+
 
     const handleContinue = () => {
-        // Validation and navigation logic to be added
-        console.log('Continue with:', { name, dob, gender });
+        if (!name || !dob || !gender) {
+            Alert.alert("Pleaase fill all the details")
+            return;
+        }
+        setOnboardingFormValues({
+            name,
+            dob,
+            gender,
+        });
         router.push('/onboarding/details');
     };
 
@@ -38,6 +48,7 @@ const OnboardingBasicInfo = () => {
                     onChangeText={setName}
                     addonLeft={<Ionicons name="person-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
                     containerStyle={styles.inputSpacing}
+                    required
                 />
 
                 <FormInput
@@ -50,12 +61,14 @@ const OnboardingBasicInfo = () => {
                     containerStyle={styles.inputSpacing}
                     editable={false} // Will be a date picker eventually
                     onPressAddonRight={() => console.log('Open date picker')}
+                    required
                 />
 
                 <GenderSelector
                     label="Gender"
                     value={gender}
                     onChange={setGender}
+                    required
                 />
 
                 <PrimaryButton

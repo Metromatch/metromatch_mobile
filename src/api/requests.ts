@@ -1,4 +1,4 @@
-import { AUTH_API } from "./apiEndpoints";
+import { AUTH_API, MASTER_LIST_API } from "./apiEndpoints";
 import http from "./http";
 
 
@@ -16,3 +16,7 @@ export const Auth = {
   login: REQUEST_TEMPLATES(AUTH_API.LOGIN).create,
   signup: REQUEST_TEMPLATES(AUTH_API.SIGNUP).create,
 };
+
+export const MasterList = {
+  masterList: REQUEST_TEMPLATES(MASTER_LIST_API.MASTER_LIST).create,
+}

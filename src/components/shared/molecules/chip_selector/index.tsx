@@ -9,6 +9,7 @@ export interface ChipOption {
   label: string;
   value: string;
   icon?: keyof typeof Ionicons.glyphMap;
+  iconColor?: string;
 }
 
 interface ChipSelectorProps {
@@ -51,7 +52,7 @@ const ChipSelector: React.FC<ChipSelectorProps> = ({
                   <Ionicons
                     name={option.icon}
                     size={responsiveSize(16)}
-                    color={isActive ? COLORS.primary : COLORS.textSecondary}
+                    color={option.iconColor}
                     style={styles.iconLeft}
                   />
                 )}

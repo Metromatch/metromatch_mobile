@@ -5,6 +5,7 @@ import { responsiveSize } from '@/utils/responsive';
 import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card';
 import OnboardingFooter from '@/components/shared/molecules/onboarding/footer';
 import Stepper from '@/components/shared/molecules/stepper';
+import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 
 export default function OnboardingLayout() {
   const pathname = usePathname();
@@ -22,6 +23,7 @@ export default function OnboardingLayout() {
     stepLabel = "Photos";
   }
 
+  useMasterListQuery();
   return (
     <SafeAreaView style={styles.safeArea}>
       <KeyboardAvoidingView

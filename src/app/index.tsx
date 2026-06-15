@@ -7,7 +7,7 @@ export default function HomeScreen() {
 
   return (
     <View style={{ flex: 1 }}>
-      <Redirect href={isLoggedIn ? "/onboarding/onboarding_basic_info" : "/login"} />
+      <Redirect href={isLoggedIn ? "/onboarding/basic_info" : "/login"} />
     </View>
   );
 }

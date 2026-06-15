@@ -1,0 +1,23 @@
+import { MasterList } from "@/api/requests";
+import { useQuery } from "@tanstack/react-query"
+
+const useMasterListQuery = () => {
+    const {
+        data: masterlist,
+        isLoading: isMasterListLoading,
+    } = useQuery({
+        queryKey: ['master-list'],
+        queryFn: async () => {
+            const res = await MasterList.masterList('', { keys: ['gender', 'religion', 'diet', 'travel-frequency', 'drinking-habits', 'smoking-habits', 'interested-in', 'relationship-preference'] });
+            return res.data.data;
+        }
+    })
+
+    return {
+        masterlist,
+        isMasterListLoading,
+    }
+
+}
+
+export default useMasterListQuery

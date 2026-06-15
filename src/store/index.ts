@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import profileSlice from '@/slices/profileSlice';
+import onboardingStepsSlice from '@/slices/onboardingStepsSlice';
 
 const storageAdapter = {
   getItem: async (name: string) => {
@@ -15,10 +16,11 @@ const storageAdapter = {
   },
 };
 
-export const useWorkBuddyStore: any = create(
+export const useMetromatchStore: any = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...profileSlice(set),
+      ...onboardingStepsSlice(set, get)
     }),
     {
       name: 'metromatch-store',
@@ -27,4 +29,4 @@ export const useWorkBuddyStore: any = create(
   ),
 )
 
-export default useWorkBuddyStore;
+export default useMetromatchStore;
