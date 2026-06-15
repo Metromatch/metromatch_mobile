@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { router, Slot, usePathname } from 'expo-router'
-import { Image, ImageBackground, ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { COLORS } from '@/constants/theme'
 import { BlurView } from 'expo-blur'
 import VerticalTabs from '@/components/general/molecules/vertical_tabs'
@@ -25,7 +25,7 @@ const MainAuthLayout = () => {
                 style={styles.background}>
                 <View style={styles.heroOverlay} />
             </ImageBackground>
-            <ScrollView>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ marginTop: responsiveSize(30) }}>
                 <View style={styles.logoContainer}>
                     <Image
                         source={require('@/assets/images/logo_with_title.png')}
@@ -68,7 +68,7 @@ const MainAuthLayout = () => {
                     </Span>
 
                 </View>
-            </ScrollView>
+            </KeyboardAvoidingView>
 
         </View>
     )
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
         borderRadius: responsiveSize(36),
         padding: responsiveSize(24),
         overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.96)',
+        backgroundColor: 'rgba(255,255,255,0.3)',
     },
     welcome: {
         textAlign: 'center',
@@ -119,7 +119,7 @@ const styles = StyleSheet.create({
         fontSize: responsiveSize(18),
         color: COLORS.textPrimary,
         marginBottom: responsiveSize(25),
-        fontFamily: 'Poppins_500Medium',
+        fontFamily: 'Poppins_600SemiBold',
     },
     footer: {
         textAlign: 'center',

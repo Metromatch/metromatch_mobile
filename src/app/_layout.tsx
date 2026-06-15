@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider, Slot } from 'expo-router';
-import { useColorScheme, ActivityIndicator, View } from 'react-native';
+import { useColorScheme, ActivityIndicator, View, StatusBar } from 'react-native';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {

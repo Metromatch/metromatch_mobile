@@ -1,5 +1,4 @@
-import { View } from 'react-native';
-import AuthScreen from '@/components/AuthScreen';
+import { StatusBar, View } from 'react-native';
 import { useAuthStore } from '@/store/authStore';
 import { Redirect } from 'expo-router';
 

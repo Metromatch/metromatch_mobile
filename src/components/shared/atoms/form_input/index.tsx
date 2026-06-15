@@ -92,7 +92,8 @@ const styles = StyleSheet.create({
     borderRadius: responsiveSize(10),
     fontSize: responsiveSize(14),
     fontFamily: TYPOGRAPHY.regular,
-    borderColor: COLORS.border
+    borderColor: COLORS.border,
+    // padding: responsiveSize(20)
   },
   error: {
     paddingLeft: responsiveSize(10),

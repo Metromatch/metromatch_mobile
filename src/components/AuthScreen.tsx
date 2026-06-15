@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
         borderRadius: 36,
         padding: 24,
         overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.96)',
+        backgroundColor: 'rgba(255,255,255,0.3)',
     },
 
     welcome: {
