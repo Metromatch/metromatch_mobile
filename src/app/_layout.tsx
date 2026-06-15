@@ -13,6 +13,7 @@ import { ImperialScript_400Regular } from '@expo-google-fonts/imperial-script';
 import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '@/constants/theme';
+import SplashScreen from '@/components/general/molecules/splash_screen';
 
 const queryClient = new QueryClient();
 
@@ -29,11 +30,7 @@ export default function TabLayout() {
   });
 
   if (!fontsLoaded) {
-    return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator />
-      </View>
-    );
+    return <SplashScreen />;
   }
 
   return (

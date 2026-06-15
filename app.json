@@ -23,16 +23,21 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
+    "splash": {
+      "image": "./assets/images/logo_with_title.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#071C6B"
+    },
+    "backgroundColor": "#071C6B",
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
-          "android": {
-            "image": "./assets/images/splash-icon.png",
-            "imageWidth": 76
-          }
+          "backgroundColor": "#071C6B",
+          "image": "./assets/images/logo_with_title.png",
+          "imageWidth": 200,
+          "resizeMode": "contain"
         }
       ],
       "expo-font",
