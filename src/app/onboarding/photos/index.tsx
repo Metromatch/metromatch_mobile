@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, Text, Alert } from 'react-native';
+import { View, StyleSheet, Text, Alert, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
@@ -13,6 +13,7 @@ import IconButton from '@/components/general/atoms/icon_button';
 const OnboardingPhotos = () => {
     const router = useRouter();
     const [photos, setPhotos] = useState<string[]>([]);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const handleAddPhoto = async () => {
         if (photos.length >= 6) {
@@ -34,7 +35,22 @@ const OnboardingPhotos = () => {
         });
 
         if (!result.canceled) {
-            setPhotos((prev) => [...prev, result.assets[0].uri]);
+            setIsAnalyzing(true);
+            const uri = result.assets[0].uri;
+
+            // Mock API Call for Face and AI Detection
+            setTimeout(() => {
+                setIsAnalyzing(false);
+
+                const random = Math.random();
+                if (random < 0.1) {
+                    Alert.alert("Analysis Failed", "We couldn't detect a clear face in this photo. Please try another one.");
+                } else if (random < 0.2) {
+                    Alert.alert("Analysis Failed", "This image appears to be AI-generated. We only allow authentic photos.");
+                } else {
+                    setPhotos((prev) => [...prev, uri]);
+                }
+            }, 2000);
         }
     };
 
@@ -93,6 +109,13 @@ const OnboardingPhotos = () => {
                     containerStyle={styles.nextButton}
                 />
             </View>
+
+            {isAnalyzing && (
+                <View style={[StyleSheet.absoluteFill, styles.loadingOverlay]}>
+                    <ActivityIndicator size="large" color={COLORS.primary} />
+                    <Text style={styles.loadingText}>Analyzing image for faces...</Text>
+                </View>
+            )}
         </View>
     );
 };
@@ -131,4 +154,17 @@ const styles = StyleSheet.create({
     nextButton: {
         flex: 1,
     },
+    loadingOverlay: {
+        backgroundColor: 'rgba(255,255,255,0.8)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 10,
+        borderRadius: responsiveSize(20),
+    },
+    loadingText: {
+        marginTop: responsiveSize(10),
+        fontFamily: TYPOGRAPHY.medium,
+        color: COLORS.primary,
+        fontSize: responsiveSize(16),
+    }
 });
