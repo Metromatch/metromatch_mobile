@@ -90,7 +90,7 @@ const Login = () => {
             />
             <PrimaryButton
                 title="Login"
-                containerStyle={{ marginTop: responsiveSize(4) }}
+                containerStyle={{ marginTop: responsiveSize(24) }}
                 onPress={onPressLogin}
                 loading={isLoginLoading}
                 addonLeft={(

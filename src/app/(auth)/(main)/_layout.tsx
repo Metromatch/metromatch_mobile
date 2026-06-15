@@ -7,6 +7,7 @@ import VerticalTabs from '@/components/general/molecules/vertical_tabs'
 import { responsiveSize } from '@/utils/responsive'
 import { Span } from '@/components/general/atoms/span'
 import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card'
+import DoubleHeartIcon from '@/components/shared/atoms/double_heart'
 
 const MainAuthLayout = () => {
     const tabList = [{
@@ -20,13 +21,7 @@ const MainAuthLayout = () => {
 
     return (
         <View style={styles.container}>
-            <ImageBackground
-                source={require('@/assets/images/couple_bg.png')}
-                resizeMode="cover"
-                style={styles.background}>
-                <View style={styles.heroOverlay} />
-            </ImageBackground>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ marginTop: responsiveSize(30) }}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ marginTop: responsiveSize(30), paddingHorizontal: responsiveSize(20), }}>
                 <View style={styles.logoContainer}>
                     <Image
                         source={require('@/assets/images/logo_with_title.png')}
@@ -47,14 +42,15 @@ const MainAuthLayout = () => {
                         <Text style={styles.welcome}>Welcome</Text>
                         <Text style={[styles.welcome, { fontSize: 18, fontStyle: 'italic', marginTop: 1 }]}> ♡</Text>
                     </View>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
+                    <View style={{ marginBottom: responsiveSize(25), flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
 
                         <Text style={styles.title}>
                             Let's find your
                         </Text>
                         <Text style={[styles.title, { color: COLORS.primary }]}>
-                            perfect match 💙
+                            perfect match
                         </Text>
+                        <DoubleHeartIcon />
                     </View>
                     <VerticalTabs
                         tabList={tabList}
@@ -70,7 +66,6 @@ const MainAuthLayout = () => {
 
                 </View>
             </KeyboardAvoidingView>
-
         </View>
     )
 }
@@ -78,17 +73,7 @@ const MainAuthLayout = () => {
 export default MainAuthLayout
 
 const styles = StyleSheet.create({
-    container: { position: 'relative', flex: 1 },
-    background: {
-        width: '100%',
-        height: '100%',
-        position: 'absolute',
-    },
-
-    heroOverlay: {
-        ...StyleSheet.absoluteFill,
-        backgroundColor: 'rgba(58, 76, 139, 0.5)',
-    },
+    container: { flex: 1 },
     logo: {
         width: responsiveSize(280),
         height: responsiveSize(200),
@@ -112,7 +97,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         fontSize: responsiveSize(18),
         color: COLORS.textPrimary,
-        marginBottom: responsiveSize(25),
         fontFamily: 'Poppins_600SemiBold',
     },
     footer: {

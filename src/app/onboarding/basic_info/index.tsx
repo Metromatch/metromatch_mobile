@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
 
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
@@ -10,6 +11,7 @@ import PrimaryButton from '@/components/general/atoms/primary_button';
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
 
 const OnboardingBasicInfo = () => {
+    const router = useRouter();
 
     const [name, setName] = useState('');
     const [dob, setDob] = useState('');
@@ -18,6 +20,7 @@ const OnboardingBasicInfo = () => {
     const handleContinue = () => {
         // Validation and navigation logic to be added
         console.log('Continue with:', { name, dob, gender });
+        router.push('/onboarding/details');
     };
 
     return (

@@ -1,5 +1,5 @@
 import { DarkTheme, DefaultTheme, ThemeProvider, Slot } from 'expo-router';
-import { useColorScheme, ActivityIndicator, View, StatusBar } from 'react-native';
+import { useColorScheme, ActivityIndicator, View, StatusBar, StyleSheet, ImageBackground } from 'react-native';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import {
@@ -11,6 +11,8 @@ import {
 } from '@expo-google-fonts/poppins';
 import { ImperialScript_400Regular } from '@expo-google-fonts/imperial-script';
 import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
+import { LinearGradient } from 'expo-linear-gradient';
+import { COLORS } from '@/constants/theme';
 
 const queryClient = new QueryClient();
 
@@ -37,8 +39,36 @@ export default function TabLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Slot />
+        <LinearGradient
+          colors={[
+            COLORS.backgroundStart,
+            COLORS.backgroundMiddle,
+            COLORS.backgroundEnd,
+          ]}
+          style={[StyleSheet.absoluteFill, styles.container]}
+        >
+          <ImageBackground
+            source={require('@/assets/images/couple_bg.png')}
+            resizeMode="cover"
+            style={styles.background}>
+            <View style={styles.heroOverlay} />
+          </ImageBackground>
+          <Slot />
+        </LinearGradient>
       </ThemeProvider>
-    </QueryClientProvider>
+    </QueryClientProvider >
   );
 }
+
+const styles = StyleSheet.create({
+  container: { position: 'relative', flex: 1 },
+  background: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(58, 76, 139, 0.5)',
+  },
+});

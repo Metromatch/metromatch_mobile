@@ -40,7 +40,6 @@ export default PrimaryButton;
 
 const styles = StyleSheet.create({
     button: {
-        marginTop: responsiveSize(24),
         height: responsiveSize(50),
         borderRadius: responsiveSize(16),
         flexDirection: 'row',
