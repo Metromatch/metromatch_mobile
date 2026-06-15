@@ -6,6 +6,7 @@ import { BlurView } from 'expo-blur'
 import VerticalTabs from '@/components/general/molecules/vertical_tabs'
 import { responsiveSize } from '@/utils/responsive'
 import { Span } from '@/components/general/atoms/span'
+import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card'
 
 const MainAuthLayout = () => {
     const tabList = [{
@@ -41,7 +42,7 @@ const MainAuthLayout = () => {
                         </Text>
                     </View> */}
                 </View>
-                <BlurView intensity={80} tint="light" style={styles.card}>
+                <GlassmorphicCard>
                     <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
                         <Text style={styles.welcome}>Welcome</Text>
                         <Text style={[styles.welcome, { fontSize: 18, fontStyle: 'italic', marginTop: 1 }]}> ♡</Text>
@@ -61,7 +62,7 @@ const MainAuthLayout = () => {
                         onTabChange={(item) => { router.replace(item as any) }}
                     />
                     <Slot />
-                </BlurView>
+                </GlassmorphicCard>
                 <View>
                     <Span style={styles.footer}>
                         🔒 Secure metropolitan transit-based matching
@@ -99,13 +100,6 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 16,
         marginTop: -100
-    },
-    card: {
-        marginHorizontal: responsiveSize(20),
-        borderRadius: responsiveSize(36),
-        padding: responsiveSize(24),
-        overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.3)',
     },
     welcome: {
         textAlign: 'center',

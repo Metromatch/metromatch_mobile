@@ -45,7 +45,7 @@ const Signup = () => {
                     refreshTokenExpiresAt: refreshTokenExpiresAt || '',
                     isLoggedIn: true
                 });
-                router.replace('/onboarding/onboarding_basic_info');
+                router.replace('/onboarding/basic_info');
             }
         } catch (error: any) {
             Alert.alert("Signup Failed", error?.response?.data?.message || "An error occurred during signup");

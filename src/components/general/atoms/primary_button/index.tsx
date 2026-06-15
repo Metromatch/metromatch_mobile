@@ -6,6 +6,7 @@ import { TYPOGRAPHY } from '@/constants/theme'
 
 interface ButtonType {
     addonLeft?: React.ReactNode
+    addonRight?: React.ReactNode
     title?: string
     containerStyle?: ViewStyle
     onPress?: () => void
@@ -13,7 +14,7 @@ interface ButtonType {
     disabled?: boolean
 }
 
-const PrimaryButton = ({ addonLeft, title, containerStyle, onPress, loading, disabled }: ButtonType) => {
+const PrimaryButton = ({ addonLeft, addonRight, title, containerStyle, onPress, loading, disabled }: ButtonType) => {
     return (
         <TouchableOpacity activeOpacity={0.9} disabled={disabled} onPress={!loading ? onPress : () => { }} style={[containerStyle]}>
             <LinearGradient
@@ -27,6 +28,7 @@ const PrimaryButton = ({ addonLeft, title, containerStyle, onPress, loading, dis
                         <Text style={styles.label}>
                             {title}
                         </Text>
+                        {addonRight}
                     </>
                 )}
             </LinearGradient>

@@ -23,6 +23,7 @@ const Login = () => {
     const { login, isLoginLoading } = useAuthService();
 
     const onPressLogin = async () => {
+        router.replace('/onboarding/basic_info');
         const { deviceId, deviceName } = await getDeviceDetails();
         const res = await login({
             payload: {
@@ -42,7 +43,7 @@ const Login = () => {
                 refreshTokenExpiresAt: refreshTokenExpiresAt || '',
                 isLoggedIn: true
             })
-            router.replace(onboardingCompleted ? '/main/sessions' : '/onboarding/onboarding_basic_info');
+            router.replace(onboardingCompleted ? '/main/sessions' : '/onboarding/basic_info');
         }
 
     }
