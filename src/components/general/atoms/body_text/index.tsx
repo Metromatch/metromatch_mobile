@@ -64,7 +64,7 @@ export const B2 = ({
       style={[
         styles.b2,
         flex1 && { flex: 1 },
-        { color: textColor || COLORS.textSecondary },
+        { color: textColor || COLORS.textPrimary },
         styles[type],
         style,
       ]}
@@ -82,7 +82,7 @@ export const B3 = ({ text, type = 'regular', flex1, style, textColor, children }
         styles.b3,
         styles[type],
         flex1 && { flex: 1 },
-        { color: textColor || COLORS.textSecondary },
+        { color: textColor || COLORS.textPrimary },
         style,
       ]}
     >

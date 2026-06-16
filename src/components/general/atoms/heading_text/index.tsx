@@ -61,32 +61,32 @@ const styles = StyleSheet.create({
   h1: {
     fontSize: responsiveSize(32),
     lineHeight: responsiveSize(39),
-    color: COLORS.textSecondary,
+    color: COLORS.textPrimary,
   },
   h2: {
     fontSize: responsiveSize(24),
     lineHeight: responsiveSize(29),
-    color: COLORS.textSecondary,
+    color: COLORS.textPrimary,
   },
   h3: {
     fontSize: responsiveSize(20),
     lineHeight: responsiveSize(24),
-    color: COLORS.textSecondary,
+    color: COLORS.textPrimary,
   },
   h4: {
     fontSize: responsiveSize(18),
     lineHeight: responsiveSize(22),
-    color: COLORS.textSecondary,
+    color: COLORS.textPrimary,
   },
   h5: {
     fontSize: responsiveSize(16),
     lineHeight: responsiveSize(19),
-    color: COLORS.textSecondary,
+    color: COLORS.textPrimary,
   },
   h6: {
     fontSize: responsiveSize(14),
     lineHeight: responsiveSize(17),
-    color: COLORS.textSecondary,
+    color: COLORS.textPrimary,
   },
   regular: {
     fontFamily: TYPOGRAPHY.regular,

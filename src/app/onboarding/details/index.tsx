@@ -69,16 +69,19 @@ const OnboardingDetails = () => {
                     label="Height"
                     placeholder="Select your height"
                     value={height}
-                    onPress={() => console.log('Open height picker')}
                     icon="person-outline"
+                    options={[]}
+                    onChange={() => { }}
                 />
                 <FormSelect
                     flex1
                     label="Religion"
                     placeholder="Select religion"
                     value={religion}
-                    onPress={() => console.log('Open religion picker')}
                     icon="leaf-outline" // Placeholder icon since leaf is close to what's in image
+                    options={dietOptions}
+                    onChange={(value) => setReligion(value.toString())}
+
                 />
             </View>
 

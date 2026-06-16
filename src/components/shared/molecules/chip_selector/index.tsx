@@ -101,7 +101,7 @@ const styles = StyleSheet.create({
     borderColor: COLORS.primary,
   },
   inactiveChip: {
-    backgroundColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: '#FFFF',
     borderColor: '#EAEAEA',
   },
   chipContent: {
