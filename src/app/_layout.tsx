@@ -14,6 +14,7 @@ import { PlayfairDisplay_700Bold } from '@expo-google-fonts/playfair-display';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '@/constants/theme';
 import SplashScreen from '@/components/general/molecules/splash_screen';
+import Toast from 'react-native-toast-message';
 
 const queryClient = new QueryClient();
 
@@ -52,8 +53,9 @@ export default function TabLayout() {
           </ImageBackground>
           <Slot />
         </LinearGradient>
+        <Toast />
       </ThemeProvider>
-    </QueryClientProvider >
+    </QueryClientProvider>
   );
 }
 

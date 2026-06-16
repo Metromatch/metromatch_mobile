@@ -24,7 +24,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "splash": {
-      "image": "./assets/images/logo_with_title.png",
+      "image": "./assets/images/file.gif",
       "resizeMode": "contain",
       "backgroundColor": "#071C6B"
     },
@@ -35,7 +35,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#071C6B",
-          "image": "./assets/images/logo_with_title.png",
+          "image": "./assets/images/file.gif",
           "imageWidth": 200,
           "resizeMode": "contain"
         }

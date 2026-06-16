@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/store/authStore';
 import axios from 'axios';
-import { Alert } from 'react-native';
+import Toast from 'react-native-toast-message';
+import { router } from 'expo-router';
 
 const http = axios.create({
   baseURL: "https://metromatchindia.vercel.app",
@@ -18,13 +19,32 @@ http.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    console.log(token)
     return config;
   },
   (error) => {
-    console.log('error', error.response.data.message)
-    Alert.alert("Error", error?.response?.data?.message || "Something went wrong");
     return Promise.reject(error)
-  }
+  },
+);
+
+http.interceptors.response.use(
+  (response) => {
+    return response;
+  },
+  (error) => {
+    if (error?.response?.status === 401) {
+      useAuthStore.getState().clearAuthDetails();
+      router.replace('/login');
+    } else {
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: error?.response?.data?.message || 'Something went wrong',
+        position: 'top',
+      });
+    }
+    return Promise.reject(error)
+  },
 );
 
 
