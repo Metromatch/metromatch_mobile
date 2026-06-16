@@ -52,7 +52,7 @@ const ChipSelector: React.FC<ChipSelectorProps> = ({
                   <Ionicons
                     name={option.icon}
                     size={responsiveSize(16)}
-                    color={option.iconColor}
+                    color={isActive ? '#FFF' : option.iconColor}
                     style={styles.iconLeft}
                   />
                 )}

@@ -8,7 +8,7 @@ const useMasterListQuery = () => {
     } = useQuery({
         queryKey: ['master-list'],
         queryFn: async () => {
-            const res = await MasterList.masterList('', { keys: ['gender', 'religion', 'diet', 'travel-frequency', 'drinking-habits', 'smoking-habits', 'interested-in', 'relationship-preference'] });
+            const res = await MasterList.masterList('', { keys: ['gender', 'religion', 'diet', 'smokingHabits', 'drinkingHabits', 'travelTimeRange', 'interestedIn', 'relationshipPreference'] });
             return res.data.data;
         }
     })

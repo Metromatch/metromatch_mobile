@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import dayjs from 'dayjs';
 
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
@@ -23,7 +24,21 @@ const OnboardingBasicInfo = () => {
         gender: formValues.gender,
     }, {
         name: { required: true, message: 'Please enter your full name' },
-        dob: { required: true, message: 'Please select your date of birth' },
+        dob: { 
+            required: true, 
+            message: 'Please select your date of birth',
+            validate: (value: Date) => {
+                if (!value) return null;
+                const age = dayjs().diff(dayjs(value), 'year');
+                if (age < 18) {
+                    return 'You must be at least 18 years old';
+                }
+                if (age > 60) {
+                    return 'You must be 60 years old or below';
+                }
+                return null;
+            }
+        },
         gender: { required: true, message: 'Please select a gender' }
     });
 

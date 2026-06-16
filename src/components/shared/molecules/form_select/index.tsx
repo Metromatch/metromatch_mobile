@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, ViewStyle, View, StyleSheet, ScrollView, Text } from 'react-native';
+import { TouchableOpacity, ViewStyle, View, StyleSheet, ScrollView, Text, Pressable } from 'react-native';
 import FormInput from '@/components/general/atoms/form_input';
 import { Ionicons } from '@expo/vector-icons';
 import { responsiveSize } from '@/utils/responsive';
@@ -16,12 +16,12 @@ export interface SelectionOption {
 interface FormSelectProps {
     label?: string;
     placeholder: string;
-    value: string;
+    value: string | null | number;
     containerStyle?: ViewStyle;
     flex1?: boolean;
     icon?: keyof typeof Ionicons.glyphMap;
     options: SelectionOption[];
-    onChange: (value: string | number) => void;
+    onChange: (value: string | number | null) => void;
     required?: boolean
     error?: string
 }
@@ -69,7 +69,10 @@ const FormSelect = ({ label, placeholder, value, onChange, containerStyle, flex1
                 <TouchableOpacity activeOpacity={0.7} onPress={() => setIsVisible(true)} style={[styles.select]}>
                     {icon ? <Ionicons name={icon} size={responsiveSize(18)} color={COLORS.textSecondary} /> : undefined}
                     {value ? <B2 text={options.find((option) => option.value === value)?.label} flex1 numberOfLines={1} /> : <B2 text={placeholder} textColor={COLORS.textSecondary} flex1 numberOfLines={1} />}
-                    <Ionicons name="chevron-down-outline" size={responsiveSize(18)} color={COLORS.textSecondary} />
+                    {value ? <Pressable onPress={() => onChange(null)} >
+                        <Ionicons name="close-outline" size={responsiveSize(18)} color={COLORS.textSecondary} />
+                    </Pressable> : <Ionicons name="chevron-down-outline" size={responsiveSize(18)} color={COLORS.textSecondary} />}
+
                 </TouchableOpacity>
                 {error && (
                     <Span text={error} style={styles.error} />

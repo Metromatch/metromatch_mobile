@@ -38,7 +38,7 @@ const OnboardingDetails = () => {
 
     const [profession, setProfession] = useState('');
     const [height, setHeight] = useState('');
-    const [religion, setReligion] = useState('');
+    const [religion, setReligion] = useState<string | null | number>(null);
     const [diet, setDiet] = useState<string | null>(null);
     const [drinking, setDrinking] = useState<string | null>(null);
     const [smoking, setSmoking] = useState<string | null>(null);
@@ -51,7 +51,7 @@ const OnboardingDetails = () => {
     const handleBack = () => {
         router.back();
     };
-
+    console.log('masterlist', masterlist)
     return (
         <View style={styles.formContainer}>
             <FormInput
@@ -79,15 +79,15 @@ const OnboardingDetails = () => {
                     placeholder="Select religion"
                     value={religion}
                     icon="leaf-outline" // Placeholder icon since leaf is close to what's in image
-                    options={dietOptions}
-                    onChange={(value) => setReligion(value.toString())}
+                    options={masterlist?.religion || []}
+                    onChange={(value) => setReligion(value)}
 
                 />
             </View>
 
             <ChipSelector
                 label="Diet"
-                options={dietOptions}
+                options={masterlist?.diet || []}
                 value={diet}
                 onChange={setDiet}
             />
@@ -114,7 +114,7 @@ const OnboardingDetails = () => {
             </View>
 
             <ChipSelector
-                label="Yout Vibe"
+                label="Your Vibe"
                 options={dietOptions}
                 value={diet}
                 onChange={setDiet}
@@ -123,7 +123,7 @@ const OnboardingDetails = () => {
             <View style={styles.row}>
                 <ChipSelector
                     label="Looking For"
-                    options={masterlist.diet}
+                    options={masterlist?.relationshipPreference || []}
                     value={drinking}
                     onChange={setDrinking}
                     activeIconMode="check"
@@ -133,7 +133,7 @@ const OnboardingDetails = () => {
 
                 <ChipSelector
                     label="Interested In"
-                    options={masterlist.gender}
+                    options={masterlist?.interestedIn || []}
                     value={smoking}
                     onChange={setSmoking}
                     activeIconMode="check"
@@ -142,12 +142,12 @@ const OnboardingDetails = () => {
                 />
             </View>
 
-            <ChipSelector
+            {/* <ChipSelector
                 label="Places You Want To Visit"
                 options={dietOptions}
                 value={diet}
                 onChange={setDiet}
-            />
+            /> */}
 
             <View style={styles.footerButtons}>
                 <IconButton
