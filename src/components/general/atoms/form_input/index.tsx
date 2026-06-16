@@ -98,7 +98,7 @@ const styles = StyleSheet.create({
     // padding: responsiveSize(20)
   },
   error: {
-    paddingLeft: responsiveSize(10),
+    paddingLeft: responsiveSize(2),
     color: 'red'
   },
   addonLeft: {

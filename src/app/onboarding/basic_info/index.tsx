@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
@@ -11,26 +11,31 @@ import PrimaryButton from '@/components/general/atoms/primary_button';
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
 import useMetromatchStore from '@/store';
 import FormDatePicker from '@/components/general/molecules/form_date_picker';
+import { useFormValidation } from '@/hooks/useFormValidation';
 
 const OnboardingBasicInfo = () => {
     const router = useRouter();
     const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
 
-    const [name, setName] = useState<string>(formValues.name);
-    const [dob, setDob] = useState<Date | null>(formValues.dob);
-    const [gender, setGender] = useState<GenderType>(formValues.gender);
+    const { values, errors, handleChange, validateAll } = useFormValidation({
+        name: formValues.name,
+        dob: formValues.dob,
+        gender: formValues.gender,
+    }, {
+        name: { required: true, message: 'Please enter your full name' },
+        dob: { required: true, message: 'Please select your date of birth' },
+        gender: { required: true, message: 'Please select a gender' }
+    });
 
     const handleContinue = () => {
-        if (!name || !dob || !gender) {
-            Alert.alert("Pleaase fill all the details")
-            return;
+        if (validateAll()) {
+            setOnboardingFormValues({
+                name: values.name,
+                dob: values.dob,
+                gender: values.gender,
+            });
+            router.push('/onboarding/details');
         }
-        setOnboardingFormValues({
-            name,
-            dob,
-            gender,
-        });
-        router.push('/onboarding/details');
     };
 
     return (
@@ -44,26 +49,30 @@ const OnboardingBasicInfo = () => {
                 <FormInput
                     label="Full Name"
                     placeholder="Enter your full name"
-                    value={name}
-                    onChangeText={setName}
+                    value={values.name}
+                    onChangeText={(text) => handleChange('name', text)}
+                    error={errors.name}
                     addonLeft={<Ionicons name="person-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
                     required
+                    maxLength={50}
                 />
 
                 <FormDatePicker
-                    value={dob}
-                    onChange={setDob}
+                    value={values.dob}
+                    onChange={(date) => handleChange('dob', date)}
                     placeholder="DD/MM/YYYY"
                     required
                     mode='date'
                     label="Date of Birth"
+                    error={errors.dob}
                 />
 
                 <GenderSelector
                     label="Gender"
-                    value={gender}
-                    onChange={setGender}
+                    value={values.gender}
+                    onChange={(val) => handleChange('gender', val)}
                     required
+                    error={errors.gender}
                 />
 
                 <PrimaryButton

@@ -4,6 +4,8 @@ import * as Application from 'expo-application';
 
 import * as Device from 'expo-device';
 import { Platform } from "react-native";
+import { useAuthStore } from "@/store/authStore";
+import useMetromatchStore from "@/store";
 
 type UserProperties = {
   email: string,
@@ -62,4 +64,10 @@ export const getDeviceDetails = async () => {
 export const validateTokenDetails = (expirationTimestamp: number) => {
   const currentTimestamp = Date.now();
   return expirationTimestamp > currentTimestamp;
+}
+
+export const clearStore = () => {
+  useAuthStore.getState().clearAuthDetails();
+  useMetromatchStore.getState().clearProfileDetails();
+  useMetromatchStore.getState().clearOnboardingFormValues();
 }

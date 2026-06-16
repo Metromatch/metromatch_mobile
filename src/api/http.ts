@@ -2,6 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import axios from 'axios';
 import Toast from 'react-native-toast-message';
 import { router } from 'expo-router';
+import { clearStore } from '@/utils/authUtils';
 
 const http = axios.create({
   baseURL: "https://metromatchindia.vercel.app",
@@ -33,7 +34,7 @@ http.interceptors.response.use(
   },
   (error) => {
     if (error?.response?.status === 401) {
-      useAuthStore.getState().clearAuthDetails();
+      clearStore();
       router.replace('/login');
     } else {
       Toast.show({

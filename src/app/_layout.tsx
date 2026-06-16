@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider, Stack, useSegments, useRouter } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider, Stack, useSegments, useRouter, Slot } from 'expo-router';
 import { useColorScheme, ActivityIndicator, View, StatusBar, StyleSheet, ImageBackground } from 'react-native';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -17,13 +17,11 @@ import { COLORS } from '@/constants/theme';
 import SplashScreen from '@/components/general/molecules/splash_screen';
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/authStore';
-import { Auth } from '@/api/requests';
 
 const queryClient = new QueryClient();
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
-  const segments = useSegments();
   const router = useRouter();
   const { authConfiguration: { isLoggedIn, accessToken } } = useAuthStore();
 
@@ -40,14 +38,12 @@ export default function TabLayout() {
   useEffect(() => {
     if (!fontsLoaded) return;
 
-    const inAuthGroup = segments[0] === 'login';
-
-    if (!isLoggedIn && !inAuthGroup) {
+    if (!accessToken) {
       router.replace('/login');
-    } else if (isLoggedIn && inAuthGroup) {
+    } else {
       router.replace('/');
     }
-  }, [segments, fontsLoaded]);
+  }, [isLoggedIn, fontsLoaded]);
 
   if (!fontsLoaded) {
     return <SplashScreen />;
@@ -70,7 +66,8 @@ export default function TabLayout() {
             style={styles.background}>
             <View style={styles.heroOverlay} />
           </ImageBackground>
-          <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }} />
+          <Slot />
+          {/* <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }} /> */}
         </LinearGradient>
         <Toast />
       </ThemeProvider>

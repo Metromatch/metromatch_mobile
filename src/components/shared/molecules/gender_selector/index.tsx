@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import Label from '@/components/general/molecules/label';
+import { Span } from '@/components/general/atoms/span';
 
 export type GenderType = 'male' | 'female' | 'other' | null;
 
@@ -51,7 +52,7 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({ value, onChange, error,
           );
         })}
       </View>
-      {error && <Text style={styles.error}>{error}</Text>}
+      {error && <Span style={styles.error}>{error}</Span>}
     </View>
   );
 };
@@ -92,10 +93,7 @@ const styles = StyleSheet.create({
   },
   error: {
     color: 'red',
-    fontSize: responsiveSize(12),
-    marginTop: responsiveSize(5),
-    paddingLeft: responsiveSize(10),
-    fontFamily: TYPOGRAPHY.regular,
+    paddingLeft: responsiveSize(2),
   },
 });
 

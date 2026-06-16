@@ -17,6 +17,7 @@ interface FormDatePickerProps {
     disabled?: boolean
     flex1?: boolean
     mode?: 'date' | 'time' | 'datetime',
+    error?: string
 }
 
 const FormDatePicker = ({
@@ -28,7 +29,8 @@ const FormDatePicker = ({
     required,
     disabled = false,
     flex1 = true,
-    mode = 'date'
+    mode = 'date',
+    error,
 }: FormDatePickerProps) => {
     const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
 
@@ -68,6 +70,7 @@ const FormDatePicker = ({
                     flex1={false}
                     addonLeft={<Ionicons name="calendar-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
                     containerProps={{ pointerEvents: "none" }}
+                    error={error}
                 />
             </TouchableOpacity>
 
