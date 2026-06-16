@@ -76,6 +76,7 @@ const OnboardingBasicInfo = () => {
                 />
 
                 <PrimaryButton
+                    containerStyle={{ marginTop: responsiveSize(10) }}
                     title="Continue"
                     onPress={handleContinue}
                     addonRight={<Ionicons name="arrow-forward-outline" size={responsiveSize(20)} color="white" />}

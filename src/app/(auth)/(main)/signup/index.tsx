@@ -8,29 +8,46 @@ import useAuthService from '@/hooks/services/useAuthService'
 import { useAuthStore } from '@/store/authStore'
 import { getDeviceDetails } from '@/utils/authUtils'
 import { router } from 'expo-router'
+import { useFormValidation } from '@/hooks/useFormValidation'
 
 const Signup = () => {
     const [passwordVisible, setPasswordVisible] = useState(false)
     const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [confirmPassword, setConfirmPassword] = useState('')
+
+    const { values, errors, handleChange, validateAll } = useFormValidation({
+        email: '',
+        password: '',
+        confirmPassword: ''
+    }, {
+        email: {
+            required: true,
+            message: 'Please enter a valid email',
+            pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+        password: {
+            required: true,
+            message: 'Please enter a password',
+            minLength: 30
+        },
+        confirmPassword: {
+            required: true,
+            message: 'Please confirm your password',
+            validate: (value, formValues) => value !== formValues.password ? 'Passwords do not match' : null
+        }
+    });
 
     const { setAuthDetails } = useAuthStore();
     const { signup, isSignupLoading } = useAuthService();
 
     const onPressSignup = async () => {
-        if (password !== confirmPassword) {
-            Alert.alert("Error", "Passwords do not match");
-            return;
-        }
+        if (!validateAll()) return;
 
         try {
             const { deviceId, deviceName } = await getDeviceDetails();
             const res = await signup({
                 payload: {
-                    email,
-                    password,
+                    email: values.email,
+                    password: values.password,
                     deviceId,
                     deviceName
                 }
@@ -53,12 +70,13 @@ const Signup = () => {
     }
 
     return (
-        <View>
+        <View style={{ gap: responsiveSize(20) }}>
             <FormInput
-                value={email}
-                onChangeText={(text) => setEmail(text)}
+                value={values.email}
+                onChangeText={(text) => handleChange('email', text)}
                 label="Email address"
                 placeholder='Enter your email address'
+                error={errors.email}
                 required
                 addonLeft={(
                     <Ionicons
@@ -68,13 +86,15 @@ const Signup = () => {
                     />
                 )}
                 maxLength={50}
+                keyboardType="email-address"
+                autoCapitalize="none"
             />
             <FormInput
-                value={password}
-                onChangeText={(text) => setPassword(text)}
+                value={values.password}
+                onChangeText={(text) => handleChange('password', text)}
                 label="Password"
                 placeholder='Enter your password'
-                containerStyle={{ marginTop: 20 }}
+                error={errors.password}
                 required
                 addonLeft={(<Ionicons
                     name="lock-closed-outline"
@@ -93,11 +113,11 @@ const Signup = () => {
                 maxLength={30}
             />
             <FormInput
-                value={confirmPassword}
-                onChangeText={(text) => setConfirmPassword(text)}
+                value={values.confirmPassword}
+                onChangeText={(text) => handleChange('confirmPassword', text)}
                 label="Confirm Password"
                 placeholder='Confirm your password'
-                containerStyle={{ marginTop: 20 }}
+                error={errors.confirmPassword}
                 required
                 addonLeft={(<Ionicons
                     name="lock-closed-outline"
@@ -129,7 +149,6 @@ const Signup = () => {
 
             <PrimaryButton
                 title="Create My Account"
-                containerStyle={{ marginTop: responsiveSize(10) }}
                 onPress={onPressSignup}
                 loading={isSignupLoading}
                 addonLeft={(
@@ -149,7 +168,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         color: '#7782A0',
         lineHeight: 24,
-        marginTop: 15,
         fontFamily: 'Poppins_400Regular',
         fontSize: 10
     },

@@ -39,7 +39,7 @@ const FormInput = ({
 }: InputType) => {
 
   return (
-    <View style={[flex1 ? { flex: 1 } : {}, containerStyle]} {...containerProps}>
+    <View style={[styles.container, flex1 ? { flex: 1 } : {}, containerStyle]} {...containerProps}>
       {label && <Label text={label} required={required} />}
       <View
         style={[styles.inputContainer, {
@@ -81,6 +81,9 @@ const FormInput = ({
 }
 
 const styles = StyleSheet.create({
+  container: {
+    position: 'relative'
+  },
   label: {
     marginLeft: responsiveSize(10),
   },
@@ -99,7 +102,9 @@ const styles = StyleSheet.create({
   },
   error: {
     paddingLeft: responsiveSize(2),
-    color: 'red'
+    color: 'red',
+    position: "absolute",
+    bottom: -responsiveSize(22)
   },
   addonLeft: {
     position: 'absolute',

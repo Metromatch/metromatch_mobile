@@ -59,6 +59,7 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({ value, onChange, error,
 
 const styles = StyleSheet.create({
   container: {
+    position: 'relative'
   },
   row: {
     flexDirection: 'row',
@@ -94,6 +95,8 @@ const styles = StyleSheet.create({
   error: {
     color: 'red',
     paddingLeft: responsiveSize(2),
+    position: "absolute",
+    bottom: -responsiveSize(22)
   },
 });
 

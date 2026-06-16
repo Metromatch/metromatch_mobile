@@ -8,11 +8,25 @@ import Ionicons from '@expo/vector-icons/Ionicons'
 import { router } from 'expo-router'
 import React, { useState } from 'react'
 import { View } from 'react-native'
+import { useFormValidation } from '@/hooks/useFormValidation'
 
 const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false)
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
+
+    const { values, errors, handleChange, validateAll } = useFormValidation({
+        email: '',
+        password: ''
+    }, {
+        email: {
+            required: true,
+            message: 'Please enter a valid email',
+            pattern: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+        },
+        password: {
+            required: true,
+            message: 'Please enter your password'
+        }
+    });
 
     const { setAuthDetails } = useAuthStore();
 
@@ -23,12 +37,13 @@ const Login = () => {
     const { login, isLoginLoading } = useAuthService();
 
     const onPressLogin = async () => {
-        // router.replace('/onboarding/basic_info');
+        if (!validateAll()) return;
+
         const { deviceId, deviceName } = await getDeviceDetails();
         const res = await login({
             payload: {
-                email,
-                password,
+                email: values.email,
+                password: values.password,
                 deviceId,
                 deviceName
             }
@@ -49,12 +64,13 @@ const Login = () => {
     }
 
     return (
-        <View>
+        <View style={{ gap: responsiveSize(20) }}>
             <FormInput
-                value={email}
-                onChangeText={(text) => setEmail(text)}
+                value={values.email}
+                onChangeText={(text) => handleChange('email', text)}
                 label="Email address"
                 placeholder='Enter your email address'
+                error={errors.email}
                 required
                 addonLeft={(
                     <Ionicons
@@ -64,13 +80,15 @@ const Login = () => {
                     />
                 )}
                 maxLength={50}
+                keyboardType="email-address"
+                autoCapitalize="none"
             />
             <FormInput
-                value={password}
-                onChangeText={(text) => setPassword(text)}
+                value={values.password}
+                onChangeText={(text) => handleChange('password', text)}
                 label="Password"
                 placeholder='Enter your password'
-                containerStyle={{ marginTop: 20 }}
+                error={errors.password}
                 required
                 addonLeft={(<Ionicons
                     name="lock-closed-outline"
@@ -90,7 +108,7 @@ const Login = () => {
             />
             <PrimaryButton
                 title="Login"
-                containerStyle={{ marginTop: responsiveSize(24) }}
+                containerStyle={{ marginTop: responsiveSize(10) }}
                 onPress={onPressLogin}
                 loading={isLoginLoading}
                 addonLeft={(
