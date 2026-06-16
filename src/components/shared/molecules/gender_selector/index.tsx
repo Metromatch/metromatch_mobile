@@ -38,10 +38,10 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({ value, onChange, error,
               ]}
               onPress={() => onChange(item.id)}
             >
-              <Ionicons 
-                name={item.icon} 
-                size={responsiveSize(28)} 
-                color={item.color} 
+              <Ionicons
+                name={item.icon}
+                size={responsiveSize(28)}
+                color={item.color}
                 style={styles.icon}
               />
               <Text style={[styles.text, isSelected && styles.textSelected]}>
@@ -58,7 +58,6 @@ const GenderSelector: React.FC<GenderSelectorProps> = ({ value, onChange, error,
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: responsiveSize(15),
   },
   row: {
     flexDirection: 'row',

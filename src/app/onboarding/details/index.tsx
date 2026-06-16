@@ -5,7 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
-import FormInput from '@/components/shared/atoms/form_input';
+import FormInput from '@/components/general/atoms/form_input';
 import FormSelect from '@/components/shared/molecules/form_select';
 import ChipSelector, { ChipOption } from '@/components/shared/molecules/chip_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';

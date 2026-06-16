@@ -1,6 +1,6 @@
 import React from 'react';
 import { TouchableOpacity, ViewStyle, View } from 'react-native';
-import FormInput from '@/components/shared/atoms/form_input';
+import FormInput from '@/components/general/atoms/form_input';
 import { Ionicons } from '@expo/vector-icons';
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS } from '@/constants/theme';

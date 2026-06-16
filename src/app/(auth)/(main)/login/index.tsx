@@ -1,5 +1,5 @@
 import PrimaryButton from '@/components/general/atoms/primary_button'
-import FormInput from '@/components/shared/atoms/form_input'
+import FormInput from '@/components/general/atoms/form_input'
 import useAuthService from '@/hooks/services/useAuthService'
 import { useAuthStore } from '@/store/authStore'
 import { getDeviceDetails } from '@/utils/authUtils'

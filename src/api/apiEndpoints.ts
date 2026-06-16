@@ -5,6 +5,7 @@ const AUTH = `${API_V1}auth/`;
 export const AUTH_API = {
   LOGIN: `${AUTH}login`,
   SIGNUP: `${AUTH}signup`,
+  VALIDATE: `${AUTH}validate`,
 };
 
 export const MASTER_LIST_API = {

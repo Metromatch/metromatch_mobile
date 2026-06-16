@@ -5,20 +5,20 @@ import { useRouter } from 'expo-router';
 
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
-import FormInput from '@/components/shared/atoms/form_input';
+import FormInput from '@/components/general/atoms/form_input';
 import GenderSelector, { GenderType } from '@/components/shared/molecules/gender_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
 import useMetromatchStore from '@/store';
+import FormDatePicker from '@/components/general/molecules/form_date_picker';
 
 const OnboardingBasicInfo = () => {
     const router = useRouter();
     const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
 
     const [name, setName] = useState<string>(formValues.name);
-    const [dob, setDob] = useState<string>(formValues.dob);
+    const [dob, setDob] = useState<Date | null>(formValues.dob);
     const [gender, setGender] = useState<GenderType>(formValues.gender);
-
 
     const handleContinue = () => {
         if (!name || !dob || !gender) {
@@ -47,21 +47,16 @@ const OnboardingBasicInfo = () => {
                     value={name}
                     onChangeText={setName}
                     addonLeft={<Ionicons name="person-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
-                    containerStyle={styles.inputSpacing}
                     required
                 />
 
-                <FormInput
-                    label="Date of Birth"
-                    placeholder="DD / MM / YYYY"
+                <FormDatePicker
                     value={dob}
-                    onChangeText={setDob}
-                    addonLeft={<Ionicons name="calendar-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
-                    addonRight={<Ionicons name="chevron-down-outline" size={responsiveSize(20)} color={COLORS.textPrimary} />}
-                    containerStyle={styles.inputSpacing}
-                    editable={false} // Will be a date picker eventually
-                    onPressAddonRight={() => console.log('Open date picker')}
+                    onChange={setDob}
+                    placeholder="DD/MM/YYYY"
                     required
+                    mode='date'
+                    label="Date of Birth"
                 />
 
                 <GenderSelector
@@ -101,10 +96,9 @@ const styles = StyleSheet.create({
 
     formContainer: {
         marginTop: responsiveSize(10),
+        gap: responsiveSize(20),
     },
-    inputSpacing: {
-        marginBottom: responsiveSize(20),
-    },
+
     footerContainer: {
         marginTop: responsiveSize(30),
         alignItems: 'center',

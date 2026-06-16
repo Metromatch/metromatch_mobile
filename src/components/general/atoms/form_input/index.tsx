@@ -1,4 +1,4 @@
-import { View, StyleSheet, TextInput, StyleProp, ViewStyle, Platform, TextInputProps, TextStyle, TouchableOpacity } from 'react-native'
+import { View, StyleSheet, TextInput, StyleProp, ViewStyle, Platform, TextInputProps, TextStyle, TouchableOpacity, ViewProps } from 'react-native'
 import React, { useRef, useState } from 'react'
 import Label from '@/components/general/molecules/label'
 import { responsiveSize } from '@/utils/responsive'
@@ -19,6 +19,7 @@ interface InputType extends Omit<TextInputProps, 'error'> {
   disabled?: boolean
   addonLeft?: React.ReactNode
   onPressAddonRight?: () => void
+  containerProps?: ViewProps
 }
 
 const FormInput = ({
@@ -33,11 +34,12 @@ const FormInput = ({
   disabled = false,
   addonLeft,
   onPressAddonRight,
+  containerProps,
   ...props
 }: InputType) => {
 
   return (
-    <View style={[flex1 ? { flex: 1 } : {}, containerStyle]}>
+    <View style={[flex1 ? { flex: 1 } : {}, containerStyle]} {...containerProps}>
       {label && <Label text={label} required={required} />}
       <View
         style={[styles.inputContainer, {

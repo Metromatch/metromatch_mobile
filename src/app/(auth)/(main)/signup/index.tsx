@@ -1,5 +1,5 @@
 import PrimaryButton from '@/components/general/atoms/primary_button'
-import FormInput from '@/components/shared/atoms/form_input'
+import FormInput from '@/components/general/atoms/form_input'
 import { responsiveSize } from '@/utils/responsive'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import React, { useState } from 'react'
