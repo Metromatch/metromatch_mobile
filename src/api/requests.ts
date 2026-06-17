@@ -1,4 +1,4 @@
-import { AUTH_API, MASTER_LIST_API } from "./apiEndpoints";
+import { AUTH_API, MASTER_LIST_API, PROFILES_API } from "./apiEndpoints";
 import http from "./http";
 
 
@@ -21,3 +21,12 @@ export const Auth = {
 export const MasterList = {
   masterList: REQUEST_TEMPLATES(MASTER_LIST_API.MASTER_LIST).create,
 }
+
+export const Profiles = {
+  createMyProfile: REQUEST_TEMPLATES(PROFILES_API.ME).create,
+  getMyProfile: REQUEST_TEMPLATES(PROFILES_API.ME).read,
+  updateMyProfile: REQUEST_TEMPLATES(PROFILES_API.ME).update,
+  // deleteMyProfile: REQUEST_TEMPLATES(PROFILES_API.ME).delete,
+  getProfiles: REQUEST_TEMPLATES(PROFILES_API.PROFILES).read,
+}
+

@@ -1,34 +1,34 @@
 export const initialValues = {
     formValues: {
-        name: "",
-        dob: "",
-        gender: "",
-        profession: "",
-        height: "",
-        religion: "",
-        diet: "",
-        drinking: "",
-        smoking: "",
-        vibe: "",
-        lookingFor: "",
-        interestedIn: "",
-        prefMinAge: "",
-        prefMaxAge: "",
-        prefMinHeight: "",
-        prefMaxHeight: "",
-        prefReligion: "",
-        prefDiet: "",
-        prefDrinking: "",
-        prefSmoking: "",
+        name: null,
+        dob: null,
+        gender: null,
+        profession: null,
+        height: null,
+        religion: null,
+        diet: null,
+        drinking: null,
+        smoking: null,
+        vibe: null,
+        lookingFor: null,
+        interestedIn: null,
+        prefMinAge: null,
+        prefMaxAge: null,
+        prefMinHeight: null,
+        prefMaxHeight: null,
+        prefReligion: null,
+        prefDiet: null,
+        prefDrinking: null,
+        prefSmoking: null,
     },
 }
 
 export type OnboardingStepsProperties = {
     formValues: {
-        name: string;
+        name: string | null;
         dob: string | null;
-        gender: string;
-        profession: string,
+        gender: string | null;
+        profession: string | null,
         height: string | null,
         religion: string | null,
         diet: string | null,

@@ -9,11 +9,16 @@ import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import PhotoGrid from '@/components/shared/molecules/photo_grid';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
+import useMetromatchStore from '@/store';
+import useProfileService from '@/hooks/services/useProfileService';
 
 const OnboardingPhotos = () => {
     const router = useRouter();
     const [photos, setPhotos] = useState<string[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+    const { onboardingSteps: { formValues } } = useMetromatchStore();
+    const { createProfile, isCreateProfileLoading } = useProfileService();
 
     const handleAddPhoto = async () => {
         if (photos.length >= 6) {
@@ -68,14 +73,22 @@ const OnboardingPhotos = () => {
         });
     };
 
-    const handleFinish = () => {
+    const handleFinish = async () => {
         if (photos.length === 0) {
             Alert.alert("Photo Required", "Please upload at least one photo.");
             return;
         }
-        console.log('Finished onboarding with photos:', photos);
-        // For now, redirect to home/login upon completion
-        router.replace('/');
+
+        const payload = {
+            ...formValues,
+            drinkingHabits: formValues.drinking,
+            smokingHabits: formValues.smoking,
+
+        };
+        delete payload.drinking
+        delete payload.smoking
+        await createProfile({ payload })
+        router.replace('/main/sessions');
     };
 
     const handleBack = () => {
@@ -107,6 +120,7 @@ const OnboardingPhotos = () => {
                     onPress={handleFinish}
                     addonRight={<Ionicons name="checkmark-done" size={responsiveSize(20)} color="white" />}
                     containerStyle={styles.nextButton}
+                    loading={isCreateProfileLoading}
                 />
             </View>
 
