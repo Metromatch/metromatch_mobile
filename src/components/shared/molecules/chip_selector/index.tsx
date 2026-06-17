@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import Label from '@/components/general/molecules/label';
+import { Span } from '@/components/general/atoms/span';
 
 export interface ChipOption {
   label: string;
@@ -22,10 +23,11 @@ interface ChipSelectorProps {
   chipStyle?: ViewStyle;
   activeIconMode?: 'check' | 'none';
   direction?: 'horizontal' | 'vertical';
+  error?: string;
 }
 
 const ChipSelector: React.FC<ChipSelectorProps> = ({
-  label, required, options, value, onChange, style, chipStyle, activeIconMode = 'none', direction = 'horizontal'
+  label, required, options, value, onChange, style, chipStyle, activeIconMode = 'none', direction = 'horizontal', error
 }) => {
   return (
     <View style={[styles.container, style]}>
@@ -74,6 +76,9 @@ const ChipSelector: React.FC<ChipSelectorProps> = ({
           );
         })}
       </View>
+      {error && (
+        <Span text={error} style={styles.error} />
+      )}
     </View>
   );
 };
@@ -120,6 +125,11 @@ const styles = StyleSheet.create({
   },
   inactiveText: {
     color: COLORS.textPrimary,
+  },
+  error: {
+    paddingLeft: responsiveSize(2),
+    color: 'red',
+    marginTop: responsiveSize(4),
   },
 });
 

@@ -15,20 +15,25 @@ const MainAuthLayout = () => {
         label: 'Login'
     }, {
         id: '/signup',
-        label: 'Sign up'
+        label: 'Sign Up'
     }]
     const pathname = usePathname()
 
     return (
         <View style={styles.container}>
-            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ marginTop: responsiveSize(30), paddingHorizontal: responsiveSize(20), }}>
-                <View style={styles.logoContainer}>
-                    <Image
-                        source={require('@/assets/images/logo_with_title.png')}
-                        style={styles.logo}
-                        resizeMode="contain"
-                    />
-                    {/* <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
+            <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} style={{ flex: 1 }}>
+                <ScrollView
+                    contentContainerStyle={{ flexGrow: 1, marginTop: responsiveSize(30), paddingHorizontal: responsiveSize(20), paddingBottom: responsiveSize(30) }}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                >
+                    <View style={styles.logoContainer}>
+                        <Image
+                            source={require('@/assets/images/logo_with_title.png')}
+                            style={styles.logo}
+                            resizeMode="contain"
+                        />
+                        {/* <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
                         <Text style={styles.tagLine}>
                             Your match.
                         </Text>
@@ -36,35 +41,36 @@ const MainAuthLayout = () => {
                             Next to you.
                         </Text>
                     </View> */}
-                </View>
-                <GlassmorphicCard>
-                    <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
-                        <Text style={styles.welcome}>Welcome</Text>
-                        <Text style={[styles.welcome, { fontSize: 18, fontStyle: 'italic', marginTop: 1 }]}> ♡</Text>
                     </View>
-                    <View style={{ marginBottom: responsiveSize(25), flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
+                    <GlassmorphicCard>
+                        <View style={{ flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
+                            <Text style={styles.welcome}>Welcome</Text>
+                            <Text style={[styles.welcome, { fontSize: 18, fontStyle: 'italic', marginTop: 1 }]}> ♡</Text>
+                        </View>
+                        <View style={{ marginBottom: responsiveSize(25), flexDirection: 'row', justifyContent: 'center', gap: 5, alignItems: 'center' }}>
 
-                        <Text style={styles.title}>
-                            Let's find your
-                        </Text>
-                        <Text style={[styles.title, { color: COLORS.primary }]}>
-                            perfect match
-                        </Text>
-                        <DoubleHeartIcon />
+                            <Text style={styles.title}>
+                                Let's find your
+                            </Text>
+                            <Text style={[styles.title, { color: COLORS.primary }]}>
+                                perfect match
+                            </Text>
+                            <DoubleHeartIcon />
+                        </View>
+                        <VerticalTabs
+                            tabList={tabList}
+                            activeTab={pathname}
+                            onTabChange={(item) => { router.replace(item as any) }}
+                        />
+                        <Slot />
+                    </GlassmorphicCard>
+                    <View>
+                        <Span style={styles.footer}>
+                            🔒 Secure metropolitan transit-based matching
+                        </Span>
+
                     </View>
-                    <VerticalTabs
-                        tabList={tabList}
-                        activeTab={pathname}
-                        onTabChange={(item) => { router.replace(item as any) }}
-                    />
-                    <Slot />
-                </GlassmorphicCard>
-                <View>
-                    <Span style={styles.footer}>
-                        🔒 Secure metropolitan transit-based matching
-                    </Span>
-
-                </View>
+                </ScrollView>
             </KeyboardAvoidingView>
         </View>
     )

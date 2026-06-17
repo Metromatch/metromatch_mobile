@@ -12,101 +12,100 @@ import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
 import useMasterListQuery from '@/hooks/services/useMasterListQuery';
-
-const dietOptions: ChipOption[] = [
-    { label: 'Vegetarian', value: 'vegetarian', icon: 'leaf-outline', iconColor: 'green' },
-    { label: 'Non-Veg', value: 'non_veg', icon: 'restaurant-outline', iconColor: 'red' },
-    { label: 'Vegan', value: 'vegan', icon: 'leaf-outline', iconColor: 'green' },
-    { label: 'Eggetarian', value: 'eggetarian', icon: 'egg-outline', iconColor: 'yellow' },
-    { label: 'Jain', value: 'jain', icon: 'hand-left-outline', iconColor: 'blue' },
-];
-
-const drinkingOptions: ChipOption[] = [
-    { label: 'Never', value: 'never' },
-    { label: 'Sometimes', value: 'sometimes' },
-    { label: 'Yes', value: 'yes' },
-];
-
-const smokingOptions: ChipOption[] = [
-    { label: 'Never', value: 'never' },
-    { label: 'Sometimes', value: 'sometimes' },
-    { label: 'Yes', value: 'yes' },
-];
+import useMetromatchStore from '@/store';
+import { useFormValidation } from '@/hooks/useFormValidation';
 
 const OnboardingDetails = () => {
+    const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
     const router = useRouter();
 
-    const [profession, setProfession] = useState('');
-    const [height, setHeight] = useState('');
-    const [religion, setReligion] = useState<string | null | number>(null);
-    const [diet, setDiet] = useState<string | null>(null);
-    const [drinking, setDrinking] = useState<string | null>(null);
-    const [smoking, setSmoking] = useState<string | null>(null);
+    const { values, errors, handleChange, validateAll } = useFormValidation({
+        profession: formValues?.profession || '',
+        height: formValues?.height || null,
+        religion: formValues?.religion || null,
+        diet: formValues?.diet || null,
+        drinking: formValues?.drinking || null,
+        smoking: formValues?.smoking || null,
+        vibe: formValues?.vibe || null,
+        lookingFor: formValues?.lookingFor || null,
+        interestedIn: formValues?.interestedIn || null,
+    }, {});
+
     const { masterlist } = useMasterListQuery();
+
+
     const handleNext = () => {
-        console.log('Next step with:', { profession, height, religion, diet, drinking, smoking });
+        if (!validateAll()) return;
+
+        setOnboardingFormValues(values);
         router.push('/onboarding/preferences');
     };
 
     const handleBack = () => {
+        setOnboardingFormValues(values);
         router.back();
     };
-    console.log('masterlist', masterlist)
+
     return (
         <View style={styles.formContainer}>
-            <FormInput
+            {/* <FormInput
                 label="Profession"
                 placeholder="Engineer, Student, Doctor, etc."
-                value={profession}
-                onChangeText={setProfession}
+                value={values.profession}
+                onChangeText={(text) => handleChange('profession', text)}
+                error={errors.profession}
                 addonLeft={<Ionicons name="briefcase-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
                 containerStyle={styles.inputSpacing}
-            />
+            /> */}
 
             <View style={styles.row}>
                 <FormSelect
                     flex1
                     label="Height"
                     placeholder="Select your height"
-                    value={height}
+                    value={values.height}
+                    error={errors.height}
                     icon="person-outline"
-                    options={[]}
-                    onChange={() => { }}
+                    options={masterlist?.height || []}
+                    onChange={(value) => handleChange('height', value)}
                 />
                 <FormSelect
                     flex1
                     label="Religion"
                     placeholder="Select religion"
-                    value={religion}
-                    icon="leaf-outline" // Placeholder icon since leaf is close to what's in image
+                    value={values.religion}
+                    error={errors.religion}
+                    icon="leaf-outline"
                     options={masterlist?.religion || []}
-                    onChange={(value) => setReligion(value)}
-
+                    onChange={(value) => handleChange('religion', value)}
                 />
             </View>
 
             <ChipSelector
                 label="Diet"
                 options={masterlist?.diet || []}
-                value={diet}
-                onChange={setDiet}
+                value={values.diet}
+                error={errors.diet}
+                onChange={(value) => handleChange('diet', value)}
             />
 
             <View style={styles.row}>
                 <ChipSelector
                     label="Drinking"
-                    options={drinkingOptions}
-                    value={drinking}
-                    onChange={setDrinking}
+                    options={masterlist?.drinkingHabits || []}
+                    value={values.drinking}
+                    error={errors.drinking}
+                    onChange={(value) => handleChange('drinking', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
                 />
                 <ChipSelector
                     label="Smoking"
-                    options={smokingOptions}
-                    value={smoking}
-                    onChange={setSmoking}
+                    options={masterlist?.smokingHabits || []}
+                    value={values.smoking}
+                    error={errors.smoking}
+                    onChange={(value) => handleChange('smoking', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -115,17 +114,19 @@ const OnboardingDetails = () => {
 
             <ChipSelector
                 label="Your Vibe"
-                options={dietOptions}
-                value={diet}
-                onChange={setDiet}
+                options={[]}
+                value={values.vibe}
+                error={errors.vibe}
+                onChange={(value) => handleChange('vibe', value)}
             />
 
             <View style={styles.row}>
                 <ChipSelector
                     label="Looking For"
                     options={masterlist?.relationshipPreference || []}
-                    value={drinking}
-                    onChange={setDrinking}
+                    value={values.lookingFor}
+                    error={errors.lookingFor}
+                    onChange={(value) => handleChange('lookingFor', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -134,8 +135,9 @@ const OnboardingDetails = () => {
                 <ChipSelector
                     label="Interested In"
                     options={masterlist?.interestedIn || []}
-                    value={smoking}
-                    onChange={setSmoking}
+                    value={values.interestedIn}
+                    error={errors.interestedIn}
+                    onChange={(value) => handleChange('interestedIn', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -148,6 +150,15 @@ const OnboardingDetails = () => {
                 value={diet}
                 onChange={setDiet}
             /> */}
+            <FormInput
+                label="Profession"
+                placeholder="Engineer, Student, Doctor, etc."
+                value={values.profession}
+                onChangeText={(text) => handleChange('profession', text)}
+                error={errors.profession}
+                addonLeft={<Ionicons name="briefcase-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
+                containerStyle={styles.inputSpacing}
+            />
 
             <View style={styles.footerButtons}>
                 <IconButton

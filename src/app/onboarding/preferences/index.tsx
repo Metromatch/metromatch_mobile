@@ -8,38 +8,31 @@ import FormSelect from '@/components/shared/molecules/form_select';
 import ChipSelector, { ChipOption } from '@/components/shared/molecules/chip_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
-
-const dietOptions: ChipOption[] = [
-    { label: 'Vegetarian', value: 'vegetarian', icon: 'leaf-outline' },
-    { label: 'Non-Veg', value: 'non_veg', icon: 'restaurant-outline' },
-    { label: 'Vegan', value: 'vegan', icon: 'leaf-outline' },
-    { label: 'Eggetarian', value: 'eggetarian', icon: 'egg-outline' },
-    { label: 'Jain', value: 'jain', icon: 'hand-left-outline' },
-];
-
-const drinkingOptions: ChipOption[] = [
-    { label: 'Never', value: 'never' },
-    { label: 'Sometimes', value: 'sometimes' },
-    { label: 'Yes', value: 'yes' },
-];
-
-const smokingOptions: ChipOption[] = [
-    { label: 'Never', value: 'never' },
-    { label: 'Sometimes', value: 'sometimes' },
-    { label: 'Yes', value: 'yes' },
-];
+import { useFormValidation } from '@/hooks/useFormValidation';
+import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 
 const OnboardingPreferences = () => {
     const router = useRouter();
+    const { masterlist } = useMasterListQuery();
 
-    const [height, setHeight] = useState('');
-    const [religion, setReligion] = useState('');
-    const [diet, setDiet] = useState<string | null>(null);
-    const [drinking, setDrinking] = useState<string | null>(null);
-    const [smoking, setSmoking] = useState<string | null>(null);
+    const { values, errors, handleChange, validateAll } = useFormValidation({
+        height: '',
+        religion: '',
+        diet: null,
+        drinking: null,
+        smoking: null,
+    }, {
+        height: { required: true, message: 'Please select preferred height' },
+        religion: { required: true, message: 'Please select preferred religion' },
+        diet: { required: true, message: 'Please select diet preference' },
+        drinking: { required: true, message: 'Please select drinking preference' },
+        smoking: { required: true, message: 'Please select smoking preference' },
+    });
 
     const handleNext = () => {
-        console.log('Next step with:', { height, religion, diet, drinking, smoking });
+        if (!validateAll()) return;
+
+        console.log('Next step with:', values);
         router.push('/onboarding/photos');
     };
 
@@ -54,33 +47,43 @@ const OnboardingPreferences = () => {
                     flex1
                     label="Height"
                     placeholder="Preferred height"
-                    value={height}
-                    onPress={() => console.log('Open height picker')}
+                    value={values.height}
+                    error={errors.height}
+                    required
+                    options={masterlist?.height || []}
+                    onChange={(value) => handleChange('height', value)}
                     icon="person-outline"
                 />
                 <FormSelect
                     flex1
                     label="Religion"
                     placeholder="Preferred religion"
-                    value={religion}
-                    onPress={() => console.log('Open religion picker')}
+                    value={values.religion}
+                    error={errors.religion}
+                    required
+                    options={masterlist?.religion || []}
+                    onChange={(value) => handleChange('religion', value)}
                     icon="leaf-outline"
                 />
             </View>
 
             <ChipSelector
                 label="Diet Preferences"
-                options={dietOptions}
-                value={diet}
-                onChange={setDiet}
+                options={masterlist?.diet || []}
+                value={values.diet}
+                error={errors.diet}
+                required
+                onChange={(value) => handleChange('diet', value)}
             />
 
             <View style={styles.row}>
                 <ChipSelector
                     label="Drinking"
-                    options={drinkingOptions}
-                    value={drinking}
-                    onChange={setDrinking}
+                    options={masterlist?.drinkingHabits || []}
+                    value={values.drinking}
+                    error={errors.drinking}
+                    required
+                    onChange={(value) => handleChange('drinking', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -88,9 +91,11 @@ const OnboardingPreferences = () => {
 
                 <ChipSelector
                     label="Smoking"
-                    options={smokingOptions}
-                    value={smoking}
-                    onChange={setSmoking}
+                    options={masterlist?.smokingHabits || []}
+                    value={values.smoking}
+                    error={errors.smoking}
+                    required
+                    onChange={(value) => handleChange('smoking', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"

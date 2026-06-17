@@ -70,11 +70,11 @@ const Signup = () => {
     }
 
     return (
-        <View style={{ gap: responsiveSize(20) }}>
+        <View style={styles.container}>
             <FormInput
                 value={values.email}
                 onChangeText={(text) => handleChange('email', text)}
-                label="Email address"
+                label="Email Address"
                 placeholder='Enter your email address'
                 error={errors.email}
                 required
@@ -164,6 +164,9 @@ const Signup = () => {
 }
 
 const styles = StyleSheet.create({
+    container: {
+        gap: responsiveSize(20),
+    },
     terms: {
         textAlign: 'center',
         color: '#7782A0',

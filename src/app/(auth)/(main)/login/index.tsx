@@ -68,7 +68,7 @@ const Login = () => {
             <FormInput
                 value={values.email}
                 onChangeText={(text) => handleChange('email', text)}
-                label="Email address"
+                label="Email Address"
                 placeholder='Enter your email address'
                 error={errors.email}
                 required

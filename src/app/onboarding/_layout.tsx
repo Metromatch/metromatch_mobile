@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Image, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Image, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, Keyboard } from 'react-native';
 import { Slot, usePathname } from 'expo-router';
 import { responsiveSize } from '@/utils/responsive';
 import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card';
@@ -22,32 +22,32 @@ export default function OnboardingLayout() {
     currentStep = 4;
     stepLabel = "Photos";
   }
-
+  console.log('Keyboard.isVisible()', Keyboard.isVisible())
   useMasterListQuery();
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <KeyboardAvoidingView
-        style={styles.keyboardView}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
-          <View style={styles.logoContainer}>
-            <Image
-              source={require('@/../assets/images/logo_with_title.png')}
-              style={styles.logo}
-              resizeMode="contain"
-            />
-          </View>
+    // <View style={[styles.keyboardView, { backgroundColor: 'red' }]}>
+    <KeyboardAvoidingView
+      style={styles.keyboardView}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView style={{ flex: 1, }} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+        <View style={styles.logoContainer}>
+          <Image
+            source={require('@/../assets/images/logo_with_title.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
 
-          <GlassmorphicCard>
-            <Stepper currentStep={currentStep} totalSteps={4} stepLabel={stepLabel} />
-            <Slot />
-          </GlassmorphicCard>
+        <GlassmorphicCard>
+          <Stepper currentStep={currentStep} totalSteps={4} stepLabel={stepLabel} />
+          <Slot />
+        </GlassmorphicCard>
 
-          <OnboardingFooter />
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        <OnboardingFooter />
+      </ScrollView>
+    </KeyboardAvoidingView>
+    // </View>
   );
 }
 
