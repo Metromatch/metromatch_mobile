@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Image, SafeAreaView, KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, Keyboard } from 'react-native';
+import { View, StyleSheet, Image, SafeAreaView, Platform, Text, TouchableOpacity, Keyboard, ScrollView } from 'react-native';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { Slot, usePathname } from 'expo-router';
 import { responsiveSize } from '@/utils/responsive';
 import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card';
@@ -25,12 +26,15 @@ export default function OnboardingLayout() {
   console.log('Keyboard.isVisible()', Keyboard.isVisible())
   useMasterListQuery();
   return (
-    // <View style={[styles.keyboardView, { backgroundColor: 'red' }]}>
-    <KeyboardAvoidingView
-      style={styles.keyboardView}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView style={{ flex: 1, }} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
+    <View style={styles.keyboardView}>
+      <KeyboardAwareScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        enableOnAndroid={true}
+      // extraScrollHeight={responsiveSize(150)}
+      >
         <View style={styles.logoContainer}>
           <Image
             source={require('@/../assets/images/logo_with_title.png')}
@@ -45,9 +49,8 @@ export default function OnboardingLayout() {
         </GlassmorphicCard>
 
         <OnboardingFooter />
-      </ScrollView>
-    </KeyboardAvoidingView>
-    // </View>
+      </KeyboardAwareScrollView>
+    </View>
   );
 }
 

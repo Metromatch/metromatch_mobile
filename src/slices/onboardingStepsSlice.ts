@@ -12,6 +12,14 @@ export const initialValues = {
         vibe: "",
         lookingFor: "",
         interestedIn: "",
+        prefMinAge: "",
+        prefMaxAge: "",
+        prefMinHeight: "",
+        prefMaxHeight: "",
+        prefReligion: "",
+        prefDiet: "",
+        prefDrinking: "",
+        prefSmoking: "",
     },
 }
 
@@ -29,6 +37,14 @@ export type OnboardingStepsProperties = {
         vibe: string | null,
         lookingFor: string | null,
         interestedIn: string | null,
+        prefMinAge: string | null,
+        prefMaxAge: string | null,
+        prefMinHeight: string | null,
+        prefMaxHeight: string | null,
+        prefReligion: string | null,
+        prefDiet: string | null,
+        prefDrinking: string | null,
+        prefSmoking: string | null,
     };
 }
 

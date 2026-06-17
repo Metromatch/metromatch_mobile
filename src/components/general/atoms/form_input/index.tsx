@@ -103,8 +103,8 @@ const styles = StyleSheet.create({
   error: {
     paddingLeft: responsiveSize(2),
     color: 'red',
-    position: "absolute",
-    bottom: -responsiveSize(22)
+    // position: "absolute",
+    // bottom: -responsiveSize(22)
   },
   addonLeft: {
     position: 'absolute',

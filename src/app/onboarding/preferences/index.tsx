@@ -10,80 +10,132 @@ import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
 import { useFormValidation } from '@/hooks/useFormValidation';
 import useMasterListQuery from '@/hooks/services/useMasterListQuery';
+import FormInput from '@/components/general/atoms/form_input';
+import useMetromatchStore from '@/store';
+
+const validateAge = (value: number | string) => {
+    if (!value) return null;
+    if (Number(value) < 18) {
+        return 'Age can not be less than 18';
+    }
+    if (Number(value) > 100) {
+        return 'Age can not be more than 100';
+    }
+    return null;
+}
+
+const validateMaxAge = (value: number | string, minAge: number | string) => {
+    if (!value) return null;
+    const error = validateAge(value)
+    if (error) return error
+    if (Number(value) < Number(minAge)) {
+        return 'Max age can not be less than min age';
+    }
+    return null;
+}
 
 const OnboardingPreferences = () => {
     const router = useRouter();
     const { masterlist } = useMasterListQuery();
+    const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
 
     const { values, errors, handleChange, validateAll } = useFormValidation({
-        height: '',
-        religion: '',
-        diet: null,
-        drinking: null,
-        smoking: null,
+        prefMinAge: formValues?.prefMinAge || '',
+        prefMaxAge: formValues?.prefMaxAge || '',
+        prefMinHeight: formValues?.prefMinHeight || null,
+        prefMaxHeight: formValues?.prefMaxHeight || null,
+        prefReligion: formValues?.prefReligion || null,
+        prefDiet: formValues?.prefDiet || null,
+        prefDrinking: formValues?.prefDrinking || null,
+        prefSmoking: formValues?.prefSmoking || null,
     }, {
-        height: { required: true, message: 'Please select preferred height' },
-        religion: { required: true, message: 'Please select preferred religion' },
-        diet: { required: true, message: 'Please select diet preference' },
-        drinking: { required: true, message: 'Please select drinking preference' },
-        smoking: { required: true, message: 'Please select smoking preference' },
+        prefMinAge: { required: false, validate: validateAge },
+        prefMaxAge: { required: false, validate: (value: any, currentValues: any): string | null => validateMaxAge(value, currentValues.prefMinAge) },
     });
 
     const handleNext = () => {
         if (!validateAll()) return;
 
-        console.log('Next step with:', values);
+        setOnboardingFormValues(values);
         router.push('/onboarding/photos');
     };
 
     const handleBack = () => {
+        setOnboardingFormValues(values);
         router.back();
     };
 
     return (
         <View style={styles.formContainer}>
             <View style={styles.row}>
+                <FormInput
+                    flex1
+                    label="Min Age"
+                    placeholder="Enter min age"
+                    value={values.prefMinAge}
+                    onChangeText={(text) => handleChange('prefMinAge', text)}
+                    error={errors.prefMinAge}
+                    keyboardType="numeric"
+                />
+                <FormInput
+                    flex1
+                    label="Max Age"
+                    placeholder="Enter max age"
+                    value={values.prefMaxAge}
+                    onChangeText={(text) => handleChange('prefMaxAge', text)}
+                    error={errors.prefMaxAge}
+                    keyboardType="numeric"
+                />
+            </View>
+            <View style={styles.row}>
                 <FormSelect
                     flex1
-                    label="Height"
-                    placeholder="Preferred height"
-                    value={values.height}
-                    error={errors.height}
-                    required
+                    label="Min Height"
+                    placeholder="Preferred min height"
+                    value={values.prefMinHeight}
+                    error={errors.prefMinHeight}
                     options={masterlist?.height || []}
-                    onChange={(value) => handleChange('height', value)}
+                    onChange={(value) => handleChange('prefMinHeight', value)}
                     icon="person-outline"
                 />
                 <FormSelect
                     flex1
-                    label="Religion"
-                    placeholder="Preferred religion"
-                    value={values.religion}
-                    error={errors.religion}
-                    required
-                    options={masterlist?.religion || []}
-                    onChange={(value) => handleChange('religion', value)}
-                    icon="leaf-outline"
+                    label="Max Height"
+                    placeholder="Preferred max height"
+                    value={values.prefMaxHeight}
+                    error={errors.prefMaxHeight}
+                    options={masterlist?.height || []}
+                    onChange={(value) => handleChange('prefMaxHeight', value)}
+                    icon="person-outline"
                 />
             </View>
+
+            <FormSelect
+                flex1
+                label="Religion"
+                placeholder="Preferred religion"
+                value={values.prefReligion}
+                error={errors.prefReligion}
+                options={masterlist?.religion || []}
+                onChange={(value) => handleChange('prefReligion', value)}
+                icon="leaf-outline"
+            />
 
             <ChipSelector
                 label="Diet Preferences"
                 options={masterlist?.diet || []}
-                value={values.diet}
-                error={errors.diet}
-                required
-                onChange={(value) => handleChange('diet', value)}
+                value={values.prefDiet}
+                error={errors.prefDiet}
+                onChange={(value) => handleChange('prefDiet', value)}
             />
 
             <View style={styles.row}>
                 <ChipSelector
                     label="Drinking"
                     options={masterlist?.drinkingHabits || []}
-                    value={values.drinking}
-                    error={errors.drinking}
-                    required
-                    onChange={(value) => handleChange('drinking', value)}
+                    value={values.prefDrinking}
+                    error={errors.prefDrinking}
+                    onChange={(value) => handleChange('prefDrinking', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -92,10 +144,9 @@ const OnboardingPreferences = () => {
                 <ChipSelector
                     label="Smoking"
                     options={masterlist?.smokingHabits || []}
-                    value={values.smoking}
-                    error={errors.smoking}
-                    required
-                    onChange={(value) => handleChange('smoking', value)}
+                    value={values.prefSmoking}
+                    error={errors.prefSmoking}
+                    onChange={(value) => handleChange('prefSmoking', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"

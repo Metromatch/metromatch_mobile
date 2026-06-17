@@ -48,7 +48,7 @@ const OnboardingDetails = () => {
 
     return (
         <View style={styles.formContainer}>
-            {/* <FormInput
+            <FormInput
                 label="Profession"
                 placeholder="Engineer, Student, Doctor, etc."
                 value={values.profession}
@@ -56,7 +56,7 @@ const OnboardingDetails = () => {
                 error={errors.profession}
                 addonLeft={<Ionicons name="briefcase-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
                 containerStyle={styles.inputSpacing}
-            /> */}
+            />
 
             <View style={styles.row}>
                 <FormSelect
@@ -150,15 +150,6 @@ const OnboardingDetails = () => {
                 value={diet}
                 onChange={setDiet}
             /> */}
-            <FormInput
-                label="Profession"
-                placeholder="Engineer, Student, Doctor, etc."
-                value={values.profession}
-                onChangeText={(text) => handleChange('profession', text)}
-                error={errors.profession}
-                addonLeft={<Ionicons name="briefcase-outline" size={responsiveSize(20)} color={COLORS.textSecondary} />}
-                containerStyle={styles.inputSpacing}
-            />
 
             <View style={styles.footerButtons}>
                 <IconButton
