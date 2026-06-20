@@ -18,7 +18,7 @@ const OnboardingPhotos = () => {
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const { onboardingSteps: { formValues } } = useMetromatchStore();
-    const { createProfile, isCreateProfileLoading } = useProfileService();
+    const { createProfile, isCreateProfileLoading } = useProfileService({});
 
     const handleAddPhoto = async () => {
         if (photos.length >= 6) {

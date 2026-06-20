@@ -49,8 +49,9 @@ const Login = () => {
             }
         });
 
-        const { accessToken, refreshToken, accessTokenExpiresAt, refreshTokenExpiresAt, onboardingCompleted } = res.data.data
+        const { accessToken, refreshToken, refreshTokenExpiresAt, onboardingCompleted } = res.data.data
         if (accessToken) {
+            const accessTokenExpiresAt = JSON.parse(atob(accessToken.split('.')[1])).exp * 1000;
             setAuthDetails({
                 accessToken,
                 refreshToken: refreshToken || '',

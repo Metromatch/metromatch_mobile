@@ -17,14 +17,14 @@ import { COLORS } from '@/constants/theme';
 import SplashScreen from '@/components/general/molecules/splash_screen';
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/authStore';
+import dayjs from 'dayjs';
 
 const queryClient = new QueryClient();
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const router = useRouter();
-  const { authConfiguration: { isLoggedIn, accessToken } } = useAuthStore();
-
+  const { authConfiguration: { accessToken, accessTokenExpiresAt } } = useAuthStore();
   const [fontsLoaded] = useFonts({
     Poppins_400Regular,
     Poppins_500Medium,
@@ -35,15 +35,12 @@ export default function TabLayout() {
     ImperialScript_400Regular
   });
 
+  const isTokenValid = accessToken && accessTokenExpiresAt && dayjs(accessTokenExpiresAt).isAfter(dayjs());
   useEffect(() => {
     if (!fontsLoaded) return;
 
-    if (!accessToken) {
-      router.replace('/login');
-    } else {
-      router.replace('/');
-    }
-  }, [isLoggedIn, fontsLoaded]);
+    router.replace(!accessToken || !isTokenValid ? '/login' : '/');
+  }, [fontsLoaded]);
 
   if (!fontsLoaded) {
     return <SplashScreen />;

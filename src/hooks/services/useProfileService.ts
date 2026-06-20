@@ -1,8 +1,27 @@
 // create profile
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Profiles } from "../../api/requests";
 
-const useProfileService = () => {
+const useProfileService = ({
+    fetchMyProfile = false
+}: {
+    fetchMyProfile?: boolean,
+}) => {
+    const {
+        data: myProfile,
+        isLoading: isMyProfileLoading,
+        refetch: refetchMyProfile,
+    } = useQuery({
+        queryKey: ['my-profile', fetchMyProfile],
+        queryFn: async () => {
+            const res = await Profiles.getMyProfile('')
+            return res.data.data
+        },
+        enabled: fetchMyProfile,
+        gcTime: Infinity,
+        staleTime: Infinity,
+    })
+
     const {
         mutateAsync: createProfile,
         isPending: isCreateProfileLoading,
@@ -17,20 +36,23 @@ const useProfileService = () => {
         mutationFn: ({ payload }: { payload: any }) => Profiles.updateMyProfile('', payload),
     });
 
-    const {
-        mutateAsync: getMyProfile,
-        isPending: isGetMyProfileLoading,
-    } = useMutation({
-        mutationFn: () => Profiles.getMyProfile(''),
-    });
+    // const {
+    //     mutateAsync: getMyProfile,
+    //     isPending: isGetMyProfileLoading,
+    // } = useMutation({
+    //     mutationFn: () => Profiles.getMyProfile(''),
+    // });
 
     return {
         createProfile,
         isCreateProfileLoading,
+
         updateProfile,
         isUpdateProfileLoading,
-        getMyProfile,
-        isGetMyProfileLoading,
+
+        myProfile,
+        isMyProfileLoading,
+        refetchMyProfile
     }
 }
 

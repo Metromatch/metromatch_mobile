@@ -23,7 +23,7 @@ export default function OnboardingLayout() {
     currentStep = 4;
     stepLabel = "Photos";
   }
-  console.log('Keyboard.isVisible()', Keyboard.isVisible())
+
   useMasterListQuery();
   return (
     <View style={styles.keyboardView}>

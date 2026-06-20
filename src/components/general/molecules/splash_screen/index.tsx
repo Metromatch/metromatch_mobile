@@ -3,8 +3,9 @@ import { StyleSheet, Image } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS } from '@/constants/theme';
 import { responsiveSize } from '@/utils/responsive';
+import { B1 } from '../../atoms/body_text';
 
-const SplashScreen = () => {
+const SplashScreen = ({ message = "" }: { message?: string }) => {
     return (
         <LinearGradient
             colors={[
@@ -19,6 +20,7 @@ const SplashScreen = () => {
                 style={styles.logo}
                 resizeMode="contain"
             />
+            {message && <B1 textColor='white'>{message}</B1>}
         </LinearGradient>
     );
 };
