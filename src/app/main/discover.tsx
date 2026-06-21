@@ -1,26 +1,1142 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useRef, useState, useCallback } from 'react';
+import {
+    View,
+    Text,
+    StyleSheet,
+    Dimensions,
+    TouchableOpacity,
+    Animated,
+    PanResponder,
+    Image,
+    ActivityIndicator,
+    Platform,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { COLORS } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BlurView } from 'expo-blur';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { COLORS, TYPOGRAPHY } from '@/constants/theme';
+import useDiscoverService, { NearbyProfile, SwipeType } from '@/hooks/services/useDiscoverService';
+import Toast from 'react-native-toast-message';
 
-export default function DiscoverScreen() {
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Discover</Text>
-    </SafeAreaView>
-  );
+const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
+const CARD_WIDTH = SCREEN_WIDTH - 32;
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.28;
+const ROTATION_FACTOR = 12;
+
+// ─── helper ────────────────────────────────────────────────────────────────
+function getAge(dob: string): number {
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
 }
 
+function fmtDistance(meters?: number): string {
+    if (!meters) return '';
+    if (meters < 1000) return `${meters}m away`;
+    return `${(meters / 1000).toFixed(1)} km away`;
+}
+
+// ─── Interest chips ─────────────────────────────────────────────────────────
+function InterestChip({ label, icon }: { label: string; icon: string }) {
+    return (
+        <View style={styles.chip}>
+            <Text style={styles.chipIcon}>{icon}</Text>
+            <Text style={styles.chipText}>{label}</Text>
+        </View>
+    );
+}
+
+// ─── Match Modal ─────────────────────────────────────────────────────────────
+function MatchModal({
+    visible,
+    profile,
+    onClose,
+}: {
+    visible: boolean;
+    profile: NearbyProfile | null;
+    onClose: () => void;
+}) {
+    const scaleAnim = useRef(new Animated.Value(0)).current;
+    const opacityAnim = useRef(new Animated.Value(0)).current;
+
+    React.useEffect(() => {
+        if (visible) {
+            Animated.parallel([
+                Animated.spring(scaleAnim, {
+                    toValue: 1,
+                    tension: 60,
+                    friction: 8,
+                    useNativeDriver: true,
+                }),
+                Animated.timing(opacityAnim, {
+                    toValue: 1,
+                    duration: 250,
+                    useNativeDriver: true,
+                }),
+            ]).start();
+        } else {
+            scaleAnim.setValue(0);
+            opacityAnim.setValue(0);
+        }
+    }, [visible]);
+
+    if (!visible || !profile) return null;
+
+    return (
+        <Animated.View style={[styles.matchOverlay, { opacity: opacityAnim }]}>
+            <Animated.View
+                style={[styles.matchCard, { transform: [{ scale: scaleAnim }] }]}
+            >
+                <LinearGradient
+                    colors={['#1A42D9', '#5C3DD8']}
+                    style={styles.matchGradient}
+                >
+                    <Text style={styles.matchEmoji}>💙</Text>
+                    <Text style={styles.matchTitle}>It's a Match!</Text>
+                    <Text style={styles.matchSubtitle}>
+                        You and{' '}
+                        <Text style={{ fontFamily: TYPOGRAPHY.semibold }}>
+                            {profile.name}
+                        </Text>{' '}
+                        liked each other
+                    </Text>
+
+                    <View style={styles.matchAvatarRow}>
+                        <View style={styles.matchAvatarBorder}>
+                            <View style={styles.matchAvatarPlaceholder}>
+                                <Ionicons name="person" size={32} color={COLORS.primary} />
+                            </View>
+                        </View>
+                        <View style={styles.matchHeartBadge}>
+                            <Text style={{ fontSize: 18 }}>❤️</Text>
+                        </View>
+                        <View style={styles.matchAvatarBorder}>
+                            <View style={styles.matchAvatarPlaceholder}>
+                                <Ionicons name="person" size={32} color="#E91E8C" />
+                            </View>
+                        </View>
+                    </View>
+
+                    <TouchableOpacity
+                        style={styles.matchMessageBtn}
+                        onPress={onClose}
+                        activeOpacity={0.85}
+                    >
+                        <LinearGradient
+                            colors={['#6EA8FF', '#2F6BFF']}
+                            style={styles.matchMessageGradient}
+                        >
+                            <Ionicons name="chatbubble-ellipses" size={18} color="white" />
+                            <Text style={styles.matchMessageText}>Send Message</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity onPress={onClose} style={{ marginTop: 12 }}>
+                        <Text style={styles.matchKeepText}>Keep Swiping</Text>
+                    </TouchableOpacity>
+                </LinearGradient>
+            </Animated.View>
+        </Animated.View>
+    );
+}
+
+// ─── Swipeable Card ──────────────────────────────────────────────────────────
+function SwipeCard({
+    profile,
+    onSwipe,
+    isTop,
+    stackIndex,
+}: {
+    profile: NearbyProfile;
+    onSwipe: (userId: string, swipeType: SwipeType) => void;
+    isTop: boolean;
+    stackIndex: number;
+}) {
+    const position = useRef(new Animated.ValueXY()).current;
+    const likeOpacity = useRef(new Animated.Value(0)).current;
+    const nopeOpacity = useRef(new Animated.Value(0)).current;
+    const superLikeOpacity = useRef(new Animated.Value(0)).current;
+
+    // Keep a mutable ref so PanResponder callbacks always read the latest value.
+    // Without this, the closure inside useRef(PanResponder.create(...)) captures
+    // isTop from the FIRST render only, causing all non-first cards to be
+    // un-swipeable even after they become the top card.
+    const isTopRef = useRef(isTop);
+    isTopRef.current = isTop;   // update on every render — no useEffect needed
+
+    const rotate = position.x.interpolate({
+        inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
+        outputRange: [`-${ROTATION_FACTOR}deg`, '0deg', `${ROTATION_FACTOR}deg`],
+        extrapolate: 'clamp',
+    });
+
+    const cardOpacity = position.x.interpolate({
+        inputRange: [-SCREEN_WIDTH, 0, SCREEN_WIDTH],
+        outputRange: [0.6, 1, 0.6],
+        extrapolate: 'clamp',
+    });
+
+    const panResponder = useRef(
+        PanResponder.create({
+            onStartShouldSetPanResponder: () => isTopRef.current,
+            onMoveShouldSetPanResponder: () => isTopRef.current,
+            onPanResponderMove: (_, { dx, dy }) => {
+                position.setValue({ x: dx, y: dy });
+                // Update stamp opacities
+                const absDx = Math.abs(dx);
+                if (dy < -60 && absDx < 60) {
+                    superLikeOpacity.setValue(Math.min((-dy - 60) / 60, 1));
+                    likeOpacity.setValue(0);
+                    nopeOpacity.setValue(0);
+                } else if (dx > 0) {
+                    likeOpacity.setValue(Math.min(dx / SWIPE_THRESHOLD, 1));
+                    nopeOpacity.setValue(0);
+                    superLikeOpacity.setValue(0);
+                } else {
+                    nopeOpacity.setValue(Math.min(-dx / SWIPE_THRESHOLD, 1));
+                    likeOpacity.setValue(0);
+                    superLikeOpacity.setValue(0);
+                }
+            },
+            onPanResponderRelease: (_, { dx, dy }) => {
+                const absDx = Math.abs(dx);
+                if (dy < -100 && absDx < 80) {
+                    // Super like — swipe up
+                    Animated.spring(position, {
+                        toValue: { x: 0, y: -SCREEN_HEIGHT },
+                        useNativeDriver: true,
+                    }).start(() => onSwipe(profile.userId, 'super_like'));
+                } else if (dx > SWIPE_THRESHOLD) {
+                    // Like — swipe right
+                    Animated.spring(position, {
+                        toValue: { x: SCREEN_WIDTH + 100, y: dy },
+                        useNativeDriver: true,
+                    }).start(() => onSwipe(profile.userId, 'like'));
+                } else if (dx < -SWIPE_THRESHOLD) {
+                    // Pass — swipe left
+                    Animated.spring(position, {
+                        toValue: { x: -SCREEN_WIDTH - 100, y: dy },
+                        useNativeDriver: true,
+                    }).start(() => onSwipe(profile.userId, 'pass'));
+                } else {
+                    // Snap back
+                    Animated.parallel([
+                        Animated.spring(position, {
+                            toValue: { x: 0, y: 0 },
+                            tension: 40,
+                            friction: 6,
+                            useNativeDriver: true,
+                        }),
+                        Animated.timing(likeOpacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+                        Animated.timing(nopeOpacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+                        Animated.timing(superLikeOpacity, { toValue: 0, duration: 150, useNativeDriver: true }),
+                    ]).start();
+                }
+            },
+        })
+    ).current;
+
+    const scale = isTop ? 1 : Math.max(0.94 - (stackIndex - 1) * 0.03, 0.85);
+    const translateY = isTop ? 0 : (stackIndex - 1) * 10;
+
+    const interests: { label: string; icon: string }[] = [
+        profile.diet ? { label: profile.diet, icon: '🥗' } : null,
+        profile.travelFrequency ? { label: profile.travelFrequency, icon: '✈️' } : null,
+        profile.smokingHabits === 'non-smoker' ? null : profile.smokingHabits ? { label: profile.smokingHabits, icon: '🚬' } : null,
+        profile.drinkingHabits ? { label: profile.drinkingHabits, icon: '☕' } : null,
+    ].filter(Boolean) as { label: string; icon: string }[];
+
+    return (
+        <Animated.View
+            style={[
+                styles.card,
+                {
+                    transform: [
+                        { scale },
+                        { translateY },
+                        ...(isTop
+                            ? [
+                                { translateX: position.x },
+                                { translateY: position.y },
+                                { rotate },
+                            ]
+                            : []),
+                    ],
+                    opacity: isTop ? cardOpacity : 1,
+                    zIndex: isTop ? 10 : 10 - stackIndex,
+                },
+            ]}
+            {...(isTop ? panResponder.panHandlers : {})}
+        >
+            {/* Photo */}
+            <View style={styles.cardPhotoContainer}>
+                <LinearGradient
+                    colors={['#1A42D9', '#5C7BFF']}
+                    style={styles.cardPhotoPlaceholder}
+                >
+                    <Ionicons name="person" size={80} color="rgba(255,255,255,0.4)" />
+                </LinearGradient>
+
+                {/* Online badge */}
+                <View style={styles.onlineBadge}>
+                    <View style={styles.onlineDot} />
+                    <Text style={styles.onlineText}>Online</Text>
+                </View>
+
+                {/* More options */}
+                <TouchableOpacity style={styles.moreBtn}>
+                    <Ionicons name="ellipsis-horizontal" size={18} color="white" />
+                </TouchableOpacity>
+
+                {/* Like stamp */}
+                <Animated.View
+                    style={[styles.stamp, styles.likeStamp, { opacity: likeOpacity }]}
+                >
+                    <Text style={styles.stampText}>LIKE</Text>
+                </Animated.View>
+
+                {/* Nope stamp */}
+                <Animated.View
+                    style={[styles.stamp, styles.nopeStamp, { opacity: nopeOpacity }]}
+                >
+                    <Text style={[styles.stampText, { color: '#FF4458' }]}>NOPE</Text>
+                </Animated.View>
+
+                {/* Super Like stamp */}
+                <Animated.View
+                    style={[styles.stamp, styles.superStamp, { opacity: superLikeOpacity }]}
+                >
+                    <Text style={[styles.stampText, { color: '#00B4D8' }]}>SUPER</Text>
+                </Animated.View>
+
+                {/* Bottom gradient on photo */}
+                <LinearGradient
+                    colors={['transparent', 'rgba(0,0,0,0.85)']}
+                    style={styles.cardPhotoGradient}
+                />
+            </View>
+
+            {/* Info */}
+            <BlurView intensity={20} tint="dark" style={styles.cardInfo}>
+                {/* Name + age + verified */}
+                <View style={styles.nameRow}>
+                    <Text style={styles.nameText}>
+                        {profile.name}
+                        {profile.dob ? `, ${getAge(profile.dob)}` : ''}
+                    </Text>
+                    <View style={styles.verifiedBadge}>
+                        <Ionicons name="checkmark" size={11} color="white" />
+                    </View>
+                    {profile.distanceMeters != null && (
+                        <View style={styles.distanceBadge}>
+                            <Ionicons name="location-outline" size={12} color={COLORS.primary} />
+                            <Text style={styles.distanceText}>
+                                {fmtDistance(profile.distanceMeters)}
+                            </Text>
+                        </View>
+                    )}
+                </View>
+
+                {/* Metro route row */}
+                {(profile.travelTimeSlots?.length ?? 0) > 0 && (
+                    <View style={styles.metroRow}>
+                        <Ionicons name="subway-outline" size={14} color={COLORS.primaryLight} />
+                        <Text style={styles.metroText} numberOfLines={1}>
+                            {profile.travelTimeSlots?.slice(0, 2).join(' → ')}
+                        </Text>
+                    </View>
+                )}
+
+                {/* Interest chips */}
+                {interests.length > 0 && (
+                    <View style={styles.chipsRow}>
+                        {interests.slice(0, 3).map((it, i) => (
+                            <InterestChip key={i} label={it.label} icon={it.icon} />
+                        ))}
+                    </View>
+                )}
+
+                {/* Bio line */}
+                {profile.relationshipPreference && (
+                    <Text style={styles.bioText} numberOfLines={2}>
+                        Looking for {profile.relationshipPreference.toLowerCase()} 💙
+                    </Text>
+                )}
+            </BlurView>
+        </Animated.View>
+    );
+}
+
+// ─── Action Buttons ──────────────────────────────────────────────────────────
+function ActionButtons({
+    onPass,
+    onLike,
+    onSuperLike,
+    onUndo,
+    disabled,
+}: {
+    onPass: () => void;
+    onLike: () => void;
+    onSuperLike: () => void;
+    onUndo: () => void;
+    disabled: boolean;
+}) {
+    return (
+        <View style={styles.actionRow}>
+            {/* Undo */}
+            <TouchableOpacity
+                onPress={onUndo}
+                style={[styles.actionBtn, styles.actionBtnSm]}
+                activeOpacity={0.8}
+                disabled={disabled}
+            >
+                <Ionicons name="refresh" size={22} color={COLORS.textSecondary} />
+            </TouchableOpacity>
+
+            {/* Pass */}
+            <TouchableOpacity
+                onPress={onPass}
+                style={[styles.actionBtn, styles.actionBtnLg]}
+                activeOpacity={0.8}
+                disabled={disabled}
+            >
+                <LinearGradient colors={['#FF6B8A', '#FF4458']} style={styles.actionGradient}>
+                    <Ionicons name="close" size={30} color="white" />
+                </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Like */}
+            <TouchableOpacity
+                onPress={onLike}
+                style={[styles.actionBtn, styles.actionBtnXl]}
+                activeOpacity={0.8}
+                disabled={disabled}
+            >
+                <LinearGradient colors={['#FF6BAA', '#E91E8C']} style={styles.actionGradient}>
+                    <Ionicons name="heart" size={34} color="white" />
+                </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Super Like */}
+            <TouchableOpacity
+                onPress={onSuperLike}
+                style={[styles.actionBtn, styles.actionBtnLg]}
+                activeOpacity={0.8}
+                disabled={disabled}
+            >
+                <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.actionGradient}>
+                    <Ionicons name="flash" size={26} color="white" />
+                </LinearGradient>
+            </TouchableOpacity>
+
+            {/* Spacer for symmetry */}
+            <View style={[styles.actionBtn, styles.actionBtnSm]} />
+        </View>
+    );
+}
+
+// ─── Sample data (dev / empty-API fallback) ────────────────────────────────
+const SAMPLE_PROFILES: NearbyProfile[] = [
+    {
+        id: 'sample-1',
+        userId: 'sample-user-1',
+        name: 'Ananya',
+        dob: '1998-03-12',
+        gender: 'female',
+        profession: 'UX Designer',
+        religion: 'hindu',
+        height: '5_4',
+        diet: 'vegetarian',
+        drinkingHabits: 'occasionally',
+        smokingHabits: 'non-smoker',
+        travelFrequency: 'Travel',
+        relationshipPreference: 'Long-term',
+        interestedIn: 'male',
+        travelTimeSlots: ['Rajiv Chowk', 'Dwarka Sec 21'],
+        distanceMeters: 2000,
+    },
+    {
+        id: 'sample-2',
+        userId: 'sample-user-2',
+        name: 'Priya',
+        dob: '1999-07-22',
+        gender: 'female',
+        profession: 'Software Engineer',
+        religion: 'christian',
+        height: '5_5',
+        diet: 'non_vegetarian',
+        drinkingHabits: 'socially',
+        smokingHabits: 'non-smoker',
+        travelFrequency: 'Coffee',
+        relationshipPreference: 'Casual',
+        interestedIn: 'male',
+        travelTimeSlots: ['Hauz Khas', 'Noida Sec 18'],
+        distanceMeters: 850,
+    },
+    {
+        id: 'sample-3',
+        userId: 'sample-user-3',
+        name: 'Meera',
+        dob: '1997-11-05',
+        gender: 'female',
+        profession: 'Marketing Manager',
+        religion: 'hindu',
+        height: '5_3',
+        diet: 'vegetarian',
+        drinkingHabits: 'never',
+        smokingHabits: 'non-smoker',
+        travelFrequency: 'Book Lover',
+        relationshipPreference: 'Long-term',
+        interestedIn: 'male',
+        travelTimeSlots: ['Connaught Place', 'Lajpat Nagar'],
+        distanceMeters: 450,
+    },
+    {
+        id: 'sample-4',
+        userId: 'sample-user-4',
+        name: 'Nisha',
+        dob: '2000-05-18',
+        gender: 'female',
+        profession: 'Architect',
+        religion: 'hindu',
+        height: '5_6',
+        diet: 'non_vegetarian',
+        drinkingHabits: 'occasionally',
+        smokingHabits: 'non-smoker',
+        travelFrequency: 'Travel',
+        relationshipPreference: 'Long-term',
+        interestedIn: 'male',
+        travelTimeSlots: ['Indira Gandhi Airport', 'Saket'],
+        distanceMeters: 1200,
+    },
+    {
+        id: 'sample-5',
+        userId: 'sample-user-5',
+        name: 'Kavya',
+        dob: '1996-09-30',
+        gender: 'female',
+        profession: 'Doctor',
+        religion: 'jain',
+        height: '5_2',
+        diet: 'vegan',
+        drinkingHabits: 'never',
+        smokingHabits: 'non-smoker',
+        travelFrequency: 'Fitness',
+        relationshipPreference: 'Long-term',
+        interestedIn: 'male',
+        travelTimeSlots: ['AIIMS', 'Lodi Colony'],
+        distanceMeters: 600,
+    },
+];
+
+// ─── Main Screen ─────────────────────────────────────────────────────────────
+export default function DiscoverScreen() {
+    const { nearbyProfiles, isDiscoveryLoading, refetchDiscovery, swipe, isSwipePending } =
+        useDiscoverService({ radius: 1000, limit: 20 });
+
+    const [cardStack, setCardStack] = useState<NearbyProfile[]>([]);
+    const [matchedProfile, setMatchedProfile] = useState<NearbyProfile | null>(null);
+    const [showMatch, setShowMatch] = useState(false);
+    const [activeFilter, setActiveFilter] = useState<'Nearby' | 'New' | 'Premium'>('Nearby');
+
+    // Sync fetched profiles into card stack; fall back to sample data when API is empty
+    React.useEffect(() => {
+        if (cardStack.length === 0) {
+            const source = nearbyProfiles.length > 0 ? nearbyProfiles : SAMPLE_PROFILES;
+            setCardStack([...source]);
+        }
+    }, [nearbyProfiles]);
+
+    // When the stack runs out, reload sample data (dev convenience)
+    React.useEffect(() => {
+        if (!isDiscoveryLoading && cardStack.length === 0) {
+            setCardStack([...SAMPLE_PROFILES]);
+        }
+    }, [cardStack.length, isDiscoveryLoading]);
+
+    const handleSwipe = useCallback(
+        async (userId: string, swipeType: SwipeType) => {
+            // Remove card from stack immediately for snappy UX
+            setCardStack((prev) => prev.filter((p) => p.userId !== userId));
+
+            // Don't call the API for sample / placeholder cards
+            if (userId.startsWith('sample-')) return;
+
+            try {
+                const res = await swipe({ toUserId: userId, swipeType });
+                const data = res.data;
+                if (data?.matched && swipeType !== 'pass') {
+                    const matchedP = nearbyProfiles.find((p) => p.userId === userId);
+                    if (matchedP) {
+                        setMatchedProfile(matchedP);
+                        setShowMatch(true);
+                    }
+                }
+            } catch (_) {
+                // swipe errors are handled by http interceptor (toast)
+            }
+        },
+        [nearbyProfiles, swipe]
+    );
+
+    const handleButtonSwipe = (type: SwipeType) => {
+        if (cardStack.length === 0) return;
+        const top = cardStack[0];
+        handleSwipe(top.userId, type);
+    };
+
+    // Empty state
+    const renderEmpty = () => (
+        <View style={styles.emptyContainer}>
+            <Text style={{ fontSize: 48 }}>🚉</Text>
+            <Text style={styles.emptyTitle}>No one nearby</Text>
+            <Text style={styles.emptySubtitle}>
+                Expand your radius or check back later when more commuters are online
+            </Text>
+            <TouchableOpacity
+                style={styles.refreshBtn}
+                onPress={() => {
+                    refetchDiscovery();
+                    setCardStack([]);
+                }}
+                activeOpacity={0.85}
+            >
+                <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.refreshGradient}>
+                    <Ionicons name="refresh" size={18} color="white" />
+                    <Text style={styles.refreshText}>Refresh</Text>
+                </LinearGradient>
+            </TouchableOpacity>
+        </View>
+    );
+
+    return (
+        <View style={styles.screen}>
+            {/* Extra overlay so discover cards have enough contrast */}
+            <View style={styles.bgOverlay} />
+
+            <SafeAreaView style={styles.safeArea} edges={['top']}>
+                {/* ─── Header ─────────────────────────────────────────── */}
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.headerIcon}>
+                        <Ionicons name="menu" size={24} color="white" />
+                    </TouchableOpacity>
+
+                    <View style={styles.logoRow}>
+                        <Image
+                            source={require('@/assets/images/metromatch_logo.png')}
+                            style={styles.headerLogo}
+                            resizeMode="contain"
+                        />
+                    </View>
+
+                    <TouchableOpacity style={styles.headerIcon}>
+                        <Ionicons name="options-outline" size={24} color="white" />
+                    </TouchableOpacity>
+                </View>
+
+                {/* ─── Filter tabs ─────────────────────────────────────── */}
+                <View style={styles.filterRow}>
+                    {(['Nearby', 'New', 'Premium'] as const).map((f) => (
+                        <TouchableOpacity
+                            key={f}
+                            onPress={() => setActiveFilter(f)}
+                            style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
+                            activeOpacity={0.8}
+                        >
+                            {activeFilter === f && (
+                                <LinearGradient
+                                    colors={['#3B7BFF', '#1A42D9']}
+                                    style={StyleSheet.absoluteFill}
+                                    start={{ x: 0, y: 0 }}
+                                    end={{ x: 1, y: 0 }}
+                                />
+                            )}
+                            <Text style={[styles.filterText, activeFilter === f && styles.filterTextActive]}>
+                                {f === 'Nearby' ? '📍 ' : f === 'New' ? '✨ ' : '👑 '}
+                                {f}
+                            </Text>
+                        </TouchableOpacity>
+                    ))}
+                </View>
+
+                {/* ─── Card stack area ─────────────────────────────────── */}
+                <View style={styles.cardArea}>
+                    {isDiscoveryLoading ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="white" />
+                            <Text style={styles.loadingText}>Finding people near you…</Text>
+                        </View>
+                    ) : cardStack.length === 0 ? (
+                        renderEmpty()
+                    ) : (
+                        cardStack
+                            .slice(0, 3)
+                            .reverse()
+                            .map((profile, reverseIdx) => {
+                                const stackIndex = Math.min(cardStack.slice(0, 3).length - 1 - reverseIdx, 2);
+                                const isTop = stackIndex === 0;
+                                return (
+                                    <SwipeCard
+                                        key={profile.userId}
+                                        profile={profile}
+                                        onSwipe={handleSwipe}
+                                        isTop={isTop}
+                                        stackIndex={stackIndex}
+                                    />
+                                );
+                            })
+                    )}
+                </View>
+
+                {/* ─── Action buttons ──────────────────────────────────── */}
+                {cardStack.length > 0 && !isDiscoveryLoading && (
+                    <ActionButtons
+                        disabled={isSwipePending}
+                        onPass={() => handleButtonSwipe('pass')}
+                        onLike={() => handleButtonSwipe('like')}
+                        onSuperLike={() => handleButtonSwipe('super_like')}
+                        onUndo={() => {
+                            // Re-add last swiped — simple undo by refetch
+                            refetchDiscovery();
+                        }}
+                    />
+                )}
+            </SafeAreaView>
+
+            {/* ─── Match modal ─────────────────────────────────────────── */}
+            <MatchModal
+                visible={showMatch}
+                profile={matchedProfile}
+                onClose={() => setShowMatch(false)}
+            />
+        </View>
+    );
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: COLORS.white,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 24,
-    fontFamily: 'Poppins_600SemiBold',
-    color: COLORS.textPrimary,
-  },
+    screen: {
+        flex: 1,
+        backgroundColor: 'transparent',
+    },
+    bgOverlay: {
+        ...StyleSheet.absoluteFill,
+        backgroundColor: 'rgba(7, 28, 107, 0.40)',
+    },
+    safeArea: {
+        flex: 1,
+    },
+
+    // Header
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 10,
+    },
+    headerIcon: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    logoRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerLogo: {
+        width: 130,
+        height: 36,
+    },
+
+    // Filters
+    filterRow: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        gap: 8,
+        paddingHorizontal: 16,
+        marginBottom: 12,
+    },
+    filterChip: {
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 20,
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        overflow: 'hidden',
+    },
+    filterChipActive: {
+        borderColor: 'transparent',
+    },
+    filterText: {
+        color: 'rgba(255,255,255,0.7)',
+        fontFamily: TYPOGRAPHY.medium,
+        fontSize: 13,
+    },
+    filterTextActive: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.semibold,
+    },
+
+    // Card area
+    cardArea: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingHorizontal: 16,
+    },
+
+    // Card
+    card: {
+        position: 'absolute',
+        width: CARD_WIDTH,
+        height: SCREEN_HEIGHT * 0.52,
+        borderRadius: 24,
+        overflow: 'hidden',
+        backgroundColor: '#1a2461',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.35,
+        shadowRadius: 20,
+        elevation: 12,
+    },
+    cardPhotoContainer: {
+        flex: 1,
+        position: 'relative',
+    },
+    cardPhotoPlaceholder: {
+        ...StyleSheet.absoluteFill,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    cardPhotoGradient: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '55%',
+    },
+    onlineBadge: {
+        position: 'absolute',
+        top: 14,
+        left: 14,
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        borderRadius: 12,
+        gap: 5,
+    },
+    onlineDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        backgroundColor: '#4CAF50',
+    },
+    onlineText: {
+        color: 'white',
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.medium,
+    },
+    moreBtn: {
+        position: 'absolute',
+        top: 14,
+        right: 14,
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(0,0,0,0.4)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Stamps
+    stamp: {
+        position: 'absolute',
+        top: 30,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+        borderRadius: 8,
+        borderWidth: 3,
+        transform: [{ rotate: '-15deg' }],
+    },
+    likeStamp: {
+        left: 20,
+        borderColor: '#4CAF50',
+        backgroundColor: 'rgba(76, 175, 80, 0.15)',
+        transform: [{ rotate: '-15deg' }],
+    },
+    nopeStamp: {
+        right: 20,
+        borderColor: '#FF4458',
+        backgroundColor: 'rgba(255, 68, 88, 0.15)',
+        transform: [{ rotate: '15deg' }],
+    },
+    superStamp: {
+        alignSelf: 'center',
+        left: '30%',
+        top: 30,
+        borderColor: '#00B4D8',
+        backgroundColor: 'rgba(0, 180, 216, 0.15)',
+        transform: [{ rotate: '-5deg' }],
+    },
+    stampText: {
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 22,
+        letterSpacing: 2,
+        color: '#4CAF50',
+    },
+
+    // Card info
+    cardInfo: {
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        backgroundColor: 'rgba(0,0,0,0.3)',
+    },
+    nameRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        flexWrap: 'wrap',
+        marginBottom: 4,
+    },
+    nameText: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 20,
+    },
+    verifiedBadge: {
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: COLORS.primary,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    distanceBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.12)',
+        borderRadius: 10,
+        paddingHorizontal: 8,
+        paddingVertical: 3,
+        gap: 3,
+        marginLeft: 'auto',
+    },
+    distanceText: {
+        color: COLORS.primaryLight,
+        fontSize: 11,
+        fontFamily: TYPOGRAPHY.medium,
+    },
+    metroRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 6,
+        marginBottom: 8,
+    },
+    metroText: {
+        color: 'rgba(255,255,255,0.75)',
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.regular,
+        flex: 1,
+    },
+    chipsRow: {
+        flexDirection: 'row',
+        gap: 6,
+        flexWrap: 'wrap',
+        marginBottom: 6,
+    },
+    chip: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderRadius: 14,
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+        gap: 4,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.15)',
+    },
+    chipIcon: { fontSize: 12 },
+    chipText: {
+        color: 'rgba(255,255,255,0.9)',
+        fontSize: 11,
+        fontFamily: TYPOGRAPHY.medium,
+    },
+    bioText: {
+        color: 'rgba(255,255,255,0.7)',
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.regular,
+        lineHeight: 18,
+        marginTop: 2,
+    },
+
+    // Action buttons
+    actionRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        paddingHorizontal: 20,
+        paddingBottom: Platform.OS === 'ios' ? 20 : 16,
+        paddingTop: 10,
+    },
+    actionBtn: {
+        borderRadius: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.2,
+        shadowRadius: 8,
+        elevation: 6,
+        backgroundColor: 'white',
+    },
+    actionBtnSm: { width: 48, height: 48 },
+    actionBtnLg: { width: 62, height: 62 },
+    actionBtnXl: { width: 72, height: 72 },
+    actionGradient: {
+        width: '100%',
+        height: '100%',
+        borderRadius: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    // Empty state
+    emptyContainer: {
+        alignItems: 'center',
+        gap: 12,
+        paddingHorizontal: 32,
+    },
+    emptyTitle: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 22,
+    },
+    emptySubtitle: {
+        color: 'rgba(255,255,255,0.65)',
+        fontFamily: TYPOGRAPHY.regular,
+        fontSize: 14,
+        textAlign: 'center',
+        lineHeight: 21,
+    },
+    refreshBtn: {
+        marginTop: 8,
+        borderRadius: 24,
+        overflow: 'hidden',
+    },
+    refreshGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 8,
+        paddingHorizontal: 28,
+        paddingVertical: 14,
+    },
+    refreshText: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 15,
+    },
+
+    // Loading
+    loadingContainer: {
+        alignItems: 'center',
+        gap: 14,
+    },
+    loadingText: {
+        color: 'rgba(255,255,255,0.75)',
+        fontFamily: TYPOGRAPHY.medium,
+        fontSize: 15,
+    },
+
+    // Match modal
+    matchOverlay: {
+        ...StyleSheet.absoluteFill,
+        backgroundColor: 'rgba(0,0,0,0.75)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        zIndex: 100,
+    },
+    matchCard: {
+        width: SCREEN_WIDTH - 48,
+        borderRadius: 28,
+        overflow: 'hidden',
+    },
+    matchGradient: {
+        padding: 32,
+        alignItems: 'center',
+    },
+    matchEmoji: { fontSize: 48, marginBottom: 8 },
+    matchTitle: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 28,
+        marginBottom: 8,
+    },
+    matchSubtitle: {
+        color: 'rgba(255,255,255,0.8)',
+        fontFamily: TYPOGRAPHY.regular,
+        fontSize: 15,
+        textAlign: 'center',
+        marginBottom: 24,
+        lineHeight: 22,
+    },
+    matchAvatarRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 0,
+        marginBottom: 28,
+    },
+    matchAvatarBorder: {
+        width: 80,
+        height: 80,
+        borderRadius: 40,
+        borderWidth: 3,
+        borderColor: 'white',
+        overflow: 'hidden',
+    },
+    matchAvatarPlaceholder: {
+        flex: 1,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    matchHeartBadge: {
+        zIndex: 1,
+        marginHorizontal: -10,
+    },
+    matchMessageBtn: {
+        width: '100%',
+        borderRadius: 16,
+        overflow: 'hidden',
+        marginBottom: 4,
+    },
+    matchMessageGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 16,
+    },
+    matchMessageText: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 16,
+    },
+    matchKeepText: {
+        color: 'rgba(255,255,255,0.6)',
+        fontFamily: TYPOGRAPHY.medium,
+        fontSize: 14,
+        paddingVertical: 8,
+    },
 });

@@ -1,26 +1,39 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { Text, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function MessagesScreen() {
   return (
-    <SafeAreaView style={styles.container}>
+    <LinearGradient
+      colors={[
+        COLORS.backgroundStart,
+        COLORS.backgroundMiddle,
+        COLORS.backgroundEnd,
+      ]}
+      style={[StyleSheet.absoluteFill, styles.container]}
+    >
+      <View style={styles.heroOverlay} />
       <Text style={styles.title}>Messages</Text>
-    </SafeAreaView>
+    </LinearGradient>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.white,
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  heroOverlay: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: 'rgba(58, 76, 139, 0.5)',
   },
   title: {
     fontSize: 24,
     fontFamily: 'Poppins_600SemiBold',
-    color: COLORS.textPrimary,
+    color: 'white',
   },
 });

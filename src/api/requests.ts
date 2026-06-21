@@ -1,4 +1,4 @@
-import { AUTH_API, MASTER_LIST_API, PROFILES_API } from "./apiEndpoints";
+import { AUTH_API, DISCOVERY_API, MASTER_LIST_API, MATCHES_API, PRESENCE_API, PROFILES_API, SWIPES_API } from "./apiEndpoints";
 import http from "./http";
 
 
@@ -30,3 +30,27 @@ export const Profiles = {
   getProfiles: REQUEST_TEMPLATES(PROFILES_API.PROFILES).read,
 }
 
+export const Discovery = {
+  getNearby: (params = {}) => http.get(DISCOVERY_API.DISCOVER, { params }),
+};
+
+export const Swipes = {
+  swipe: (payload: { toUserId: string; swipeType: string }) =>
+    http.post(SWIPES_API.SWIPES, payload),
+  getSent: () => http.get(SWIPES_API.SENT),
+  getReceived: () => http.get(SWIPES_API.RECEIVED),
+};
+
+export const Matches = {
+  getMatches: () => http.get(MATCHES_API.MATCHES),
+  getMatchById: (id: string) => http.get(`${MATCHES_API.MATCHES}/${id}`),
+  unmatch: (id: string) => http.delete(`${MATCHES_API.MATCHES}/${id}`),
+};
+
+export const Presence = {
+  updatePresence: (payload: { latitude: number; longitude: number; online?: boolean }) =>
+    http.put(PRESENCE_API.PRESENCE, payload),
+  setOffline: () => http.delete(PRESENCE_API.PRESENCE),
+  getMyPresence: () => http.get(PRESENCE_API.ME),
+  getNearby: (params = {}) => http.get(PRESENCE_API.NEARBY, { params }),
+};

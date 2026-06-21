@@ -1,5 +1,5 @@
 import { Redirect } from 'expo-router';
 
 export default function MainIndex() {
-  return <Redirect href="/main/sessions" />;
+  return <Redirect href="/main/discover" />;
 }
