@@ -3,7 +3,7 @@ import FormInput from '@/components/general/atoms/form_input'
 import { responsiveSize } from '@/utils/responsive'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import React, { useState } from 'react'
-import { Text, View, StyleSheet, Alert } from 'react-native'
+import { Text, View, StyleSheet, Alert, Keyboard } from 'react-native'
 import useAuthService from '@/hooks/services/useAuthService'
 import { useAuthStore } from '@/store/authStore'
 import { getDeviceDetails } from '@/utils/authUtils'
@@ -40,6 +40,7 @@ const Signup = () => {
     const { signup, isSignupLoading } = useAuthService();
 
     const onPressSignup = async () => {
+        Keyboard.dismiss()
         if (!validateAll()) return;
 
         try {

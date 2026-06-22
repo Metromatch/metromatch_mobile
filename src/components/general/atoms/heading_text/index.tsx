@@ -7,51 +7,52 @@ interface Properties extends TextProps {
   text: string | number
   type?: 'medium' | 'regular' | 'bold' | 'semibold'
   style?: StyleProp<TextStyle>
+  textColor?: string
 }
 
-export const H1 = ({ text, type = 'semibold', style, ...props }: Properties) => {
+export const H1 = ({ text, type = 'semibold', style, textColor = COLORS.textPrimary, ...props }: Properties) => {
   return (
-    <Text allowFontScaling={false} style={[styles.h1, styles[type], style]} {...props}>
+    <Text allowFontScaling={false} style={[styles.h1, styles[type], { color: textColor }, style]} {...props}>
       {text || ''}
     </Text>
   )
 }
 
-export const H2 = ({ text, type = 'semibold', style, ...props }: Properties) => {
+export const H2 = ({ text, type = 'semibold', style, textColor = COLORS.textPrimary, ...props }: Properties) => {
   return (
-    <Text allowFontScaling={false} style={[styles.h2, styles[type], style]} {...props}>
+    <Text allowFontScaling={false} style={[styles.h2, styles[type], { color: textColor }, style]} {...props}>
       {text || ''}
     </Text>
   )
 }
 
-export const H3 = ({ text, type = 'semibold', style, ...props }: Properties) => {
+export const H3 = ({ text, type = 'semibold', style, textColor = COLORS.textPrimary, ...props }: Properties) => {
   return (
-    <Text allowFontScaling={false} style={[styles.h3, styles[type], style]} {...props}>
+    <Text allowFontScaling={false} style={[styles.h3, styles[type], { color: textColor }, style]} {...props}>
       {text || ''}
     </Text>
   )
 }
 
-export const H4 = ({ text, type = 'semibold', style, ...props }: Properties) => {
+export const H4 = ({ text, type = 'semibold', style, textColor = COLORS.textPrimary, ...props }: Properties) => {
   return (
-    <Text allowFontScaling={false} style={[styles.h4, styles[type], style]} {...props}>
+    <Text allowFontScaling={false} style={[styles.h4, styles[type], { color: textColor }, style]} {...props}>
       {text || ''}
     </Text>
   )
 }
 
-export const H5 = ({ text, type = 'semibold', style, ...props }: Properties) => {
+export const H5 = ({ text, type = 'semibold', style, textColor = COLORS.textPrimary, ...props }: Properties) => {
   return (
-    <Text allowFontScaling={false} style={[styles.h5, styles[type], style]} {...props}>
+    <Text allowFontScaling={false} style={[styles.h5, styles[type], { color: textColor }, style]} {...props}>
       {text || ''}
     </Text>
   )
 }
 
-export const H6 = ({ text, type = 'semibold', style }: Properties) => {
+export const H6 = ({ text, type = 'semibold', style, textColor = COLORS.textPrimary, ...props }: Properties) => {
   return (
-    <Text allowFontScaling={false} style={[styles.h6, styles[type], style]}>
+    <Text allowFontScaling={false} style={[styles.h6, styles[type], { color: textColor }, style]} {...props}>
       {text || ''}
     </Text>
   )

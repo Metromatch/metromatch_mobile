@@ -8,11 +8,13 @@ import SplashScreen from '@/components/general/molecules/splash_screen';
 export default function HomeScreen() {
   const { authConfiguration: { accessToken, accessTokenExpiresAt } } = useAuthStore();
   const isTokenValid = accessToken && accessTokenExpiresAt && dayjs(accessTokenExpiresAt).isAfter(dayjs());
-  const { myProfile, isMyProfileLoading } = useProfileService({ fetchMyProfile: isTokenValid });
-
+  const { myProfile, isMyProfileLoading } = useProfileService({ fetchMyProfile: !!isTokenValid });
+  if (!isTokenValid) {
+    return <Redirect href="/login" />
+  }
   return (
     <View style={{ flex: 1 }}>
-      {((isTokenValid && !myProfile) || isMyProfileLoading) ? <SplashScreen message="Fetching your details..." /> : <Redirect href={myProfile?.profile ? "/main/sessions" : "/onboarding/basic_info"} />}
+      {isMyProfileLoading ? <SplashScreen message="Fetching your details..." /> : <Redirect href={myProfile?.profile ? "/main/sessions" : "/onboarding/basic_info"} />}
     </View>
   );
 }

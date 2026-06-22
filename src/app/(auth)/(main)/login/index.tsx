@@ -7,7 +7,7 @@ import { responsiveSize } from '@/utils/responsive'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { router } from 'expo-router'
 import React, { useState } from 'react'
-import { View } from 'react-native'
+import { Keyboard, View } from 'react-native'
 import { useFormValidation } from '@/hooks/useFormValidation'
 
 const Login = () => {
@@ -37,6 +37,7 @@ const Login = () => {
     const { login, isLoginLoading } = useAuthService();
 
     const onPressLogin = async () => {
+        Keyboard.dismiss()
         if (!validateAll()) return;
 
         const { deviceId, deviceName } = await getDeviceDetails();

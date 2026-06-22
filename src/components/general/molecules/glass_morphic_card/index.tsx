@@ -1,11 +1,11 @@
 import React from 'react'
 import { BlurView } from 'expo-blur'
-import { StyleSheet } from 'react-native'
+import { StyleSheet, ViewStyle } from 'react-native'
 import { responsiveSize } from '@/utils/responsive'
 
-const GlassmorphicCard = ({ children }: { children: React.ReactNode }) => {
+const GlassmorphicCard = ({ children, style, intensity = 80 }: { children: React.ReactNode, style?: ViewStyle, intensity?: number }) => {
     return (
-        <BlurView intensity={80} tint="light" style={styles.card}>
+        <BlurView intensity={intensity} tint="light" style={[styles.card, style]}>
             {children}
         </BlurView>
     )
