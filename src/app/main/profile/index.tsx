@@ -6,9 +6,6 @@ import {
     TouchableOpacity,
     Animated,
     Dimensions,
-    Platform,
-    ActivityIndicator,
-    TextInput,
     Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +13,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import useProfileService from '@/hooks/services/useProfileService';
-import dayjs from 'dayjs';
 import Toast from 'react-native-toast-message';
 import { clearStore } from '@/utils/authUtils';
 import { useRouter } from 'expo-router';
@@ -24,26 +20,11 @@ import AppContainer from '@/components/shared/layout/app_container';
 import { responsiveSize } from '@/utils/responsive';
 import ProfileHero from '@/components/shared/organisms/profile/hero';
 import ProfileCompletionCard from '@/components/shared/organisms/profile/completion_card';
-import { BlurView } from 'expo-blur';
+import VerticalTabs from '@/components/general/molecules/vertical_tabs';
+import About from '@/components/shared/organisms/profile/about';
+import Preference from '@/components/shared/organisms/profile/preference';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function getAge(dob: string | null): string {
-    if (!dob) return '';
-    const age = dayjs().diff(dayjs(dob), 'year');
-    return `${age} yrs`;
-}
-
-function formatDob(dob: string | null): string {
-    if (!dob) return '—';
-    return dayjs(dob).format('DD MMM YYYY');
-}
-
-function capitalize(str: string | null | undefined): string {
-    if (!str) return '—';
-    return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
-}
 
 // ─── Completion Progress ──────────────────────────────────────────────────────
 function getCompletionScore(profile: any): { score: number; items: { label: string; done: boolean }[] } {
@@ -70,68 +51,6 @@ function SectionHeader({ icon, title }: { icon: keyof typeof Ionicons.glyphMap; 
                 <Ionicons name={icon} size={15} color={COLORS.primary} />
             </View>
             <Text style={styles.sectionTitle}>{title}</Text>
-        </View>
-    );
-}
-
-// ─── Info Row ─────────────────────────────────────────────────────────────────
-function InfoRow({ label, value, onEdit, editing, editValue, onChangeText, multiline = false }: {
-    label: string;
-    value: string;
-    onEdit?: () => void;
-    editing?: boolean;
-    editValue?: string;
-    onChangeText?: (t: string) => void;
-    multiline?: boolean;
-}) {
-    return (
-        <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>{label}</Text>
-            {editing ? (
-                <TextInput
-                    style={[styles.infoInput, multiline && styles.infoInputMulti]}
-                    value={editValue}
-                    onChangeText={onChangeText}
-                    multiline={multiline}
-                    numberOfLines={multiline ? 3 : 1}
-                    placeholderTextColor={COLORS.textSecondary}
-                    placeholder={`Enter ${label.toLowerCase()}`}
-                />
-            ) : (
-                <Text style={styles.infoValue}>{value || '—'}</Text>
-            )}
-        </View>
-    );
-}
-
-// ─── Chip Selector ────────────────────────────────────────────────────────────
-function ChipSelector({ options, selected, onSelect }: {
-    options: string[];
-    selected: string;
-    onSelect: (val: string) => void;
-}) {
-    return (
-        <View style={styles.chipRow}>
-            {options.map((opt) => (
-                <TouchableOpacity
-                    key={opt}
-                    onPress={() => onSelect(opt)}
-                    activeOpacity={0.8}
-                    style={[styles.chip, selected === opt && styles.chipActive]}
-                >
-                    {selected === opt && (
-                        <LinearGradient
-                            colors={['#6EA8FF', '#2F6BFF']}
-                            style={StyleSheet.absoluteFill}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                        />
-                    )}
-                    <Text style={[styles.chipText, selected === opt && styles.chipTextActive]}>
-                        {capitalize(opt)}
-                    </Text>
-                </TouchableOpacity>
-            ))}
         </View>
     );
 }
@@ -172,6 +91,12 @@ function AddPhotoCard({ onPress }: { onPress: () => void }) {
     );
 }
 
+const tabList = [
+    { id: "about", label: "About", activeIcon: "person", inactiveIcon: "person-outline" },
+    { id: "preferences", label: "Preferences", activeIcon: "heart", inactiveIcon: "heart-outline" },
+    { id: "photos", label: "Photos", activeIcon: "image", inactiveIcon: "image-outline" },
+];
+
 
 // ─── Main Profile Screen ──────────────────────────────────────────────────────
 export default function ProfileScreen() {
@@ -186,7 +111,6 @@ export default function ProfileScreen() {
     }
 
     const [isEditing, setIsEditing] = useState(false);
-    const [editValues, setEditValues] = useState<Record<string, string>>({});
     const [activeSection, setActiveSection] = useState<'about' | 'preferences' | 'photos'>('about');
     const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -196,51 +120,11 @@ export default function ProfileScreen() {
 
     const { score, items: completionItems } = getCompletionScore({ ...profile, photos });
 
-    // Header animations
-    const headerOpacity = scrollY.interpolate({
-        inputRange: [0, 120],
-        outputRange: [0, 1],
-        extrapolate: 'clamp',
-    });
-
     const avatarScale = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [1, 0.75],
         extrapolate: 'clamp',
     });
-
-    // Start editing — pre-populate edit values
-    const handleStartEdit = () => {
-        setEditValues({
-            bio: profile?.bio || '',
-            profession: profile?.profession || '',
-            height: profile?.height || '',
-            religion: profile?.religion || '',
-            diet: profile?.diet || '',
-            drinkingHabits: profile?.drinkingHabits || '',
-            smokingHabits: profile?.smokingHabits || '',
-            travelFrequency: profile?.travelFrequency || '',
-            relationshipPreference: profile?.relationshipPreference || '',
-        });
-        setIsEditing(true);
-    };
-
-    const handleCancelEdit = () => {
-        setIsEditing(false);
-        setEditValues({});
-    };
-
-    const handleSaveEdit = async () => {
-        try {
-            await updateProfile({ payload: editValues });
-            await refetchMyProfile();
-            setIsEditing(false);
-            setEditValues({});
-            Toast.show({ type: 'success', text1: 'Profile updated!' });
-        } catch {
-            Toast.show({ type: 'error', text1: 'Failed to update profile', text2: 'Please try again' });
-        }
-    };
 
     const handleLogout = () => {
         Alert.alert(
@@ -256,213 +140,6 @@ export default function ProfileScreen() {
             ]
         );
     };
-
-    const setEdit = (key: string, val: string) => {
-        setEditValues((prev) => ({ ...prev, [key]: val }));
-    };
-
-    // Tab Selector
-    const renderTabBar = () => (
-        <View style={styles.tabBar}>
-            {(['about', 'preferences', 'photos'] as const).map((tab) => (
-                <TouchableOpacity
-                    key={tab}
-                    onPress={() => setActiveSection(tab)}
-                    activeOpacity={0.8}
-                    style={[styles.tab, activeSection === tab && styles.tabActive]}
-                >
-                    {activeSection === tab && (
-                        <LinearGradient
-                            colors={['rgba(110,168,255,0.25)', 'rgba(47,107,255,0.25)']}
-                            style={StyleSheet.absoluteFill}
-                        />
-                    )}
-                    <Ionicons
-                        name={
-                            tab === 'about' ? (activeSection === tab ? 'person' : 'person-outline') :
-                                tab === 'preferences' ? (activeSection === tab ? 'heart' : 'heart-outline') :
-                                    (activeSection === tab ? 'images' : 'images-outline')
-                        }
-                        size={16}
-                        color={activeSection === tab ? COLORS.primaryLight : 'rgba(255,255,255,0.5)'}
-                    />
-                    <Text style={[styles.tabText, activeSection === tab && styles.tabTextActive]}>
-                        {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                    </Text>
-                </TouchableOpacity>
-            ))}
-        </View>
-    );
-
-    // ─── About Section ────────────────────────────────────────────────────────
-    const renderAbout = () => (
-        <View style={styles.section}>
-            {/* Basic Info Card */}
-            <View style={styles.card}>
-                <SectionHeader icon="information-circle-outline" title="Basic Info" />
-
-                <InfoRow
-                    label="Full Name"
-                    value={profile?.name || '—'}
-                />
-                <View style={styles.divider} />
-                <InfoRow
-                    label="Date of Birth"
-                    value={`${formatDob(profile?.dob)}${profile?.dob ? ` (${getAge(profile.dob)})` : ''}`}
-                />
-                <View style={styles.divider} />
-                <InfoRow
-                    label="Gender"
-                    value={capitalize(profile?.gender)}
-                />
-                <View style={styles.divider} />
-                <InfoRow
-                    label="Email"
-                    value={profile?.email || '—'}
-                />
-                <View style={styles.divider} />
-                <InfoRow
-                    label="Phone"
-                    value={profile?.phone || '—'}
-                />
-            </View>
-
-            {/* Bio Card */}
-            <View style={styles.card}>
-                <SectionHeader icon="chatbubble-ellipses-outline" title="About Me" />
-                <InfoRow
-                    label="Bio"
-                    value={profile?.bio || 'No bio yet — tell the world about yourself!'}
-                    editing={isEditing}
-                    editValue={editValues.bio}
-                    onChangeText={(t) => setEdit('bio', t)}
-                    multiline
-                />
-            </View>
-
-            {/* Lifestyle Card */}
-            <View style={styles.card}>
-                <SectionHeader icon="sparkles-outline" title="Lifestyle" />
-                {isEditing ? (
-                    <>
-                        <Text style={styles.editSectionLabel}>Profession</Text>
-                        <TextInput
-                            style={styles.infoInput}
-                            value={editValues.profession}
-                            onChangeText={(t) => setEdit('profession', t)}
-                            placeholder="Your profession"
-                            placeholderTextColor={COLORS.textSecondary}
-                        />
-                        <Text style={[styles.editSectionLabel, { marginTop: 14 }]}>Height</Text>
-                        <ChipSelector
-                            options={['4_10', '5_0', '5_2', '5_4', '5_5', '5_6', '5_8', '5_10', '6_0', '6_2']}
-                            selected={editValues.height}
-                            onSelect={(v) => setEdit('height', v)}
-                        />
-                        <Text style={[styles.editSectionLabel, { marginTop: 14 }]}>Religion</Text>
-                        <ChipSelector
-                            options={['hindu', 'muslim', 'christian', 'sikh', 'jain', 'buddhist', 'other']}
-                            selected={editValues.religion}
-                            onSelect={(v) => setEdit('religion', v)}
-                        />
-                        <Text style={[styles.editSectionLabel, { marginTop: 14 }]}>Diet</Text>
-                        <ChipSelector
-                            options={['vegetarian', 'non_vegetarian', 'vegan', 'jain', 'other']}
-                            selected={editValues.diet}
-                            onSelect={(v) => setEdit('diet', v)}
-                        />
-                        <Text style={[styles.editSectionLabel, { marginTop: 14 }]}>Drinking</Text>
-                        <ChipSelector
-                            options={['never', 'occasionally', 'socially', 'regularly']}
-                            selected={editValues.drinkingHabits}
-                            onSelect={(v) => setEdit('drinkingHabits', v)}
-                        />
-                        <Text style={[styles.editSectionLabel, { marginTop: 14 }]}>Smoking</Text>
-                        <ChipSelector
-                            options={['non-smoker', 'occasionally', 'regularly']}
-                            selected={editValues.smokingHabits}
-                            onSelect={(v) => setEdit('smokingHabits', v)}
-                        />
-                    </>
-                ) : (
-                    <>
-                        <InfoRow label="Profession" value={capitalize(profile?.profession)} />
-                        <View style={styles.divider} />
-                        <InfoRow label="Height" value={profile?.height ? profile.height.replace('_', "'") + '"' : '—'} />
-                        <View style={styles.divider} />
-                        <InfoRow label="Religion" value={capitalize(profile?.religion)} />
-                        <View style={styles.divider} />
-                        <InfoRow label="Diet" value={capitalize(profile?.diet)} />
-                        <View style={styles.divider} />
-                        <InfoRow label="Drinking" value={capitalize(profile?.drinkingHabits)} />
-                        <View style={styles.divider} />
-                        <InfoRow label="Smoking" value={capitalize(profile?.smokingHabits)} />
-                    </>
-                )}
-            </View>
-        </View>
-    );
-
-    // ─── Preferences Section ──────────────────────────────────────────────────
-    const renderPreferences = () => (
-        <View style={styles.section}>
-            <View style={styles.card}>
-                <SectionHeader icon="heart-outline" title="Looking For" />
-                {isEditing ? (
-                    <>
-                        <Text style={styles.editSectionLabel}>Relationship Type</Text>
-                        <ChipSelector
-                            options={['long-term', 'casual', 'friendship', 'undecided']}
-                            selected={editValues.relationshipPreference}
-                            onSelect={(v) => setEdit('relationshipPreference', v)}
-                        />
-                    </>
-                ) : (
-                    <InfoRow label="Relationship" value={capitalize(profile?.relationshipPreference)} />
-                )}
-            </View>
-
-            <View style={styles.card}>
-                <SectionHeader icon="options-outline" title="My Preferences" />
-                <InfoRow label="Interested In" value={capitalize(preferences?.interestedIn)} />
-                <View style={styles.divider} />
-                <InfoRow
-                    label="Age Range"
-                    value={preferences?.prefMinAge && preferences?.prefMaxAge
-                        ? `${preferences.prefMinAge} – ${preferences.prefMaxAge} yrs`
-                        : '—'}
-                />
-                <View style={styles.divider} />
-                <InfoRow
-                    label="Height Range"
-                    value={preferences?.prefMinHeight && preferences?.prefMaxHeight
-                        ? `${preferences.prefMinHeight} – ${preferences.prefMaxHeight}`
-                        : '—'}
-                />
-                <View style={styles.divider} />
-                <InfoRow label="Religion" value={capitalize(preferences?.prefReligion)} />
-                <View style={styles.divider} />
-                <InfoRow label="Diet" value={capitalize(preferences?.prefDiet)} />
-            </View>
-
-            <View style={styles.card}>
-                <SectionHeader icon="subway-outline" title="Metro Travel" />
-                {(profile?.travelTimeSlots?.length > 0) ? (
-                    <View style={styles.travelSlots}>
-                        {profile.travelTimeSlots.map((slot: string, i: number) => (
-                            <View key={i} style={styles.travelSlotChip}>
-                                <Ionicons name="location-outline" size={12} color={COLORS.primaryLight} />
-                                <Text style={styles.travelSlotText}>{slot}</Text>
-                            </View>
-                        ))}
-                    </View>
-                ) : (
-                    <Text style={styles.emptyHint}>No metro stations added yet</Text>
-                )}
-            </View>
-        </View>
-    );
-
     // ─── Photos Section ───────────────────────────────────────────────────────
     const renderPhotos = () => (
         <View style={styles.section}>
@@ -518,25 +195,8 @@ export default function ProfileScreen() {
         </View>
     );
 
-    if (isMyProfileLoading) {
-        return (
-            <View style={styles.loadingScreen}>
-                <ActivityIndicator size="large" color={COLORS.primaryLight} />
-                <Text style={styles.loadingText}>Loading your profile…</Text>
-            </View>
-        );
-    }
-
     return (
         <AppContainer>
-            {/* Floating header (appears on scroll) */}
-            <Animated.View style={[styles.floatingHeader, { opacity: headerOpacity }]}>
-                <BlurView intensity={40} style={styles.floatingHeaderBlur}>
-                    <Text style={styles.floatingHeaderTitle}>
-                        {profile?.name || 'Your Profile'}
-                    </Text>
-                </BlurView>
-            </Animated.View>
 
             <Animated.ScrollView
                 style={styles.scrollView}
@@ -547,7 +207,7 @@ export default function ProfileScreen() {
                 )}
                 scrollEventThrottle={16}
             >
-                <SafeAreaView style={{ gap: responsiveSize(16) }} edges={['top']}>
+                <SafeAreaView style={{ gap: responsiveSize(16), paddingBottom: responsiveSize(18) }} edges={['top']}>
 
                     <ProfileHero
                         avatarScale={avatarScale}
@@ -559,26 +219,21 @@ export default function ProfileScreen() {
                         photoCount={photos.length}
                         completionScore={score}
                         isEditing={isEditing}
-                        isSaving={isUpdateProfileLoading}
-                        onEditPress={handleStartEdit}
-                        onSavePress={handleSaveEdit}
-                        onCancelPress={handleCancelEdit}
-                        onLogoutPress={handleLogout}
                     />
 
                     <ProfileCompletionCard score={score} items={completionItems} />
+                    <View style={{ height: responsiveSize(6) }} />
+                    <VerticalTabs
+                        tabList={tabList}
+                        activeTab={activeSection}
+                        onTabChange={(item) => setActiveSection(item as any)}
+                    />
+
+                    {activeSection === 'about' && <About profile={profile} />}
+                    {activeSection === 'preferences' && <Preference preference={preferences} />}
+                    {activeSection === 'photos' && renderPhotos()}
 
 
-                    {/* 
-                    {renderTabBar()}
-
-
-                    {activeSection === 'about' && renderAbout()}
-                    {activeSection === 'preferences' && renderPreferences()}
-                    {activeSection === 'photos' && renderPhotos()} */}
-
-
-                    <View style={{ height: 100 }} />
                 </SafeAreaView>
             </Animated.ScrollView>
         </AppContainer>
@@ -591,36 +246,21 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
     },
-    loadingScreen: {
-        flex: 1,
+
+    logoutBtn: {
+        backgroundColor: 'red',
+        padding: responsiveSize(12),
+        borderRadius: responsiveSize(12),
         alignItems: 'center',
         justifyContent: 'center',
-        gap: 12,
     },
-    loadingText: {
-        color: 'rgba(255,255,255,0.7)',
-        fontFamily: TYPOGRAPHY.regular,
+    logoutBtnText: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.semibold,
         fontSize: 14,
     },
 
     // Floating header
-    floatingHeader: {
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-    },
-    floatingHeaderBlur: {
-        paddingTop: Platform.OS === 'ios' ? 50 : 30,
-        paddingBottom: 12,
-        alignItems: 'center',
-    },
-    floatingHeaderTitle: {
-        fontFamily: TYPOGRAPHY.semibold,
-        fontSize: 16,
-        color: 'white',
-    },
 
     scrollView: {
         flex: 1,
@@ -629,47 +269,9 @@ const styles = StyleSheet.create({
     },
 
 
-
-
-    // Tab bar
-    tabBar: {
-        flexDirection: 'row',
-        marginHorizontal: 16,
-        marginBottom: 12,
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderRadius: 14,
-        padding: 4,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.12)',
-        gap: 4,
-    },
-    tab: {
-        flex: 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 5,
-        paddingVertical: 9,
-        borderRadius: 11,
-        overflow: 'hidden',
-    },
-    tabActive: {
-        borderWidth: 1,
-        borderColor: 'rgba(110,168,255,0.3)',
-    },
-    tabText: {
-        fontFamily: TYPOGRAPHY.medium,
-        fontSize: 12,
-        color: 'rgba(255,255,255,0.5)',
-    },
-    tabTextActive: {
-        color: COLORS.primaryLight,
-        fontFamily: TYPOGRAPHY.semibold,
-    },
-
     // Sections
     section: {
-        paddingHorizontal: 16,
+        // paddingHorizontal: 16,
         gap: 12,
     },
     card: {
@@ -706,115 +308,6 @@ const styles = StyleSheet.create({
     },
 
     // Info rows
-    infoRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'flex-start',
-        paddingVertical: 2,
-    },
-    infoLabel: {
-        fontFamily: TYPOGRAPHY.regular,
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.5)',
-        flex: 1,
-    },
-    infoValue: {
-        fontFamily: TYPOGRAPHY.medium,
-        fontSize: 13,
-        color: 'white',
-        flex: 2,
-        textAlign: 'right',
-    },
-    infoInput: {
-        flex: 2,
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderRadius: 10,
-        borderWidth: 1,
-        borderColor: 'rgba(110,168,255,0.3)',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        color: 'white',
-        fontFamily: TYPOGRAPHY.regular,
-        fontSize: 13,
-        textAlign: 'right',
-    },
-    infoInputMulti: {
-        minHeight: 70,
-        textAlign: 'left',
-        textAlignVertical: 'top',
-        flex: undefined,
-        width: '100%',
-        marginTop: 8,
-    },
-    divider: {
-        height: 1,
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        marginVertical: 10,
-    },
-
-    // Edit section label
-    editSectionLabel: {
-        fontFamily: TYPOGRAPHY.medium,
-        fontSize: 12,
-        color: 'rgba(255,255,255,0.5)',
-        marginBottom: 8,
-    },
-
-    // Chips
-    chipRow: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    chip: {
-        paddingHorizontal: 14,
-        paddingVertical: 7,
-        borderRadius: 20,
-        backgroundColor: 'rgba(255,255,255,0.08)',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.15)',
-        overflow: 'hidden',
-    },
-    chipActive: {
-        borderColor: 'transparent',
-    },
-    chipText: {
-        fontFamily: TYPOGRAPHY.medium,
-        fontSize: 12,
-        color: 'rgba(255,255,255,0.6)',
-    },
-    chipTextActive: {
-        color: 'white',
-    },
-
-    // Travel slots
-    travelSlots: {
-        flexDirection: 'row',
-        flexWrap: 'wrap',
-        gap: 8,
-    },
-    travelSlotChip: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 4,
-        backgroundColor: 'rgba(47,107,255,0.2)',
-        borderRadius: 20,
-        paddingHorizontal: 12,
-        paddingVertical: 6,
-        borderWidth: 1,
-        borderColor: 'rgba(110,168,255,0.3)',
-    },
-    travelSlotText: {
-        fontFamily: TYPOGRAPHY.medium,
-        fontSize: 12,
-        color: COLORS.primaryLight,
-    },
-    emptyHint: {
-        fontFamily: TYPOGRAPHY.regular,
-        fontSize: 13,
-        color: 'rgba(255,255,255,0.35)',
-        fontStyle: 'italic',
-    },
 
     // Photos
     photosGrid: {

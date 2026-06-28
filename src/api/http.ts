@@ -6,7 +6,7 @@ import { clearStore } from '@/utils/authUtils';
 
 const http = axios.create({
   baseURL: "https://metromatchindia.vercel.app",
-  timeout: 10_000,
+  timeout: 20_000,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

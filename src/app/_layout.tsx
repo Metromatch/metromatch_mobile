@@ -18,6 +18,7 @@ import SplashScreen from '@/components/general/molecules/splash_screen';
 import Toast from 'react-native-toast-message';
 import { useAuthStore } from '@/store/authStore';
 import dayjs from 'dayjs';
+import { clearStore } from '@/utils/authUtils';
 
 const queryClient = new QueryClient();
 
@@ -38,8 +39,12 @@ export default function TabLayout() {
   const isTokenValid = accessToken && accessTokenExpiresAt && dayjs(accessTokenExpiresAt).isAfter(dayjs());
   useEffect(() => {
     if (!fontsLoaded) return;
-
-    router.replace(!accessToken || !isTokenValid ? '/login' : '/');
+    if (!accessToken || !isTokenValid) {
+      clearStore();
+      router.replace('/login');
+    } else {
+      router.replace('/');
+    }
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {

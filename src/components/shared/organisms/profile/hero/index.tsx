@@ -1,25 +1,21 @@
 import React from 'react';
 import {
     View,
-    Text,
     StyleSheet,
     TouchableOpacity,
     Animated,
-    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { COLORS, TYPOGRAPHY } from '@/constants/theme';
+import { TYPOGRAPHY } from '@/constants/theme';
 import { responsiveSize } from '@/utils/responsive';
 import ProfilePicture from '@/components/shared/molecules/profile_picture';
-import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card';
 import { H2 } from '@/components/general/atoms/heading_text';
 import { B2 } from '@/components/general/atoms/body_text';
 import dayjs from 'dayjs';
 import Toast from 'react-native-toast-message';
+import StatusRow from '@/components/shared/molecules/profile/status_row';
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
 function getAge(dob: string | null | undefined): string {
     if (!dob) return '';
     const age = dayjs().diff(dayjs(dob), 'year');
@@ -31,27 +27,16 @@ function capitalize(str: string | null | undefined): string {
     return str.charAt(0).toUpperCase() + str.slice(1).replace(/_/g, ' ');
 }
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 export interface ProfileHeroProps {
-    /** Animated scroll-driven scale for the avatar (optional) */
     avatarScale?: Animated.AnimatedInterpolation<number>;
-    /** Profile data */
     name?: string;
     dob?: string | null;
     profession?: string | null;
     gender?: string | null;
     profilePicture?: string;
-    /** Stats */
     photoCount?: number;
     completionScore?: number;
-    /** Edit mode state */
     isEditing?: boolean;
-    isSaving?: boolean;
-    /** Callbacks */
-    onEditPress?: () => void;
-    onSavePress?: () => void;
-    onCancelPress?: () => void;
-    onLogoutPress?: () => void;
     onAvatarPress?: () => void;
 }
 
@@ -66,11 +51,6 @@ export default function ProfileHero({
     photoCount = 0,
     completionScore = 0,
     isEditing = false,
-    isSaving = false,
-    onEditPress,
-    onSavePress,
-    onCancelPress,
-    onLogoutPress,
     onAvatarPress,
 }: ProfileHeroProps) {
     const avatarTransform = avatarScale ? [{ scale: avatarScale }] : [];
@@ -104,86 +84,11 @@ export default function ProfileHero({
             <H2 textColor="white" text={name ? `${name}${dob ? `, ${getAge(dob)}` : ''}` : 'Your Profile'} />
             {profession && <B2 textColor="white" text={capitalize(profession)} />}
 
-            {/* ─── Stats Row ──────────────────────────────────────────── */}
-            <GlassmorphicCard intensity={30} style={styles.statsRow}>
-                <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{photoCount}</Text>
-                    <Text style={styles.statLabel}>Photos</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                    <Text style={styles.statValue}>{completionScore}%</Text>
-                    <Text style={styles.statLabel}>Complete</Text>
-                </View>
-                <View style={styles.statDivider} />
-                <View style={styles.statItem}>
-                    <Text style={styles.statValue}>
-                        {gender ? capitalize(gender).charAt(0) : '—'}
-                    </Text>
-                    <Text style={styles.statLabel}>Gender</Text>
-                </View>
-            </GlassmorphicCard>
-
-            {/* ─── Action Buttons ─────────────────────────────────────── */}
-            <View style={styles.heroActions}>
-                {isEditing ? (
-                    <>
-                        {/* Cancel */}
-                        <TouchableOpacity
-                            style={styles.cancelBtn}
-                            onPress={onCancelPress}
-                            activeOpacity={0.8}
-                        >
-                            <Ionicons name="close" size={16} color="rgba(255,255,255,0.7)" />
-                            <Text style={styles.cancelBtnText}>Cancel</Text>
-                        </TouchableOpacity>
-
-                        {/* Save */}
-                        <TouchableOpacity
-                            style={styles.saveBtn}
-                            onPress={onSavePress}
-                            activeOpacity={0.8}
-                            disabled={isSaving}
-                        >
-                            <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.saveBtnGradient}>
-                                {isSaving ? (
-                                    <ActivityIndicator size="small" color="white" />
-                                ) : (
-                                    <>
-                                        <Ionicons name="checkmark" size={16} color="white" />
-                                        <Text style={styles.saveBtnText}>Save Changes</Text>
-                                    </>
-                                )}
-                            </LinearGradient>
-                        </TouchableOpacity>
-                    </>
-                ) : (
-                    <>
-                        {/* Edit */}
-                        <TouchableOpacity
-                            style={styles.editBtn}
-                            onPress={onEditPress}
-                            activeOpacity={0.8}
-                        >
-                            <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.editBtnGradient}>
-                                <Ionicons name="pencil" size={16} color="white" />
-                                <Text style={styles.editBtnText}>Edit Profile</Text>
-                            </LinearGradient>
-                        </TouchableOpacity>
-
-                        {/* Logout */}
-                        <TouchableOpacity
-                            style={styles.logoutBtn}
-                            onPress={onLogoutPress}
-                            activeOpacity={0.8}
-                        >
-                            <BlurView intensity={20} tint="dark" style={styles.logoutBtnInner}>
-                                <Ionicons name="log-out-outline" size={18} color="rgba(255,255,255,0.7)" />
-                            </BlurView>
-                        </TouchableOpacity>
-                    </>
-                )}
-            </View>
+            <StatusRow
+                photoCount={photoCount}
+                completionScore={completionScore}
+                gender={gender ? capitalize(gender).charAt(0) : '-'}
+            />
         </View>
     );
 }
@@ -234,39 +139,7 @@ const styles = StyleSheet.create({
     },
 
     // Stats row
-    statsRow: {
-        width: '100%',
-        flexDirection: 'row',
-        alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.1)',
-        borderRadius: 16,
-        paddingVertical: 12,
-        paddingHorizontal: 24,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.15)',
-        gap: 0,
-    },
-    statItem: {
-        flex: 1,
-        alignItems: 'center',
-    },
-    statValue: {
-        fontFamily: TYPOGRAPHY.bold,
-        fontSize: 18,
-        color: 'white',
-    },
-    statLabel: {
-        fontFamily: TYPOGRAPHY.regular,
-        fontSize: 11,
-        color: 'rgba(255,255,255,0.55)',
-        marginTop: 2,
-    },
-    statDivider: {
-        width: 1,
-        height: 28,
-        backgroundColor: 'rgba(255,255,255,0.2)',
-        marginVertical: responsiveSize(10),
-    },
+
 
     // Action buttons
     heroActions: {
