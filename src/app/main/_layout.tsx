@@ -143,6 +143,12 @@ export default function MainLayout() {
           name="maps"
           options={{ href: null }}
         />
+
+        {/* Chat room — hidden from tab bar, navigated to from messages */}
+        <Tabs.Screen
+          name="chat/[matchId]"
+          options={{ href: null }}
+        />
       </Tabs>
     </View>
   );

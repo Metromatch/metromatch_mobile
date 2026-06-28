@@ -42,5 +42,13 @@ export const PRESENCE_API = {
   NEARBY: `${PRESENCE}/nearby`,
 };
 
+const CHAT = `${API_V1}chat`;
+
+export const CHAT_API = {
+  TOKEN: `${CHAT}/token`,
+  CONVERSATION: (matchId: string) => `${CHAT}/matches/${matchId}/conversation`,
+  MESSAGES: (matchId: string) => `${CHAT}/matches/${matchId}/messages`,
+};
+
 
 

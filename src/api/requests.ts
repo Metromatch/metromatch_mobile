@@ -1,4 +1,4 @@
-import { AUTH_API, DISCOVERY_API, MASTER_LIST_API, MATCHES_API, PRESENCE_API, PROFILES_API, SWIPES_API } from "./apiEndpoints";
+import { AUTH_API, CHAT_API, DISCOVERY_API, MASTER_LIST_API, MATCHES_API, PRESENCE_API, PROFILES_API, SWIPES_API } from "./apiEndpoints";
 import http from "./http";
 
 
@@ -54,3 +54,13 @@ export const Presence = {
   getMyPresence: () => http.get(PRESENCE_API.ME),
   getNearby: (params = {}) => http.get(PRESENCE_API.NEARBY, { params }),
 };
+
+export const Chat = {
+  getToken: () => http.get(CHAT_API.TOKEN),
+  getConversation: (matchId: string) => http.get(CHAT_API.CONVERSATION(matchId)),
+  getMessages: (matchId: string, params: { pageSize?: number; order?: 'asc' | 'desc' } = {}) =>
+    http.get(CHAT_API.MESSAGES(matchId), { params }),
+  sendMessage: (matchId: string, body: string) =>
+    http.post(CHAT_API.MESSAGES(matchId), { body }),
+};
+

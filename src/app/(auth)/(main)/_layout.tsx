@@ -62,6 +62,7 @@ const MainAuthLayout = () => {
                             activeTab={pathname}
                             onTabChange={(item) => { router.replace(item as any) }}
                         />
+                        <View style={{ height: responsiveSize(12) }} />
                         <Slot />
                     </GlassmorphicCard>
                     <View>
