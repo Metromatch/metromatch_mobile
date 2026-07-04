@@ -60,7 +60,7 @@ const Login = () => {
                 refreshTokenExpiresAt: refreshTokenExpiresAt || '',
                 isLoggedIn: true
             })
-            router.replace(onboardingCompleted ? '/main/sessions' : '/onboarding/basic_info');
+            router.replace('/');
         }
 
     }

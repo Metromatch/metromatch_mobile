@@ -13,9 +13,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import useProfileService from '@/hooks/services/useProfileService';
+import useAuthService from '@/hooks/services/useAuthService';
 import Toast from 'react-native-toast-message';
-import { clearStore } from '@/utils/authUtils';
-import { useRouter } from 'expo-router';
+
 import AppContainer from '@/components/shared/layout/app_container';
 import { responsiveSize } from '@/utils/responsive';
 import ProfileHero from '@/components/shared/organisms/profile/hero';
@@ -91,7 +91,7 @@ function AddPhotoCard({ onPress }: { onPress: () => void }) {
     );
 }
 
-const tabList = [
+const tabList: any = [
     { id: "about", label: "About", activeIcon: "person", inactiveIcon: "person-outline" },
     { id: "preferences", label: "Preferences", activeIcon: "heart", inactiveIcon: "heart-outline" },
     { id: "photos", label: "Photos", activeIcon: "image", inactiveIcon: "image-outline" },
@@ -102,13 +102,7 @@ const tabList = [
 export default function ProfileScreen() {
     const { myProfile, isMyProfileLoading, refetchMyProfile, updateProfile, isUpdateProfileLoading } =
         useProfileService({ fetchMyProfile: true });
-    const router = useRouter();
-
-    // const { clearAuthDetails } = useAuthStore();
-    const onPressSignout = () => {
-        clearStore();
-        router.replace('/login');
-    }
+    const { logout, isLogoutLoading } = useAuthService();
 
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState<'about' | 'preferences' | 'photos'>('about');
@@ -135,7 +129,7 @@ export default function ProfileScreen() {
                 {
                     text: 'Sign Out',
                     style: 'destructive',
-                    onPress: () => onPressSignout(),
+                    onPress: () => logout(),
                 },
             ]
         );
@@ -233,6 +227,20 @@ export default function ProfileScreen() {
                     {activeSection === 'preferences' && <Preference preference={preferences} />}
                     {activeSection === 'photos' && renderPhotos()}
 
+                    <TouchableOpacity
+                        id="logout-button"
+                        style={[styles.logoutBtn, isLogoutLoading && { opacity: 0.6 }]}
+                        onPress={handleLogout}
+                        disabled={isLogoutLoading}
+                        activeOpacity={0.8}
+                    >
+                        <View style={styles.logoutBtnInner}>
+                            <Ionicons name="log-out-outline" size={18} color="white" />
+                            <Text style={styles.logoutBtnText}>
+                                {isLogoutLoading ? 'Signing out…' : 'Sign Out'}
+                            </Text>
+                        </View>
+                    </TouchableOpacity>
 
                 </SafeAreaView>
             </Animated.ScrollView>
@@ -248,16 +256,23 @@ const styles = StyleSheet.create({
     },
 
     logoutBtn: {
-        backgroundColor: 'red',
-        padding: responsiveSize(12),
-        borderRadius: responsiveSize(12),
+        backgroundColor: 'rgba(220,53,69,0.15)',
+        borderWidth: 1,
+        borderColor: 'rgba(220,53,69,0.5)',
+        padding: responsiveSize(14),
+        borderRadius: responsiveSize(14),
+        marginBottom: responsiveSize(8),
+    },
+    logoutBtnInner: {
+        flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
+        gap: 8,
     },
     logoutBtnText: {
-        color: 'white',
+        color: '#FF6B6B',
         fontFamily: TYPOGRAPHY.semibold,
-        fontSize: 14,
+        fontSize: 15,
     },
 
     // Floating header

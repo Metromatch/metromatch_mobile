@@ -11,6 +11,7 @@ export const AUTH_API = {
   LOGIN: `${AUTH}login`,
   SIGNUP: `${AUTH}signup`,
   VALIDATE: `${AUTH}validate`,
+  LOGOUT: `${AUTH}logout`,
 };
 
 export const MASTER_LIST_API = {

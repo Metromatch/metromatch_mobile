@@ -17,7 +17,7 @@ import { BlurView } from 'expo-blur';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import useDiscoverService, { NearbyProfile, SwipeType } from '@/hooks/services/useDiscoverService';
-import Toast from 'react-native-toast-message';
+
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - 32;
@@ -439,132 +439,43 @@ function ActionButtons({
     );
 }
 
-// ─── Sample data (dev / empty-API fallback) ────────────────────────────────
-const SAMPLE_PROFILES: NearbyProfile[] = [
-    {
-        id: 'sample-1',
-        userId: 'sample-user-1',
-        name: 'Ananya',
-        dob: '1998-03-12',
-        gender: 'female',
-        profession: 'UX Designer',
-        religion: 'hindu',
-        height: '5_4',
-        diet: 'vegetarian',
-        drinkingHabits: 'occasionally',
-        smokingHabits: 'non-smoker',
-        travelFrequency: 'Travel',
-        relationshipPreference: 'Long-term',
-        interestedIn: 'male',
-        travelTimeSlots: ['Rajiv Chowk', 'Dwarka Sec 21'],
-        distanceMeters: 2000,
-    },
-    {
-        id: 'sample-2',
-        userId: 'sample-user-2',
-        name: 'Priya',
-        dob: '1999-07-22',
-        gender: 'female',
-        profession: 'Software Engineer',
-        religion: 'christian',
-        height: '5_5',
-        diet: 'non_vegetarian',
-        drinkingHabits: 'socially',
-        smokingHabits: 'non-smoker',
-        travelFrequency: 'Coffee',
-        relationshipPreference: 'Casual',
-        interestedIn: 'male',
-        travelTimeSlots: ['Hauz Khas', 'Noida Sec 18'],
-        distanceMeters: 850,
-    },
-    {
-        id: 'sample-3',
-        userId: 'sample-user-3',
-        name: 'Meera',
-        dob: '1997-11-05',
-        gender: 'female',
-        profession: 'Marketing Manager',
-        religion: 'hindu',
-        height: '5_3',
-        diet: 'vegetarian',
-        drinkingHabits: 'never',
-        smokingHabits: 'non-smoker',
-        travelFrequency: 'Book Lover',
-        relationshipPreference: 'Long-term',
-        interestedIn: 'male',
-        travelTimeSlots: ['Connaught Place', 'Lajpat Nagar'],
-        distanceMeters: 450,
-    },
-    {
-        id: 'sample-4',
-        userId: 'sample-user-4',
-        name: 'Nisha',
-        dob: '2000-05-18',
-        gender: 'female',
-        profession: 'Architect',
-        religion: 'hindu',
-        height: '5_6',
-        diet: 'non_vegetarian',
-        drinkingHabits: 'occasionally',
-        smokingHabits: 'non-smoker',
-        travelFrequency: 'Travel',
-        relationshipPreference: 'Long-term',
-        interestedIn: 'male',
-        travelTimeSlots: ['Indira Gandhi Airport', 'Saket'],
-        distanceMeters: 1200,
-    },
-    {
-        id: 'sample-5',
-        userId: 'sample-user-5',
-        name: 'Kavya',
-        dob: '1996-09-30',
-        gender: 'female',
-        profession: 'Doctor',
-        religion: 'jain',
-        height: '5_2',
-        diet: 'vegan',
-        drinkingHabits: 'never',
-        smokingHabits: 'non-smoker',
-        travelFrequency: 'Fitness',
-        relationshipPreference: 'Long-term',
-        interestedIn: 'male',
-        travelTimeSlots: ['AIIMS', 'Lodi Colony'],
-        distanceMeters: 600,
-    },
-];
+
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function DiscoverScreen() {
-    const { nearbyProfiles, isDiscoveryLoading, refetchDiscovery, swipe, isSwipePending } =
-        useDiscoverService({ radius: 1000, limit: 20 });
+    const {
+        nearbyProfiles,
+        isDiscoveryLoading,
+        refetchDiscovery,
+        refresh,
+        locationStatus,
+        swipe,
+        isSwipePending,
+    } = useDiscoverService({ radius: 1000, limit: 20 });
 
     const [cardStack, setCardStack] = useState<NearbyProfile[]>([]);
     const [matchedProfile, setMatchedProfile] = useState<NearbyProfile | null>(null);
     const [showMatch, setShowMatch] = useState(false);
     const [activeFilter, setActiveFilter] = useState<'Nearby' | 'New' | 'Premium'>('Nearby');
 
-    // Sync fetched profiles into card stack; fall back to sample data when API is empty
+    // Sync fetched profiles into card stack when API responds
     React.useEffect(() => {
-        if (cardStack.length === 0) {
-            const source = nearbyProfiles.length > 0 ? nearbyProfiles : SAMPLE_PROFILES;
-            setCardStack([...source]);
+        if (nearbyProfiles.length > 0) {
+            setCardStack([...nearbyProfiles]);
         }
     }, [nearbyProfiles]);
 
-    // When the stack runs out, reload sample data (dev convenience)
+    // When stack runs out, refetch from API
     React.useEffect(() => {
-        if (!isDiscoveryLoading && cardStack.length === 0) {
-            setCardStack([...SAMPLE_PROFILES]);
+        if (!isDiscoveryLoading && locationStatus === 'ready' && cardStack.length === 0) {
+            refetchDiscovery();
         }
-    }, [cardStack.length, isDiscoveryLoading]);
+    }, [cardStack.length, isDiscoveryLoading, locationStatus]);
 
     const handleSwipe = useCallback(
         async (userId: string, swipeType: SwipeType) => {
             // Remove card from stack immediately for snappy UX
             setCardStack((prev) => prev.filter((p) => p.userId !== userId));
-
-            // Don't call the API for sample / placeholder cards
-            if (userId.startsWith('sample-')) return;
 
             try {
                 const res = await swipe({ toUserId: userId, swipeType });
@@ -589,29 +500,76 @@ export default function DiscoverScreen() {
         handleSwipe(top.userId, type);
     };
 
-    // Empty state
-    const renderEmpty = () => (
-        <View style={styles.emptyContainer}>
-            <Text style={{ fontSize: 48 }}>🚉</Text>
-            <Text style={styles.emptyTitle}>No one nearby</Text>
-            <Text style={styles.emptySubtitle}>
-                Expand your radius or check back later when more commuters are online
-            </Text>
-            <TouchableOpacity
-                style={styles.refreshBtn}
-                onPress={() => {
-                    refetchDiscovery();
-                    setCardStack([]);
-                }}
-                activeOpacity={0.85}
-            >
-                <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.refreshGradient}>
-                    <Ionicons name="refresh" size={18} color="white" />
-                    <Text style={styles.refreshText}>Refresh</Text>
-                </LinearGradient>
-            </TouchableOpacity>
-        </View>
-    );
+    // ─── Empty / error state ────────────────────────────────────────────────
+    const renderEmpty = () => {
+        if (locationStatus === 'denied') {
+            return (
+                <View style={styles.emptyContainer}>
+                    <Text style={{ fontSize: 48 }}>📍</Text>
+                    <Text style={styles.emptyTitle}>Location Access Needed</Text>
+                    <Text style={styles.emptySubtitle}>
+                        MetroMatch needs your location to find people near your metro route.
+                        Please enable location in Settings and try again.
+                    </Text>
+                    <TouchableOpacity
+                        style={styles.refreshBtn}
+                        onPress={refresh}
+                        activeOpacity={0.85}
+                    >
+                        <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.refreshGradient}>
+                            <Ionicons name="location" size={18} color="white" />
+                            <Text style={styles.refreshText}>Try Again</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+
+        if (locationStatus === 'error') {
+            return (
+                <View style={styles.emptyContainer}>
+                    <Text style={{ fontSize: 48 }}>⚠️</Text>
+                    <Text style={styles.emptyTitle}>Connection Error</Text>
+                    <Text style={styles.emptySubtitle}>
+                        Couldn't reach the server. Check your connection and try again.
+                    </Text>
+                    <TouchableOpacity
+                        style={styles.refreshBtn}
+                        onPress={refresh}
+                        activeOpacity={0.85}
+                    >
+                        <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.refreshGradient}>
+                            <Ionicons name="refresh" size={18} color="white" />
+                            <Text style={styles.refreshText}>Retry</Text>
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
+            );
+        }
+
+        return (
+            <View style={styles.emptyContainer}>
+                <Text style={{ fontSize: 48 }}>🚉</Text>
+                <Text style={styles.emptyTitle}>No one nearby</Text>
+                <Text style={styles.emptySubtitle}>
+                    Expand your radius or check back later when more commuters are online
+                </Text>
+                <TouchableOpacity
+                    style={styles.refreshBtn}
+                    onPress={() => {
+                        setCardStack([]);
+                        refetchDiscovery();
+                    }}
+                    activeOpacity={0.85}
+                >
+                    <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.refreshGradient}>
+                        <Ionicons name="refresh" size={18} color="white" />
+                        <Text style={styles.refreshText}>Refresh</Text>
+                    </LinearGradient>
+                </TouchableOpacity>
+            </View>
+        );
+    };
 
     return (
         <View style={styles.screen}>
@@ -665,10 +623,16 @@ export default function DiscoverScreen() {
 
                 {/* ─── Card stack area ─────────────────────────────────── */}
                 <View style={styles.cardArea}>
-                    {isDiscoveryLoading ? (
+                    {isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating' ? (
                         <View style={styles.loadingContainer}>
                             <ActivityIndicator size="large" color="white" />
-                            <Text style={styles.loadingText}>Finding people near you…</Text>
+                            <Text style={styles.loadingText}>
+                                {locationStatus === 'requesting'
+                                    ? 'Requesting location access…'
+                                    : locationStatus === 'updating'
+                                        ? 'Updating your location…'
+                                        : 'Finding people near you…'}
+                            </Text>
                         </View>
                     ) : cardStack.length === 0 ? (
                         renderEmpty()

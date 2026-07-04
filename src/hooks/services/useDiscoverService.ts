@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Discovery, Swipes, Matches } from '../../api/requests';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import * as Location from 'expo-location';
+import { Discovery, Swipes, Matches, Presence } from '../../api/requests';
 
 export type SwipeType = 'like' | 'pass' | 'super_like';
 
@@ -23,33 +25,85 @@ export interface NearbyProfile {
     photos?: { url: string }[];
 }
 
+export type LocationStatus =
+    | 'idle'
+    | 'requesting'
+    | 'denied'
+    | 'updating'
+    | 'ready'
+    | 'error';
+
 const useDiscoverService = ({
-    radius = 500,
+    radius = 1000,
     limit = 20,
 }: {
     radius?: number;
     limit?: number;
 } = {}) => {
     const queryClient = useQueryClient();
+    const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
+    const locationReady = locationStatus === 'ready';
+    const hasInitialized = useRef(false);
 
-    // Fetch nearby profiles via Discovery API
+    // ─── Step 1: Get device location & update presence ────────────────────────
+    const initLocation = useCallback(async () => {
+        if (hasInitialized.current) return;
+        hasInitialized.current = true;
+
+        setLocationStatus('requesting');
+
+        try {
+            const { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setLocationStatus('denied');
+                return;
+            }
+
+            setLocationStatus('updating');
+
+            const loc = await Location.getCurrentPositionAsync({
+                accuracy: Location.Accuracy.Balanced,
+            });
+
+            await Presence.updatePresence({
+                latitude: loc.coords.latitude,
+                longitude: loc.coords.longitude,
+                online: true,
+            });
+
+            setLocationStatus('ready');
+            // Trigger discovery fetch now that presence is updated
+            queryClient.invalidateQueries({ queryKey: ['discovery'] });
+        } catch (err) {
+            console.warn('[useDiscoverService] location/presence error:', err);
+            setLocationStatus('error');
+        }
+    }, [queryClient]);
+
+    useEffect(() => {
+        initLocation();
+    }, [initLocation]);
+
+    // ─── Step 2: Fetch nearby profiles via Discovery API ─────────────────────
     const {
         data: nearbyProfiles,
         isLoading: isDiscoveryLoading,
         refetch: refetchDiscovery,
         isRefetching: isRefetchingDiscovery,
+        error: discoveryError,
     } = useQuery<NearbyProfile[]>({
         queryKey: ['discovery', radius, limit],
         queryFn: async () => {
             const res = await Discovery.getNearby({ radius, limit });
             return res.data?.data ?? [];
         },
+        enabled: locationReady,
         staleTime: 1000 * 60 * 2, // 2 min
         gcTime: 1000 * 60 * 5,
-        retry: 1,
+        retry: 2,
     });
 
-    // Swipe mutation — returns { swipe, matched, matchId }
+    // ─── Swipe mutation ────────────────────────────────────────────────────────
     const {
         mutateAsync: swipe,
         isPending: isSwipePending,
@@ -62,12 +116,11 @@ const useDiscoverService = ({
             swipeType: SwipeType;
         }) => Swipes.swipe({ toUserId, swipeType }),
         onSuccess: () => {
-            // Invalidate matches so the matches list stays fresh
             queryClient.invalidateQueries({ queryKey: ['matches'] });
         },
     });
 
-    // Fetch active matches
+    // ─── Matches query ─────────────────────────────────────────────────────────
     const {
         data: matches,
         isLoading: isMatchesLoading,
@@ -81,7 +134,7 @@ const useDiscoverService = ({
         staleTime: 1000 * 30,
     });
 
-    // Unmatch mutation
+    // ─── Unmatch mutation ──────────────────────────────────────────────────────
     const {
         mutateAsync: unmatch,
         isPending: isUnmatchPending,
@@ -92,11 +145,22 @@ const useDiscoverService = ({
         },
     });
 
+    // ─── Manual refresh (re-grab location + refetch) ──────────────────────────
+    const refresh = useCallback(async () => {
+        hasInitialized.current = false;
+        await initLocation();
+        await refetchDiscovery();
+    }, [initLocation, refetchDiscovery]);
+
     return {
         nearbyProfiles: nearbyProfiles ?? [],
-        isDiscoveryLoading,
+        isDiscoveryLoading: isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating',
         refetchDiscovery,
         isRefetchingDiscovery,
+        discoveryError,
+
+        locationStatus,
+        refresh,
 
         swipe,
         isSwipePending,

@@ -16,6 +16,7 @@ export const Auth = {
   login: REQUEST_TEMPLATES(AUTH_API.LOGIN).create,
   signup: REQUEST_TEMPLATES(AUTH_API.SIGNUP).create,
   validateToken: REQUEST_TEMPLATES(AUTH_API.VALIDATE).read,
+  logout: () => http.post(AUTH_API.LOGOUT, {}),
 };
 
 export const MasterList = {

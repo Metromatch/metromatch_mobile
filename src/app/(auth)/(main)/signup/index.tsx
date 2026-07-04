@@ -27,7 +27,7 @@ const Signup = () => {
         password: {
             required: true,
             message: 'Please enter a password',
-            minLength: 30
+            minLength: 8
         },
         confirmPassword: {
             required: true,
