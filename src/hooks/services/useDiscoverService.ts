@@ -44,6 +44,9 @@ const useDiscoverService = ({
     const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
     const locationReady = locationStatus === 'ready';
     const hasInitialized = useRef(false);
+    // Client-side set of swiped userIds — filters profiles that sneak through
+    // before the backend deployment is warm or on stale cached queries
+    const swipedIds = useRef<Set<string>>(new Set());
 
     // ─── Step 1: Get device location & update presence ────────────────────────
     const initLocation = useCallback(async () => {
@@ -100,12 +103,12 @@ const useDiscoverService = ({
         enabled: locationReady,
         staleTime: 1000 * 60 * 2, // 2 min
         gcTime: 1000 * 60 * 5,
-        retry: 2,
+        retry: 0,         // never auto-retry — user can manually refresh
     });
 
     // ─── Swipe mutation ────────────────────────────────────────────────────────
     const {
-        mutateAsync: swipe,
+        mutateAsync: _swipe,
         isPending: isSwipePending,
     } = useMutation({
         mutationFn: ({
@@ -119,6 +122,15 @@ const useDiscoverService = ({
             queryClient.invalidateQueries({ queryKey: ['matches'] });
         },
     });
+
+    // Wraps the raw mutation to also record the swipe client-side
+    const swipe = useCallback(
+        (args: { toUserId: string; swipeType: SwipeType }) => {
+            swipedIds.current.add(args.toUserId);
+            return _swipe(args);
+        },
+        [_swipe],
+    );
 
     // ─── Matches query ─────────────────────────────────────────────────────────
     const {
@@ -153,7 +165,10 @@ const useDiscoverService = ({
     }, [initLocation, refetchDiscovery]);
 
     return {
-        nearbyProfiles: nearbyProfiles ?? [],
+        // Filter out client-side swiped profiles in case they appear on a refetch
+        nearbyProfiles: (nearbyProfiles ?? []).filter(
+            (p) => !swipedIds.current.has(p.userId),
+        ),
         isDiscoveryLoading: isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating',
         refetchDiscovery,
         isRefetchingDiscovery,

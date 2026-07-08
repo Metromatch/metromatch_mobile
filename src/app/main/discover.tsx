@@ -457,17 +457,26 @@ export default function DiscoverScreen() {
     const [matchedProfile, setMatchedProfile] = useState<NearbyProfile | null>(null);
     const [showMatch, setShowMatch] = useState(false);
     const [activeFilter, setActiveFilter] = useState<'Nearby' | 'New' | 'Premium'>('Nearby');
+    // Guards against re-fetching in a loop when the API returns empty
+    const stackDepletedFetch = useRef(false);
 
     // Sync fetched profiles into card stack when API responds
     React.useEffect(() => {
         if (nearbyProfiles.length > 0) {
             setCardStack([...nearbyProfiles]);
+            stackDepletedFetch.current = false; // reset guard — new cards loaded
         }
     }, [nearbyProfiles]);
 
-    // When stack runs out, refetch from API
+    // When user swipes the last card, refetch once — NOT when API returns empty
     React.useEffect(() => {
-        if (!isDiscoveryLoading && locationStatus === 'ready' && cardStack.length === 0) {
+        if (
+            !isDiscoveryLoading &&
+            locationStatus === 'ready' &&
+            cardStack.length === 0 &&
+            !stackDepletedFetch.current
+        ) {
+            stackDepletedFetch.current = true; // prevent re-firing until new cards load
             refetchDiscovery();
         }
     }, [cardStack.length, isDiscoveryLoading, locationStatus]);

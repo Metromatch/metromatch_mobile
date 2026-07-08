@@ -4,8 +4,8 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { responsiveSize } from '@/utils/responsive';
-import FormSelect from '@/components/shared/molecules/form_select';
-import ChipSelector, { ChipOption } from '@/components/shared/molecules/chip_selector';
+import FormSelect from '@/components/general/organisms/form_select';
+import ChipSelector, { ChipOption } from '@/components/general/molecules/chip_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
 import { useFormValidation } from '@/hooks/useFormValidation';

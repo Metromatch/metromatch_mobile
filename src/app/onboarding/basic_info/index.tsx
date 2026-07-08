@@ -19,13 +19,13 @@ const OnboardingBasicInfo = () => {
     const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
 
     const { values, errors, handleChange, validateAll } = useFormValidation({
-        name: formValues.name,
+        name: formValues.name ?? '',
         dob: formValues.dob,
         gender: formValues.gender,
     }, {
         name: { required: true, message: 'Please enter your full name' },
-        dob: { 
-            required: true, 
+        dob: {
+            required: true,
             message: 'Please select your date of birth',
             validate: (value: Date) => {
                 if (!value) return null;
