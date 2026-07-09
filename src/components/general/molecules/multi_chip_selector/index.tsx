@@ -109,6 +109,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'space-between',
         borderWidth: 1,
+        flexGrow: 1
     },
     activeChip: {
         backgroundColor: COLORS.primary,

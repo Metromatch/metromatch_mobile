@@ -5,7 +5,7 @@ const DISCOVERY = `${API_V1}discovery`;
 const SWIPES = `${API_V1}swipes`;
 const MATCHES = `${API_V1}matches`;
 const PRESENCE = `${API_V1}presence`;
-
+const MASTER_LIST = `${API_V1}masterlist`;
 
 export const AUTH_API = {
   LOGIN: `${AUTH}login`,
@@ -15,7 +15,8 @@ export const AUTH_API = {
 };
 
 export const MASTER_LIST_API = {
-  MASTER_LIST: `${API_V1}masterlist`,
+  MASTER_LIST,
+  METRO_STATIONS: `${MASTER_LIST}/metro-stations`,
 };
 
 export const PROFILES_API = {

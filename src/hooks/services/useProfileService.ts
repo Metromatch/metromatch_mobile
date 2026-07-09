@@ -1,18 +1,21 @@
 // create profile
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Profiles } from "../../api/requests";
+import useMetromatchStore from "@/store";
+import { useAuthStore } from "@/store/authStore";
 
 const useProfileService = ({
     fetchMyProfile = false
 }: {
     fetchMyProfile?: boolean,
 }) => {
+    const { authConfiguration: { userId } } = useAuthStore();
     const {
         data: myProfile,
         isLoading: isMyProfileLoading,
         refetch: refetchMyProfile,
     } = useQuery({
-        queryKey: ['my-profile', fetchMyProfile],
+        queryKey: ['my-profile', userId],
         queryFn: async () => {
             const res = await Profiles.getMyProfile('')
             return res.data.data

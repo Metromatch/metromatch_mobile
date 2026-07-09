@@ -15,12 +15,15 @@ export default function OnboardingLayout() {
 
   if (pathname.includes('details')) {
     currentStep = 2;
-    stepLabel = "More About You"; // The image for step 2 doesn't have a label under the stepper, or maybe it's just "About You" again. Let's use empty string or "About You". I'll use empty string to match the image where there is no label under the stepper.
-  } else if (pathname.includes('preferences')) {
+    stepLabel = "More About You";
+  } else if (pathname.includes('metro_details')) {
     currentStep = 3;
+    stepLabel = "Metro Details";
+  } else if (pathname.includes('preferences')) {
+    currentStep = 4;
     stepLabel = "Partner Preferences";
   } else if (pathname.includes('photos')) {
-    currentStep = 4;
+    currentStep = 5;
     stepLabel = "Photos";
   }
 
@@ -44,7 +47,7 @@ export default function OnboardingLayout() {
         </View>
 
         <GlassmorphicCard>
-          <Stepper currentStep={currentStep} totalSteps={4} stepLabel={stepLabel} />
+          <Stepper currentStep={currentStep} totalSteps={5} stepLabel={stepLabel} />
           <Slot />
         </GlassmorphicCard>
 

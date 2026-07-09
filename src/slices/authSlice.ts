@@ -4,6 +4,7 @@ export const authConfigurationInitialValues = {
   accessTokenExpiresAt: '',
   refreshToken: '',
   refreshTokenExpiresAt: '',
+  userId: ''
 }
 
 type Properties = {
@@ -12,6 +13,7 @@ type Properties = {
   accessTokenExpiresAt: string,
   refreshToken: string,
   refreshTokenExpiresAt: string,
+  userId: string
 }
 const authSlice = (set: any) => {
   const Set = (data: Partial<Properties>) => {

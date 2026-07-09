@@ -46,8 +46,8 @@ const OnboardingPreferences = () => {
         prefMaxHeight: formValues?.prefMaxHeight || null,
         prefReligion: formValues?.prefReligion || null,
         prefDiet: formValues?.prefDiet || null,
-        prefDrinking: formValues?.prefDrinking || null,
-        prefSmoking: formValues?.prefSmoking || null,
+        prefDrinkingHabits: formValues?.prefDrinkingHabits || null,
+        prefSmokingHabits: formValues?.prefSmokingHabits || null,
     }, {
         prefMinAge: { required: false, validate: validateAge },
         prefMaxAge: { required: false, validate: (value: any, currentValues: any): string | null => validateMaxAge(value, currentValues.prefMinAge) },
@@ -133,9 +133,9 @@ const OnboardingPreferences = () => {
                 <ChipSelector
                     label="Drinking"
                     options={masterlist?.drinkingHabits || []}
-                    value={values.prefDrinking}
-                    error={errors.prefDrinking}
-                    onChange={(value) => handleChange('prefDrinking', value)}
+                    value={values.prefDrinkingHabits}
+                    error={errors.prefDrinkingHabits}
+                    onChange={(value) => handleChange('prefDrinkingHabits', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -144,9 +144,9 @@ const OnboardingPreferences = () => {
                 <ChipSelector
                     label="Smoking"
                     options={masterlist?.smokingHabits || []}
-                    value={values.prefSmoking}
-                    error={errors.prefSmoking}
-                    onChange={(value) => handleChange('prefSmoking', value)}
+                    value={values.prefSmokingHabits}
+                    error={errors.prefSmokingHabits}
+                    onChange={(value) => handleChange('prefSmokingHabits', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"

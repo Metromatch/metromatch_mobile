@@ -2,6 +2,7 @@ import React from 'react';
 import { View, StyleSheet, Text } from 'react-native';
 import { responsiveSize } from '@/utils/responsive';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
+import { B1, B2 } from '@/components/general/atoms/body_text';
 
 interface StepperProps {
   currentStep: number;
@@ -18,22 +19,22 @@ const Stepper: React.FC<StepperProps> = ({ currentStep, totalSteps, stepLabel })
         {steps.map((step, index) => {
           const isActive = step <= currentStep;
           const isCurrent = step === currentStep;
-          
+
           return (
             <React.Fragment key={`step-${step}`}>
-              <View 
+              <View
                 style={[
                   styles.circle,
                   isActive ? styles.activeCircle : styles.inactiveCircle,
                   isCurrent && styles.currentCircle
-                ]} 
+                ]}
               />
               {index < totalSteps - 1 && (
-                <View 
+                <View
                   style={[
                     styles.line,
                     isActive && step < currentStep ? styles.activeLine : styles.inactiveLine
-                  ]} 
+                  ]}
                 />
               )}
             </React.Fragment>
@@ -41,8 +42,8 @@ const Stepper: React.FC<StepperProps> = ({ currentStep, totalSteps, stepLabel })
         })}
       </View>
       <View style={styles.textContainer}>
-        <Text style={styles.stepText}>Step {currentStep} of {totalSteps}</Text>
-        <Text style={styles.labelText}>{stepLabel}</Text>
+        <B2 type="semibold" text={`Step ${currentStep} of ${totalSteps}`} textColor={COLORS.primary} />
+        <B2 type="medium" text={stepLabel} textColor={COLORS.textSecondary} />
       </View>
     </View>
   );
@@ -88,18 +89,9 @@ const styles = StyleSheet.create({
   },
   textContainer: {
     alignItems: 'center',
+    gap: responsiveSize(2),
   },
-  stepText: {
-    fontFamily: TYPOGRAPHY.semibold,
-    fontSize: responsiveSize(14),
-    color: COLORS.primary,
-    marginBottom: responsiveSize(2),
-  },
-  labelText: {
-    fontFamily: TYPOGRAPHY.regular,
-    fontSize: responsiveSize(12),
-    color: COLORS.textSecondary,
-  },
+
 });
 
 export default Stepper;

@@ -21,6 +21,7 @@ export const Auth = {
 
 export const MasterList = {
   masterList: REQUEST_TEMPLATES(MASTER_LIST_API.MASTER_LIST).create,
+  metroStationList: REQUEST_TEMPLATES(MASTER_LIST_API.METRO_STATIONS).read,
 }
 
 export const Profiles = {

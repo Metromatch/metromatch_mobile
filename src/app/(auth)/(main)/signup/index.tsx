@@ -54,7 +54,7 @@ const Signup = () => {
                 }
             });
 
-            const { accessToken, refreshToken, refreshTokenExpiresAt } = res.data.data;
+            const { accessToken, refreshToken, refreshTokenExpiresAt, userId } = res.data.data;
             if (accessToken) {
                 const accessTokenExpiresAt = JSON.parse(atob(accessToken.split('.')[1])).exp * 1000;
                 setAuthDetails({
@@ -62,7 +62,8 @@ const Signup = () => {
                     refreshToken: refreshToken || '',
                     accessTokenExpiresAt: accessTokenExpiresAt || '',
                     refreshTokenExpiresAt: refreshTokenExpiresAt || '',
-                    isLoggedIn: true
+                    isLoggedIn: true,
+                    userId,
                 });
                 router.replace('/onboarding/basic_info');
             }

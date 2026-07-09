@@ -79,16 +79,8 @@ const OnboardingPhotos = () => {
             return;
         }
 
-        const payload = {
-            ...formValues,
-            drinkingHabits: formValues.drinking,
-            smokingHabits: formValues.smoking,
-
-        };
-        delete payload.drinking
-        delete payload.smoking
-        await createProfile({ payload })
-        router.replace('/main/sessions');
+        await createProfile({ payload: formValues })
+        router.replace('/main/discover');
     };
 
     const handleBack = () => {

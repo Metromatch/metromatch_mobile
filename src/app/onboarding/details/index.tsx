@@ -10,10 +10,10 @@ import FormSelect from '@/components/general/organisms/form_select';
 import ChipSelector, { ChipOption } from '@/components/general/molecules/chip_selector';
 import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
-import DoubleHeartIcon from '@/components/shared/atoms/double_heart';
 import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 import useMetromatchStore from '@/store';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import MultiChipSelector from '@/components/general/molecules/multi_chip_selector';
 
 const OnboardingDetails = () => {
     const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
@@ -24,21 +24,19 @@ const OnboardingDetails = () => {
         height: formValues?.height || null,
         religion: formValues?.religion || null,
         diet: formValues?.diet || null,
-        drinking: formValues?.drinking || null,
-        smoking: formValues?.smoking || null,
-        vibe: formValues?.vibe || null,
+        drinkingHabits: formValues?.drinkingHabits || null,
+        smokingHabits: formValues?.smokingHabits || null,
+        vibe: formValues?.vibe || [],
         lookingFor: formValues?.lookingFor || null,
         interestedIn: formValues?.interestedIn || null,
     }, {});
 
     const { masterlist } = useMasterListQuery();
-
-
     const handleNext = () => {
         if (!validateAll()) return;
 
         setOnboardingFormValues(values);
-        router.push('/onboarding/preferences');
+        router.push('/onboarding/metro_details');
     };
 
     const handleBack = () => {
@@ -93,9 +91,9 @@ const OnboardingDetails = () => {
                 <ChipSelector
                     label="Drinking"
                     options={masterlist?.drinkingHabits || []}
-                    value={values.drinking}
-                    error={errors.drinking}
-                    onChange={(value) => handleChange('drinking', value)}
+                    value={values.drinkingHabits}
+                    error={errors.drinkingHabits}
+                    onChange={(value) => handleChange('drinkingHabits', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
@@ -103,18 +101,18 @@ const OnboardingDetails = () => {
                 <ChipSelector
                     label="Smoking"
                     options={masterlist?.smokingHabits || []}
-                    value={values.smoking}
-                    error={errors.smoking}
-                    onChange={(value) => handleChange('smoking', value)}
+                    value={values.smokingHabits}
+                    error={errors.smokingHabits}
+                    onChange={(value) => handleChange('smokingHabits', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
                 />
             </View>
 
-            <ChipSelector
+            <MultiChipSelector
                 label="Your Vibe"
-                options={[]}
+                options={masterlist?.vibe || []}
                 value={values.vibe}
                 error={errors.vibe}
                 onChange={(value) => handleChange('vibe', value)}
