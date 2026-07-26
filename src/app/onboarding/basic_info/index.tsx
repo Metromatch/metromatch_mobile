@@ -20,7 +20,7 @@ const OnboardingBasicInfo = () => {
 
     const { values, errors, handleChange, validateAll } = useFormValidation({
         name: formValues.name ?? '',
-        dob: formValues.dob,
+        dob: formValues.dob || new Date(new Date().getFullYear() - 30),
         gender: formValues.gender,
     }, {
         name: { required: true, message: 'Please enter your full name' },

@@ -27,7 +27,7 @@ const OnboardingDetails = () => {
         drinkingHabits: formValues?.drinkingHabits || null,
         smokingHabits: formValues?.smokingHabits || null,
         vibe: formValues?.vibe || [],
-        lookingFor: formValues?.lookingFor || null,
+        relationshipPreference: formValues?.relationshipPreference || null,
         interestedIn: formValues?.interestedIn || null,
     }, {});
 
@@ -122,9 +122,9 @@ const OnboardingDetails = () => {
                 <ChipSelector
                     label="Looking For"
                     options={masterlist?.relationshipPreference || []}
-                    value={values.lookingFor}
-                    error={errors.lookingFor}
-                    onChange={(value) => handleChange('lookingFor', value)}
+                    value={values.relationshipPreference}
+                    error={errors.relationshipPreference}
+                    onChange={(value) => handleChange('relationshipPreference', value)}
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"

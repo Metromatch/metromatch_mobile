@@ -1,8 +1,35 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
+import React, { useEffect } from 'react';
 import { COLORS } from '@/constants/theme';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Platform, View, Text, StyleSheet, ColorValue } from 'react-native';
+// import { OverlayProvider, Chat } from 'stream-chat-expo';
+import { chatClient } from '@/utils/stream';
+
+
+export async function connectChatUser(user: {
+  profileId: string;
+  name: string;
+  image?: string;
+  token: string;
+}) {
+  if (chatClient.userID === user.profileId) {
+    return;
+  }
+
+  if (chatClient.userID) {
+    await chatClient.disconnectUser();
+  }
+
+  await chatClient.connectUser(
+    {
+      id: user.profileId,
+      name: user.name,
+      image: user.image,
+    },
+    user.token,
+  );
+}
 
 function TabIcon({
   name,
@@ -49,8 +76,13 @@ const badgeStyles = StyleSheet.create({
 });
 
 export default function MainLayout() {
+  useEffect(() => {
+    // connectChatUser(profileId, )
+  }, [])
   return (
+    // <OverlayProvider>
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
+      {/* <Chat client={chatClient}> */}
       <Tabs
         screenOptions={{
           headerShown: false,
@@ -108,6 +140,21 @@ export default function MainLayout() {
           }}
         />
 
+        {/* Matches */}
+        <Tabs.Screen
+          name="matches"
+          options={{
+            title: 'Matches',
+            tabBarIcon: ({ color, focused }) => (
+              <TabIcon
+                name={focused ? 'star' : 'star-outline'}
+                focused={focused}
+                color={color}
+              />
+            ),
+          }}
+        />
+
         {/* Sessions / Likes */}
         <Tabs.Screen
           name="sessions"
@@ -150,6 +197,8 @@ export default function MainLayout() {
           options={{ href: null }}
         />
       </Tabs>
+      {/* </Chat> */}
     </View>
+    // </OverlayProvider>
   );
 }

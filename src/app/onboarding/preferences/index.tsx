@@ -40,8 +40,8 @@ const OnboardingPreferences = () => {
     const { setOnboardingFormValues, onboardingSteps: { formValues } } = useMetromatchStore();
 
     const { values, errors, handleChange, validateAll } = useFormValidation({
-        prefMinAge: formValues?.prefMinAge || '',
-        prefMaxAge: formValues?.prefMaxAge || '',
+        prefMinAge: formValues?.prefMinAge || null,
+        prefMaxAge: formValues?.prefMaxAge || null,
         prefMinHeight: formValues?.prefMinHeight || null,
         prefMaxHeight: formValues?.prefMaxHeight || null,
         prefReligion: formValues?.prefReligion || null,
@@ -72,7 +72,7 @@ const OnboardingPreferences = () => {
                     flex1
                     label="Min Age"
                     placeholder="Enter min age"
-                    value={values.prefMinAge}
+                    value={values.prefMinAge || ''}
                     onChangeText={(text) => handleChange('prefMinAge', text)}
                     error={errors.prefMinAge}
                     keyboardType="numeric"
@@ -81,7 +81,7 @@ const OnboardingPreferences = () => {
                     flex1
                     label="Max Age"
                     placeholder="Enter max age"
-                    value={values.prefMaxAge}
+                    value={values.prefMaxAge || ''}
                     onChangeText={(text) => handleChange('prefMaxAge', text)}
                     error={errors.prefMaxAge}
                     keyboardType="numeric"

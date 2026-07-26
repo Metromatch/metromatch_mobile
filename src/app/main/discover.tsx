@@ -152,7 +152,7 @@ function SwipeCard({
     stackIndex,
 }: {
     profile: NearbyProfile;
-    onSwipe: (userId: string, swipeType: SwipeType) => void;
+    onSwipe: (profileId: string, swipeType: SwipeType) => void;
     isTop: boolean;
     stackIndex: number;
 }) {
@@ -209,19 +209,19 @@ function SwipeCard({
                     Animated.spring(position, {
                         toValue: { x: 0, y: -SCREEN_HEIGHT },
                         useNativeDriver: true,
-                    }).start(() => onSwipe(profile.userId, 'super_like'));
+                    }).start(() => onSwipe(profile.id, 'super_like'));
                 } else if (dx > SWIPE_THRESHOLD) {
                     // Like — swipe right
                     Animated.spring(position, {
                         toValue: { x: SCREEN_WIDTH + 100, y: dy },
                         useNativeDriver: true,
-                    }).start(() => onSwipe(profile.userId, 'like'));
+                    }).start(() => onSwipe(profile.id, 'like'));
                 } else if (dx < -SWIPE_THRESHOLD) {
                     // Pass — swipe left
                     Animated.spring(position, {
                         toValue: { x: -SCREEN_WIDTH - 100, y: dy },
                         useNativeDriver: true,
-                    }).start(() => onSwipe(profile.userId, 'pass'));
+                    }).start(() => onSwipe(profile.id, 'pass'));
                 } else {
                     // Snap back
                     Animated.parallel([
@@ -462,8 +462,8 @@ export default function DiscoverScreen() {
 
     // Sync fetched profiles into card stack when API responds
     React.useEffect(() => {
-        if (nearbyProfiles.length > 0) {
-            setCardStack([...nearbyProfiles]);
+        if ((nearbyProfiles?.length || 0) > 0) {
+            setCardStack([...(nearbyProfiles || [])]);
             stackDepletedFetch.current = false; // reset guard — new cards loaded
         }
     }, [nearbyProfiles]);
@@ -482,15 +482,15 @@ export default function DiscoverScreen() {
     }, [cardStack.length, isDiscoveryLoading, locationStatus]);
 
     const handleSwipe = useCallback(
-        async (userId: string, swipeType: SwipeType) => {
+        async (profileId: string, swipeType: SwipeType) => {
             // Remove card from stack immediately for snappy UX
-            setCardStack((prev) => prev.filter((p) => p.userId !== userId));
+            setCardStack((prev) => prev.filter((p) => p.id !== profileId));
 
             try {
-                const res = await swipe({ toUserId: userId, swipeType });
+                const res = await swipe({ toProfileId: profileId, swipeType });
                 const data = res.data;
                 if (data?.matched && swipeType !== 'pass') {
-                    const matchedP = nearbyProfiles.find((p) => p.userId === userId);
+                    const matchedP = nearbyProfiles?.find((p) => p.id === profileId);
                     if (matchedP) {
                         setMatchedProfile(matchedP);
                         setShowMatch(true);
@@ -506,7 +506,7 @@ export default function DiscoverScreen() {
     const handleButtonSwipe = (type: SwipeType) => {
         if (cardStack.length === 0) return;
         const top = cardStack[0];
-        handleSwipe(top.userId, type);
+        handleSwipe(top.id, type);
     };
 
     // ─── Empty / error state ────────────────────────────────────────────────
@@ -654,7 +654,7 @@ export default function DiscoverScreen() {
                                 const isTop = stackIndex === 0;
                                 return (
                                     <SwipeCard
-                                        key={profile.userId}
+                                        key={profile.id}
                                         profile={profile}
                                         onSwipe={handleSwipe}
                                         isTop={isTop}

@@ -5,7 +5,8 @@ import { router } from 'expo-router';
 import { clearStore } from '@/utils/authUtils';
 
 const http = axios.create({
-  baseURL: "https://metromatchindia.vercel.app",
+  // baseURL: "https://metromatchindia.vercel.app",
+  baseURL: "http://localhost:3000",
   timeout: 20_000,
   headers: {
     'Content-Type': 'application/json',

@@ -47,7 +47,8 @@ export const PRESENCE_API = {
 const CHAT = `${API_V1}chat`;
 
 export const CHAT_API = {
-  TOKEN: `${CHAT}/token`,
+  GET_TOKEN: `${CHAT}/chattoken`,
+  CREATE_TOKEN: `${CHAT}/create-chat-token`,
   CONVERSATION: (matchId: string) => `${CHAT}/matches/${matchId}/conversation`,
   MESSAGES: (matchId: string) => `${CHAT}/matches/${matchId}/messages`,
 };

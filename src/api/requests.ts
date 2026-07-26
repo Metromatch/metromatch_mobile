@@ -37,7 +37,7 @@ export const Discovery = {
 };
 
 export const Swipes = {
-  swipe: (payload: { toUserId: string; swipeType: string }) =>
+  swipe: (payload: { toProfileId: string; swipeType: string }) =>
     http.post(SWIPES_API.SWIPES, payload),
   getSent: () => http.get(SWIPES_API.SENT),
   getReceived: () => http.get(SWIPES_API.RECEIVED),
@@ -58,7 +58,8 @@ export const Presence = {
 };
 
 export const Chat = {
-  getToken: () => http.get(CHAT_API.TOKEN),
+  getToken: () => http.get(CHAT_API.GET_TOKEN),
+  createToken: () => http.get(CHAT_API.CREATE_TOKEN),
   getConversation: (matchId: string) => http.get(CHAT_API.CONVERSATION(matchId)),
   getMessages: (matchId: string, params: { pageSize?: number; order?: 'asc' | 'desc' } = {}) =>
     http.get(CHAT_API.MESSAGES(matchId), { params }),

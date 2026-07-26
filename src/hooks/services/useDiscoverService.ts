@@ -112,12 +112,12 @@ const useDiscoverService = ({
         isPending: isSwipePending,
     } = useMutation({
         mutationFn: ({
-            toUserId,
+            toProfileId,
             swipeType,
         }: {
-            toUserId: string;
+            toProfileId: string;
             swipeType: SwipeType;
-        }) => Swipes.swipe({ toUserId, swipeType }),
+        }) => Swipes.swipe({ toProfileId, swipeType }),
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['matches'] });
         },
@@ -125,8 +125,8 @@ const useDiscoverService = ({
 
     // Wraps the raw mutation to also record the swipe client-side
     const swipe = useCallback(
-        (args: { toUserId: string; swipeType: SwipeType }) => {
-            swipedIds.current.add(args.toUserId);
+        (args: { toProfileId: string; swipeType: SwipeType }) => {
+            swipedIds.current.add(args.toProfileId);
             return _swipe(args);
         },
         [_swipe],
@@ -166,9 +166,10 @@ const useDiscoverService = ({
 
     return {
         // Filter out client-side swiped profiles in case they appear on a refetch
-        nearbyProfiles: (nearbyProfiles ?? []).filter(
-            (p) => !swipedIds.current.has(p.userId),
-        ),
+        // nearbyProfiles: (nearbyProfiles ?? []).filter(
+        //     (p) => !swipedIds.current.has(p.userId),
+        // ),
+        nearbyProfiles,
         isDiscoveryLoading: isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating',
         refetchDiscovery,
         isRefetchingDiscovery,

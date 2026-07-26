@@ -1,7 +1,6 @@
 // create profile
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Profiles } from "../../api/requests";
-import useMetromatchStore from "@/store";
 import { useAuthStore } from "@/store/authStore";
 
 const useProfileService = ({
