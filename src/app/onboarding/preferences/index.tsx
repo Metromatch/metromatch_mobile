@@ -49,8 +49,8 @@ const OnboardingPreferences = () => {
         prefDrinkingHabits: formValues?.prefDrinkingHabits || null,
         prefSmokingHabits: formValues?.prefSmokingHabits || null,
     }, {
-        prefMinAge: { required: false, validate: validateAge },
-        prefMaxAge: { required: false, validate: (value: any, currentValues: any): string | null => validateMaxAge(value, currentValues.prefMinAge) },
+        prefMinAge: { required: true, validate: validateAge },
+        prefMaxAge: { required: true, validate: (value: any, currentValues: any): string | null => validateMaxAge(value, currentValues.prefMinAge) },
     });
 
     const handleNext = () => {
@@ -71,6 +71,7 @@ const OnboardingPreferences = () => {
                 <FormInput
                     flex1
                     label="Min Age"
+                    required
                     placeholder="Enter min age"
                     value={values.prefMinAge || ''}
                     onChangeText={(text) => handleChange('prefMinAge', text)}
@@ -80,6 +81,7 @@ const OnboardingPreferences = () => {
                 <FormInput
                     flex1
                     label="Max Age"
+                    required
                     placeholder="Enter max age"
                     value={values.prefMaxAge || ''}
                     onChangeText={(text) => handleChange('prefMaxAge', text)}

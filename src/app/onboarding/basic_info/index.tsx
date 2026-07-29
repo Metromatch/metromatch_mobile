@@ -23,10 +23,10 @@ const OnboardingBasicInfo = () => {
         dob: formValues.dob || new Date(new Date().getFullYear() - 30),
         gender: formValues.gender,
     }, {
-        name: { required: true, message: 'Please enter your full name' },
+        name: { required: true, message: 'Required' },
         dob: {
             required: true,
-            message: 'Please select your date of birth',
+            message: 'Required',
             validate: (value: Date) => {
                 if (!value) return null;
                 const age = dayjs().diff(dayjs(value), 'year');
@@ -39,7 +39,7 @@ const OnboardingBasicInfo = () => {
                 return null;
             }
         },
-        gender: { required: true, message: 'Please select a gender' }
+        gender: { required: true, message: 'Required' }
     });
 
     const handleContinue = () => {

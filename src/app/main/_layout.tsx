@@ -196,6 +196,18 @@ export default function MainLayout() {
           name="chat/[matchId]"
           options={{ href: null }}
         />
+
+        {/* Profile detail — hidden, navigated to from discover cards */}
+        <Tabs.Screen
+          name="discover/[profileId]"
+          options={{ href: null }}
+        />
+
+        {/* Subscription — hidden, navigated to from profile screen */}
+        <Tabs.Screen
+          name="subscription"
+          options={{ href: null }}
+        />
       </Tabs>
       {/* </Chat> */}
     </View>

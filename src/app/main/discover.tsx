@@ -15,8 +15,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BlurView } from 'expo-blur';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import useDiscoverService, { NearbyProfile, SwipeType } from '@/hooks/services/useDiscoverService';
+import useFavoriteService from '@/hooks/services/useFavoriteService';
+import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -144,15 +147,19 @@ function MatchModal({
     );
 }
 
+
+
 // ─── Swipeable Card ──────────────────────────────────────────────────────────
 function SwipeCard({
     profile,
     onSwipe,
+    onPress,
     isTop,
     stackIndex,
 }: {
     profile: NearbyProfile;
     onSwipe: (profileId: string, swipeType: SwipeType) => void;
+    onPress: (profile: NearbyProfile) => void;
     isTop: boolean;
     stackIndex: number;
 }) {
@@ -180,11 +187,18 @@ function SwipeCard({
         extrapolate: 'clamp',
     });
 
+    // Track total drag distance to distinguish taps from swipes
+    const dragDistanceRef = useRef(0);
+
     const panResponder = useRef(
         PanResponder.create({
             onStartShouldSetPanResponder: () => isTopRef.current,
             onMoveShouldSetPanResponder: () => isTopRef.current,
+            onPanResponderGrant: () => {
+                dragDistanceRef.current = 0;
+            },
             onPanResponderMove: (_, { dx, dy }) => {
+                dragDistanceRef.current = Math.max(Math.abs(dx), Math.abs(dy));
                 position.setValue({ x: dx, y: dy });
                 // Update stamp opacities
                 const absDx = Math.abs(dx);
@@ -204,6 +218,11 @@ function SwipeCard({
             },
             onPanResponderRelease: (_, { dx, dy }) => {
                 const absDx = Math.abs(dx);
+                // If barely moved — treat as a tap → open profile sheet
+                if (dragDistanceRef.current < 8) {
+                    onPress(profile);
+                    return;
+                }
                 if (dy < -100 && absDx < 80) {
                     // Super like — swipe up
                     Animated.spring(position, {
@@ -278,8 +297,15 @@ function SwipeCard({
                     colors={['#1A42D9', '#5C7BFF']}
                     style={styles.cardPhotoPlaceholder}
                 >
-                    <Ionicons name="person" size={80} color="rgba(255,255,255,0.4)" />
+                    <Image
+                        source={{ uri: profile.imageUrl }}
+                        style={styles.cardPhotoPlaceholder}
+                        resizeMode='cover'
+                    // onError={}
+                    />
+                    {/* <Ionicons name="person" size={80} color="rgba(255,255,255,0.4)" /> */}
                 </LinearGradient>
+                {/* //image */}
 
                 {/* Online badge */}
                 <View style={styles.onlineBadge}>
@@ -321,7 +347,7 @@ function SwipeCard({
             </View>
 
             {/* Info */}
-            <BlurView intensity={20} tint="dark" style={styles.cardInfo}>
+            <BlurView intensity={40} tint="dark" style={styles.cardInfo}>
                 {/* Name + age + verified */}
                 <View style={styles.nameRow}>
                     <Text style={styles.nameText}>
@@ -375,27 +401,25 @@ function SwipeCard({
 function ActionButtons({
     onPass,
     onLike,
-    onSuperLike,
-    onUndo,
+    onMarkFavorite,
     disabled,
 }: {
     onPass: () => void;
     onLike: () => void;
-    onSuperLike: () => void;
-    onUndo: () => void;
+    onMarkFavorite: () => void;
     disabled: boolean;
 }) {
     return (
         <View style={styles.actionRow}>
             {/* Undo */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
                 onPress={onUndo}
                 style={[styles.actionBtn, styles.actionBtnSm]}
                 activeOpacity={0.8}
                 disabled={disabled}
             >
                 <Ionicons name="refresh" size={22} color={COLORS.textSecondary} />
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Pass */}
             <TouchableOpacity
@@ -423,18 +447,18 @@ function ActionButtons({
 
             {/* Super Like */}
             <TouchableOpacity
-                onPress={onSuperLike}
+                onPress={onMarkFavorite}
                 style={[styles.actionBtn, styles.actionBtnLg]}
                 activeOpacity={0.8}
                 disabled={disabled}
             >
                 <LinearGradient colors={['#6EA8FF', '#2F6BFF']} style={styles.actionGradient}>
-                    <Ionicons name="flash" size={26} color="white" />
+                    <Ionicons name="star" size={26} color="white" />
                 </LinearGradient>
             </TouchableOpacity>
 
             {/* Spacer for symmetry */}
-            <View style={[styles.actionBtn, styles.actionBtnSm]} />
+            {/* <View style={[styles.actionBtn, styles.actionBtnSm]} /> */}
         </View>
     );
 }
@@ -457,18 +481,18 @@ export default function DiscoverScreen() {
     const [matchedProfile, setMatchedProfile] = useState<NearbyProfile | null>(null);
     const [showMatch, setShowMatch] = useState(false);
     const [activeFilter, setActiveFilter] = useState<'Nearby' | 'New' | 'Premium'>('Nearby');
-    // Guards against re-fetching in a loop when the API returns empty
     const stackDepletedFetch = useRef(false);
 
-    // Sync fetched profiles into card stack when API responds
+    const { markFavorite } = useFavoriteService({});
+    const { masterlist } = useMasterListQuery();
+
     React.useEffect(() => {
         if ((nearbyProfiles?.length || 0) > 0) {
             setCardStack([...(nearbyProfiles || [])]);
-            stackDepletedFetch.current = false; // reset guard — new cards loaded
+            stackDepletedFetch.current = false;
         }
     }, [nearbyProfiles]);
 
-    // When user swipes the last card, refetch once — NOT when API returns empty
     React.useEffect(() => {
         if (
             !isDiscoveryLoading &&
@@ -503,13 +527,17 @@ export default function DiscoverScreen() {
         [nearbyProfiles, swipe]
     );
 
+    const onMarkFavorite = () => {
+        const top = cardStack[0];
+        markFavorite(top.id)
+    }
+
     const handleButtonSwipe = (type: SwipeType) => {
         if (cardStack.length === 0) return;
         const top = cardStack[0];
         handleSwipe(top.id, type);
     };
 
-    // ─── Empty / error state ────────────────────────────────────────────────
     const renderEmpty = () => {
         if (locationStatus === 'denied') {
             return (
@@ -579,6 +607,8 @@ export default function DiscoverScreen() {
             </View>
         );
     };
+
+    // console.log('masterlist', masterlist)
 
     return (
         <View style={styles.screen}>
@@ -655,8 +685,50 @@ export default function DiscoverScreen() {
                                 return (
                                     <SwipeCard
                                         key={profile.id}
-                                        profile={profile}
+                                        profile={{
+                                            name: profile.name,
+                                            id: profile.id,
+                                            dob: profile.dob ?? '',
+                                            profession: profile.profession ?? '',
+                                            gender: masterlist?.gender?.find((g: any) => g.value === profile.gender)?.label,
+                                            userId: profile.userId,
+                                            travelTimeSlots: profile.travelTimeSlots?.map((t: string) => masterlist?.travelTimeRange?.find((r: any) => r.value === t)?.label ?? ''),
+                                            diet: masterlist?.diet?.find((d: any) => d.value === profile.diet)?.label,
+                                            drinkingHabits: masterlist?.drinkingHabits?.find((d: any) => d.value === profile.drinkingHabits)?.label,
+                                            smokingHabits: masterlist?.smokingHabits?.find((s: any) => s.value === profile.smokingHabits)?.label,
+                                            travelFrequency: masterlist?.travelFrequency?.find((t: any) => t.value === profile.travelFrequency)?.label,
+                                            relationshipPreference: masterlist?.relationshipPreference?.find((r: any) => r.value === profile.relationshipPreference)?.label,
+                                            interestedIn: masterlist?.interestedIn?.find((i: any) => i.value === profile.interestedIn)?.label,
+                                            imageUrl: profile.photos?.find((p: any) => p.isPrimary)?.imageUrl ?? ''
+                                        }}
+                                        // profile={profile}
                                         onSwipe={handleSwipe}
+                                        onPress={() => {
+                                            router.push({
+                                                pathname: '/profile_details/[profileId]',
+                                                params: {
+                                                    profileId: profile.id,
+                                                    name: profile.name,
+                                                    dob: profile.dob ?? '',
+                                                    gender: profile.gender ?? '',
+                                                    profession: profile.profession ?? '',
+                                                    religion: profile.religion ?? '',
+                                                    height: profile.height ?? '',
+                                                    diet: 'Non veg',
+                                                    drinkingHabits: profile.drinkingHabits ?? '',
+                                                    smokingHabits: profile.smokingHabits ?? '',
+                                                    travelFrequency: profile.travelFrequency ?? '',
+                                                    relationshipPreference: profile.relationshipPreference ?? '',
+                                                    interestedIn: profile.interestedIn ?? '',
+                                                    travelTimeSlots: JSON.stringify(profile.travelTimeSlots ?? []),
+                                                    distanceMeters: String(profile.distanceMeters ?? ''),
+                                                    imageUrl: profile.photos?.filter((photo: any) => !photo.isPrimary)?.map((photo: any) => photo.imageUrl) ?? [],
+                                                    primaryImage: profile.photos?.find((photo: any) => photo.isPrimary)?.imageUrl || '',
+                                                    bio: profile.bio,
+
+                                                },
+                                            });
+                                        }}
                                         isTop={isTop}
                                         stackIndex={stackIndex}
                                     />
@@ -671,11 +743,7 @@ export default function DiscoverScreen() {
                         disabled={isSwipePending}
                         onPass={() => handleButtonSwipe('pass')}
                         onLike={() => handleButtonSwipe('like')}
-                        onSuperLike={() => handleButtonSwipe('super_like')}
-                        onUndo={() => {
-                            // Re-add last swiped — simple undo by refetch
-                            refetchDiscovery();
-                        }}
+                        onMarkFavorite={() => onMarkFavorite()}
                     />
                 )}
             </SafeAreaView>
@@ -686,6 +754,7 @@ export default function DiscoverScreen() {
                 profile={matchedProfile}
                 onClose={() => setShowMatch(false)}
             />
+
         </View>
     );
 }
@@ -873,7 +942,10 @@ const styles = StyleSheet.create({
     cardInfo: {
         paddingHorizontal: 16,
         paddingVertical: 14,
-        backgroundColor: 'rgba(0,0,0,0.3)',
+        backgroundColor: 'rgba(0, 0, 0, 1)',
+        position: 'absolute',
+        bottom: 0,
+        width: '100%'
     },
     nameRow: {
         flexDirection: 'row',
@@ -1111,5 +1183,179 @@ const styles = StyleSheet.create({
         fontFamily: TYPOGRAPHY.medium,
         fontSize: 14,
         paddingVertical: 8,
+    },
+
+    // ─── Profile Bottom Sheet ───────────────────────────────────────────────
+    sheetBackdrop: {
+        ...StyleSheet.absoluteFill,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+    },
+    sheet: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        maxHeight: SCREEN_HEIGHT * 0.88,
+        backgroundColor: '#0D1B6E',
+        borderTopLeftRadius: 28,
+        borderTopRightRadius: 28,
+        overflow: 'hidden',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -6 },
+        shadowOpacity: 0.4,
+        shadowRadius: 20,
+        elevation: 20,
+    },
+    sheetHandle: {
+        width: 40,
+        height: 4,
+        borderRadius: 2,
+        backgroundColor: 'rgba(255,255,255,0.3)',
+        alignSelf: 'center',
+        marginTop: 12,
+        marginBottom: 8,
+    },
+    sheetScroll: {
+        paddingBottom: 40,
+    },
+    sheetPhotoWrap: {
+        width: '100%',
+        height: 280,
+        position: 'relative',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    sheetPhoto: {
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    sheetPhotoGradient: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        height: '60%',
+    },
+    sheetNameOverlay: {
+        position: 'absolute',
+        bottom: 16,
+        left: 20,
+        right: 20,
+        flexDirection: 'row',
+        alignItems: 'flex-end',
+        justifyContent: 'space-between',
+    },
+    sheetName: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 26,
+        flex: 1,
+        marginRight: 12,
+    },
+    sheetDistanceBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        borderRadius: 12,
+        paddingHorizontal: 10,
+        paddingVertical: 5,
+        gap: 4,
+    },
+    sheetDistanceText: {
+        color: COLORS.primaryLight,
+        fontSize: 12,
+        fontFamily: TYPOGRAPHY.medium,
+    },
+    sheetMetroBox: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 10,
+        marginHorizontal: 20,
+        marginTop: 16,
+        backgroundColor: 'rgba(47,107,255,0.18)',
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(110,168,255,0.25)',
+    },
+    sheetMetroText: {
+        color: COLORS.primaryLight,
+        fontFamily: TYPOGRAPHY.medium,
+        fontSize: 13,
+        flex: 1,
+    },
+    sheetSection: {
+        marginTop: 20,
+        marginHorizontal: 20,
+    },
+    sheetSectionTitle: {
+        color: 'rgba(255,255,255,0.5)',
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 11,
+        letterSpacing: 1.4,
+        textTransform: 'uppercase',
+        marginBottom: 12,
+    },
+    sheetGrid: {
+        gap: 10,
+    },
+    sheetGridItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 14,
+        backgroundColor: 'rgba(255,255,255,0.07)',
+        borderRadius: 14,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
+    },
+    sheetGridIcon: {
+        fontSize: 20,
+        width: 28,
+        textAlign: 'center',
+    },
+    sheetGridLabel: {
+        color: 'rgba(255,255,255,0.45)',
+        fontFamily: TYPOGRAPHY.regular,
+        fontSize: 11,
+        marginBottom: 2,
+    },
+    sheetGridValue: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.medium,
+        fontSize: 14,
+    },
+    sheetChipsWrap: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 8,
+    },
+    sheetChipItem: {
+        backgroundColor: 'rgba(47,107,255,0.2)',
+        borderRadius: 20,
+        paddingHorizontal: 14,
+        paddingVertical: 7,
+        borderWidth: 1,
+        borderColor: 'rgba(110,168,255,0.3)',
+    },
+    sheetChipText: {
+        color: COLORS.primaryLight,
+        fontFamily: TYPOGRAPHY.medium,
+        fontSize: 13,
+    },
+    sheetCloseBtn: {
+        position: 'absolute',
+        top: 16,
+        right: 16,
+        width: 34,
+        height: 34,
+        borderRadius: 17,
+        backgroundColor: 'rgba(0,0,0,0.45)',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
 });

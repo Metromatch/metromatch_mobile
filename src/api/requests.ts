@@ -1,4 +1,4 @@
-import { AUTH_API, CHAT_API, DISCOVERY_API, MASTER_LIST_API, MATCHES_API, PRESENCE_API, PROFILES_API, SWIPES_API } from "./apiEndpoints";
+import { AUTH_API, CHAT_API, DISCOVERY_API, FAVORITES_API, MASTER_LIST_API, MATCHES_API, PAYMENTS_API, PRESENCE_API, PROFILES_API, SWIPES_API } from "./apiEndpoints";
 import http from "./http";
 
 
@@ -66,4 +66,14 @@ export const Chat = {
   sendMessage: (matchId: string, body: string) =>
     http.post(CHAT_API.MESSAGES(matchId), { body }),
 };
+
+export const Favorites = {
+  markFavorite: (payload: { profileId: string }) => http.post(FAVORITES_API.FAVORITES, payload),
+  removeFavorite: (id: string) => http.delete(`${FAVORITES_API.FAVORITES}/${id}`),
+}
+
+export const Payments = {
+  createPaymentOrder: REQUEST_TEMPLATES(PAYMENTS_API.CREATE_ORDER).create,
+  verifyPayment: REQUEST_TEMPLATES(PAYMENTS_API.VERIFY).create,
+}
 

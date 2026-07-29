@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { router } from 'expo-router';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import useProfileService from '@/hooks/services/useProfileService';
 import useAuthService from '@/hooks/services/useAuthService';
@@ -228,6 +229,25 @@ export default function ProfileScreen() {
                     {activeSection === 'preferences' && <Preference preference={preferences} />}
                     {activeSection === 'photos' && renderPhotos()}
 
+                    {/* ─── Subscription Button ──────────────────────── */}
+                    <TouchableOpacity
+                        id="subscription-button"
+                        activeOpacity={0.85}
+                        onPress={() => router.push('/main/subscription')}
+                        style={styles.subscriptionBtn}
+                    >
+                        <LinearGradient
+                            colors={['#C8952A', '#8B5E0A']}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.subscriptionBtnInner}
+                        >
+                            <Ionicons name="flash" size={18} color="white" />
+                            <Text style={styles.subscriptionBtnText}>Upgrade to Premium</Text>
+                            <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
+                        </LinearGradient>
+                    </TouchableOpacity>
+
                     <TouchableOpacity
                         id="logout-button"
                         style={[styles.logoutBtn, isLogoutLoading && { opacity: 0.6 }]}
@@ -274,6 +294,32 @@ const styles = StyleSheet.create({
         color: '#FF6B6B',
         fontFamily: TYPOGRAPHY.semibold,
         fontSize: 15,
+    },
+
+    subscriptionBtn: {
+        borderRadius: responsiveSize(14),
+        overflow: 'hidden',
+        marginBottom: responsiveSize(10),
+        shadowColor: '#C8952A',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.35,
+        shadowRadius: 10,
+        elevation: 6,
+    },
+    subscriptionBtnInner: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 10,
+        paddingVertical: responsiveSize(14),
+        paddingHorizontal: 20,
+    },
+    subscriptionBtnText: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 15,
+        flex: 1,
+        textAlign: 'center',
     },
 
     // Floating header

@@ -29,7 +29,43 @@ const OnboardingDetails = () => {
         vibe: formValues?.vibe || [],
         relationshipPreference: formValues?.relationshipPreference || null,
         interestedIn: formValues?.interestedIn || null,
-    }, {});
+        bio: formValues?.bio || '',
+    }, {
+        profession: { required: true, message: 'Required' },
+        // height: { required: true, message: 'Required' },
+        // religion: { required: true, message: 'Required' },
+        // diet: { required: true, message: 'Required' },
+        // drinkingHabits: { required: true, message: 'Required' },
+        // smokingHabits: { required: true, message: 'Required' },
+        vibe: {
+            required: true,
+            message: 'Required',
+            validate: (value: string[]) => {
+                // if (!value || value.length === 0) return null;
+                const count = value.length;
+                if (count < 1) {
+                    return 'You must select at least 1 vibes';
+                }
+                if (count > 7) {
+                    return 'You must select at most 7 vibes';
+                }
+                return null;
+            }
+        },
+        relationshipPreference: { required: true, message: 'Required' },
+        interestedIn: { required: true, message: 'Required' },
+        bio: {
+            required: true, message: 'Required', validate: (value: string) => {
+                if (value.length < 20) {
+                    return 'Bio must be at least 20 characters';
+                }
+                if (value.length > 200) {
+                    return 'Bio must be at most 200 characters';
+                }
+                return null;
+            }
+        },
+    });
 
     const { masterlist } = useMasterListQuery();
     const handleNext = () => {
@@ -48,6 +84,7 @@ const OnboardingDetails = () => {
         <View style={styles.formContainer}>
             <FormInput
                 label="Profession"
+                required
                 placeholder="Engineer, Student, Doctor, etc."
                 value={values.profession}
                 onChangeText={(text) => handleChange('profession', text)}
@@ -111,6 +148,7 @@ const OnboardingDetails = () => {
             </View>
 
             <MultiChipSelector
+                required
                 label="Your Vibe"
                 options={masterlist?.vibe || []}
                 value={values.vibe}
@@ -128,6 +166,7 @@ const OnboardingDetails = () => {
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
+                    required
                 />
 
                 <ChipSelector
@@ -139,6 +178,7 @@ const OnboardingDetails = () => {
                     activeIconMode="check"
                     style={{ flex: 1 }}
                     direction="vertical"
+                    required
                 />
             </View>
 
@@ -148,6 +188,15 @@ const OnboardingDetails = () => {
                 value={diet}
                 onChange={setDiet}
             /> */}
+            <FormInput
+                label="Your Bio"
+                required
+                placeholder="Write something about yourself..."
+                value={values.bio}
+                onChangeText={(text) => handleChange('bio', text)}
+                error={errors.bio}
+                multiline
+            />
 
             <View style={styles.footerButtons}>
                 <IconButton

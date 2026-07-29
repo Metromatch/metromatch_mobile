@@ -23,6 +23,7 @@ export const initialValues = {
         frequentMetroStation: null,
         travelTimeSlots: null,
         travelFrequency: null,
+        bio: null,
         // relationshipPreference: null,
     },
 }
@@ -52,6 +53,7 @@ export type OnboardingStepsProperties = {
         frequentMetroStation: string | null,
         travelTimeSlots: string[] | null,
         travelFrequency: string | null,
+        bio: string | null
         // relationshipPreference: string | null,
     };
 }

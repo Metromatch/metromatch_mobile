@@ -6,6 +6,8 @@ const SWIPES = `${API_V1}swipes`;
 const MATCHES = `${API_V1}matches`;
 const PRESENCE = `${API_V1}presence`;
 const MASTER_LIST = `${API_V1}masterlist`;
+const FAVORITES = `${API_V1}favorites`;
+const PAYMENTS = `${API_V1}payments`;
 
 export const AUTH_API = {
   LOGIN: `${AUTH}login`,
@@ -52,6 +54,16 @@ export const CHAT_API = {
   CONVERSATION: (matchId: string) => `${CHAT}/matches/${matchId}/conversation`,
   MESSAGES: (matchId: string) => `${CHAT}/matches/${matchId}/messages`,
 };
+
+export const FAVORITES_API = {
+  FAVORITES,
+};
+
+export const PAYMENTS_API = {
+  CREATE_ORDER: `${PAYMENTS}/create-order`,
+  VERIFY: `${PAYMENTS}/verify`,
+};
+
 
 
 

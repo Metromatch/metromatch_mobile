@@ -57,8 +57,9 @@ const FormInput = ({
             styles.inputStyle,
             {
               height: props.multiline ? 'auto' : '100%',
-              ...(Platform.OS === 'ios' && props.multiline && {
-                minHeight: (props.numberOfLines || 4) * responsiveSize(26)
+              ...(props.multiline && {
+                minHeight: (props.numberOfLines || 4) * responsiveSize(26),
+                paddingVertical: responsiveSize(10)
               }),
               maxHeight: props.multiline
                 ? responsiveSize(26) * (props.numberOfLines || 5) + responsiveSize(29)

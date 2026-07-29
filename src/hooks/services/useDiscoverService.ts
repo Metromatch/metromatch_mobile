@@ -23,6 +23,8 @@ export interface NearbyProfile {
     travelTimeSlots?: string[];
     distanceMeters?: number;
     photos?: { url: string }[];
+    bio?: string;
+    imageUrl?: string
 }
 
 export type LocationStatus =

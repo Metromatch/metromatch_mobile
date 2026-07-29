@@ -11,14 +11,28 @@ import PrimaryButton from '@/components/general/atoms/primary_button';
 import IconButton from '@/components/general/atoms/icon_button';
 import useMetromatchStore from '@/store';
 import useProfileService from '@/hooks/services/useProfileService';
-
+import { useCloudnaryService } from '@/hooks/services/useCloudnaryService';
+// const sample = [{
+//     fileName: 'ChatGPT Image Mar 30, 2025, 03_19_54 PM',
+//     imageUrl: 'https://res.cloudinary.com/dirj0k8qd/image/upload/v1785216521/ysherrob5lth7ka4adhp.png',
+//     publicId: 'ysherrob5lth7ka4adhp'
+// }, {
+//     fileName: 'ChatGPT Image Mar 30, 2025, 03_19_54 PM',
+//     imageUrl: 'https://res.cloudinary.com/dirj0k8qd/image/upload/v1785216564/nq5ajmvmxc3txnhho73r.png',
+//     publicId: 'nq5ajmvmxc3txnhho73r'
+// }, {
+//     fileName: "Screenshot 2026-07-07 at 4.17.01\u202fPM",
+//     imageUrl: 'https://res.cloudinary.com/dirj0k8qd/image/upload/v1785218176/xnlwfpnpsczvhzbxpf7m.png',
+//     publicId: 'xnlwfpnpsczvhzbxpf7m'
+// }]
 const OnboardingPhotos = () => {
     const router = useRouter();
-    const [photos, setPhotos] = useState<string[]>([]);
+    const [photos, setPhotos] = useState<{ fileName: string, imageUrl: string, publicId: string }[]>([]);
     const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const { onboardingSteps: { formValues } } = useMetromatchStore();
     const { createProfile, isCreateProfileLoading } = useProfileService({});
+    const { uploadImage, isImageUploading } = useCloudnaryService();
 
     const handleAddPhoto = async () => {
         if (photos.length >= 6) {
@@ -40,22 +54,26 @@ const OnboardingPhotos = () => {
         });
 
         if (!result.canceled) {
-            setIsAnalyzing(true);
-            const uri = result.assets[0].uri;
+            // setIsAnalyzing(true);
+            // const uri = result.assets[0].uri;
 
             // Mock API Call for Face and AI Detection
-            setTimeout(() => {
-                setIsAnalyzing(false);
+            // setTimeout(() => {
+            //     setIsAnalyzing(false);
 
-                const random = Math.random();
-                if (random < 0.1) {
-                    Alert.alert("Analysis Failed", "We couldn't detect a clear face in this photo. Please try another one.");
-                } else if (random < 0.2) {
-                    Alert.alert("Analysis Failed", "This image appears to be AI-generated. We only allow authentic photos.");
-                } else {
-                    setPhotos((prev) => [...prev, uri]);
-                }
-            }, 2000);
+            //     const random = Math.random();
+            //     if (random < 0.1) {
+            //         Alert.alert("Analysis Failed", "We couldn't detect a clear face in this photo. Please try another one.");
+            //     } else if (random < 0.2) {
+            //         Alert.alert("Analysis Failed", "This image appears to be AI-generated. We only allow authentic photos.");
+            //     } else {
+            //         setPhotos((prev) => [...prev, uri]);
+            //     }
+            // }, 2000);
+            const imageUrl = await uploadImage(result.assets[0]);
+            if (imageUrl) {
+                setPhotos((prev) => [...prev, imageUrl]);
+            }
         }
     };
 
@@ -79,7 +97,12 @@ const OnboardingPhotos = () => {
             return;
         }
 
-        await createProfile({ payload: formValues })
+        await createProfile({
+            payload: {
+                ...formValues,
+                photos
+            }
+        })
         router.replace('/main/discover');
     };
 
@@ -95,7 +118,7 @@ const OnboardingPhotos = () => {
             </Text>
 
             <PhotoGrid
-                photos={photos}
+                photos={photos?.map?.(photo => photo.imageUrl) || []}
                 onAddPhoto={handleAddPhoto}
                 onRemovePhoto={handleRemovePhoto}
                 onMovePhoto={handleMovePhoto}
@@ -116,10 +139,10 @@ const OnboardingPhotos = () => {
                 />
             </View>
 
-            {isAnalyzing && (
+            {isImageUploading && (
                 <View style={[StyleSheet.absoluteFill, styles.loadingOverlay]}>
                     <ActivityIndicator size="large" color={COLORS.primary} />
-                    <Text style={styles.loadingText}>Analyzing image for faces...</Text>
+                    <Text style={styles.loadingText}>Analyzing image....</Text>
                 </View>
             )}
         </View>

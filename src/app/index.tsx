@@ -14,7 +14,7 @@ export default function HomeScreen() {
   }
   return (
     <View style={{ flex: 1 }}>
-      {isMyProfileLoading ? <SplashScreen message="Fetching your details..." /> : <Redirect href={myProfile?.profile ? "/main/sessions" : "/onboarding/basic_info"} />}
+      {isMyProfileLoading ? <SplashScreen message="Fetching your details..." /> : <Redirect href={myProfile?.profile?.name ? "/main/sessions" : "/onboarding/basic_info"} />}
     </View>
   );
 }

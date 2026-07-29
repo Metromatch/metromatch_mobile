@@ -22,7 +22,7 @@ export const useFormValidation = <T extends Record<string, any>>(
 
     const handleChange = (name: keyof T, value: any) => {
         setValues((prev) => ({ ...prev, [name]: value }));
-        
+
         // Clear error when user starts typing/selecting a new value
         if (errors[name]) {
             setErrors((prev) => ({ ...prev, [name]: undefined }));
@@ -36,7 +36,7 @@ export const useFormValidation = <T extends Record<string, any>>(
         let error = null;
 
         if (rule.required && (value === undefined || value === null || (typeof value === 'string' && value.trim() === ''))) {
-            error = rule.message || 'This field is required';
+            error = rule.message || 'Required';
         } else if (rule.minLength && typeof value === 'string' && value.length < rule.minLength) {
             error = rule.message || `Minimum length is ${rule.minLength}`;
         } else if (rule.maxLength && typeof value === 'string' && value.length > rule.maxLength) {
