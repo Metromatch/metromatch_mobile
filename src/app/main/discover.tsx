@@ -623,7 +623,6 @@ export default function DiscoverScreen() {
 
             <SafeAreaView style={styles.safeArea} edges={['top']}>
                 <ScrollView >
-                    {/* ─── Header ─────────────────────────────────────────── */}
                     <View style={styles.header}>
                         <TouchableOpacity style={styles.headerIcon}>
                             <Ionicons name="menu" size={24} color="white" />
@@ -641,18 +640,9 @@ export default function DiscoverScreen() {
                             <Ionicons name="options-outline" size={24} color="white" />
                         </TouchableOpacity>
                     </View>
-                    {/* <View style={{
-                        justifyContent: 'center',
-                        alignItems: 'center',
-                        paddingVertical: 10,
-                    }}>
-                        
-                        <CountdownTimer targetDate={nextResetTime} />
 
-                    </View> */}
                     <RemainigTimeTab />
 
-                    {/* ─── Card stack area ─────────────────────────────────── */}
                     <View style={styles.cardArea}>
                         {isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating' ? (
                             <View style={styles.loadingContainer}>
@@ -693,7 +683,6 @@ export default function DiscoverScreen() {
                                                 interestedIn: masterlist?.interestedIn?.find((i: any) => i.value === profile.interestedIn)?.label,
                                                 imageUrl: profile.photos?.find((p: any) => p.isPrimary)?.imageUrl ?? ''
                                             }}
-                                            // profile={profile}
                                             onSwipe={handleSwipe}
                                             onPress={() => {
                                                 router.push({
@@ -717,7 +706,6 @@ export default function DiscoverScreen() {
                                                         imageUrl: profile.photos?.filter((photo: any) => !photo.isPrimary)?.map((photo: any) => photo.imageUrl) ?? [],
                                                         primaryImage: profile.photos?.find((photo: any) => photo.isPrimary)?.imageUrl || '',
                                                         bio: profile.bio,
-
                                                     },
                                                 });
                                             }}
@@ -729,7 +717,6 @@ export default function DiscoverScreen() {
                         )}
                     </View>
 
-                    {/* ─── Action buttons ──────────────────────────────────── */}
                     {cardStack.length > 0 && !isDiscoveryLoading && (
                         <ActionButtons
                             disabled={isSwipePending}

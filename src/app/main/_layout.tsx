@@ -10,10 +10,7 @@ export default function MainLayout() {
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       {/* <Chat client={chatClient}> */}
       <Tabs
-        tabBar={(props) => {
-          console.log('props', props)
-          return <CustomTabBar {...props} />
-        }}
+        tabBar={(props) => <CustomTabBar {...props} />}
         screenOptions={{
           headerShown: false,
           headerTransparent: true,

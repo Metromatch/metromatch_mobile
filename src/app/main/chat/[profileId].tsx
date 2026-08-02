@@ -166,210 +166,161 @@
 // });
 
 
-import React, { useEffect, useState, useRef, useCallback } from 'react';
-import {
-  View, Text,
-  StyleSheet,
-  ActivityIndicator,
-  Pressable,
-} from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useLocalSearchParams, router } from 'expo-router';
-import { COLORS, TYPOGRAPHY } from '@/constants/theme';
-import AppContainer from '@/components/shared/layout/app_container';
-import { GiftedChat } from 'react-native-gifted-chat';
-import { Client } from '@twilio/conversations';
-import useProfileService from '@/hooks/services/useProfileService';
-import useChatService from '@/hooks/services/useChatService copy';
-import { AntDesign } from '@expo/vector-icons';
-import { SafeAreaView } from 'react-native-safe-area-context';
+// import React, { useEffect, useState, useRef, useCallback } from 'react';
+// import {
+//   View, Text,
+//   StyleSheet,
+//   ActivityIndicator,
+//   Pressable,
+// } from 'react-native';
 
-export default function ChatRoomScreen() {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [activeConversation, setActiveConversation] = useState<any>(null);
-  const { profileId } = useLocalSearchParams<{ profileId: string }>();
+// import { useLocalSearchParams, router } from 'expo-router';
+// import AppContainer from '@/components/shared/layout/app_container';
+// import { GiftedChat } from 'react-native-gifted-chat';
+// import { Client } from '@twilio/conversations';
+// import useProfileService from '@/hooks/services/useProfileService';
+// import useChatService from '@/hooks/services/useChatService copy';
 
-  const { myProfile, isMyProfileLoading } = useProfileService({ fetchMyProfile: true })
-  const { getTwillioChatToken } = useChatService({});
 
-  // const MY_USER_ID = myProfile?.profile?.id?.slice(-12);
-  // const RECIPIENT_USER_ID = profileId?.slice(-12);
-  const MY_USER_ID = profileId?.slice(-12);
-  const RECIPIENT_USER_ID = myProfile?.profile?.id?.slice(-12);
+// export default function ChatRoomScreen() {
+//   const [messages, setMessages] = useState([]);
+//   const [loading, setLoading] = useState(true);
+//   const [activeConversation, setActiveConversation] = useState<any>(null);
+//   const { profileId } = useLocalSearchParams<{ profileId: string }>();
 
-  useEffect(() => {
-    let twilioClient = null;
+//   const { myProfile, isMyProfileLoading } = useProfileService({ fetchMyProfile: true })
+//   const { getTwillioChatToken } = useChatService({});
 
-    async function startChatPipeline() {
-      try {
-        // 1. Fetch the secure Access Token from your private NestJS Server
-        const data = await getTwillioChatToken({ identity: MY_USER_ID, recipientId: RECIPIENT_USER_ID });
+//   const MY_USER_ID = profileId?.slice(-12);
+//   const RECIPIENT_USER_ID = myProfile?.profile?.id?.slice(-12);
 
-        if (!data.token || !data.conversationSid) {
-          console.error("Initialization metadata missing from backend response.");
-          setLoading(false);
-          return;
-        }
+//   useEffect(() => {
+//     // Don't initialize until both user IDs are resolved
+//     if (!MY_USER_ID || !RECIPIENT_USER_ID) return;
 
-        twilioClient = new Client(data.token);
+//     let twilioClient: any = null;
+//     let isMounted = true;
 
-        // 3. Wait for client to log in successfully
-        twilioClient.on('initialized', async () => {
-          try {
-            // Fetch the conversation safely by its structural Sid provided by NestJS
-            const conversation = await twilioClient.getConversationBySid(data.conversationSid);
-            setActiveConversation(conversation);
+//     async function startChatPipeline() {
+//       try {
+//         // 1. Fetch the secure Access Token from your private NestJS Server
+//         const data = await getTwillioChatToken({ identity: MY_USER_ID, recipientId: RECIPIENT_USER_ID });
 
-            // Fetch chat history
-            const twilioMessagesPage = await conversation.getMessages(30);
-            const formattedHistory = twilioMessagesPage.items.map((msg) => ({
-              _id: msg.sid,
-              text: msg.body,
-              createdAt: msg.dateCreated,
-              user: { _id: msg.author, name: msg.author },
-            })).reverse();
+//         if (!data?.token || !data?.conversationSid) {
+//           console.error("Initialization metadata missing from backend response.");
+//           if (isMounted) setLoading(false);
+//           return;
+//         }
 
-            setMessages(formattedHistory);
-            setLoading(false);
+//         twilioClient = new Client(data.token);
 
-            // Listen for incoming live texts
-            conversation.on('messageAdded', (msg) => {
-              if (msg.author !== MY_USER_ID) {
-                const incomingMsg = {
-                  _id: msg.sid,
-                  text: msg.body,
-                  createdAt: msg.dateCreated,
-                  user: { _id: msg.author, name: msg.author },
-                };
-                setMessages((prev) => GiftedChat.append(prev, [incomingMsg]));
-              }
-            });
+//         // 2. Wait for client to initialize successfully
+//         twilioClient.on('initialized', async () => {
+//           if (!isMounted) return;
+//           try {
+//             const conversation = await twilioClient.getConversationBySid(data.conversationSid);
+//             if (isMounted) setActiveConversation(conversation);
 
-          } catch (roomError) {
-            console.error("Error accessing room via client client instance:", roomError);
-            setLoading(false);
-          }
-        });
+//             // Fetch chat history
+//             const twilioMessagesPage = await conversation.getMessages(30);
+//             const formattedHistory = twilioMessagesPage.items.map((msg: any) => ({
+//               _id: msg.sid,
+//               text: msg.body,
+//               createdAt: msg.dateCreated,
+//               user: { _id: msg.author, name: msg.author },
+//             })).reverse();
 
-        twilioClient.on('initFailed', ({ error }) => {
-          console.error("Twilio system connection engine validation failed:", error);
-          setLoading(false);
-        });
+//             if (isMounted) {
+//               setMessages(formattedHistory);
+//               setLoading(false);
+//             }
 
-      } catch (err) {
-        console.error("Pipeline failure:", err.message);
-        setLoading(false);
-      }
-    }
+//             // Listen for incoming live messages
+//             conversation.on('messageAdded', (msg: any) => {
+//               if (!isMounted || msg.author === MY_USER_ID) return;
+//               const incomingMsg = {
+//                 _id: msg.sid,
+//                 text: msg.body,
+//                 createdAt: msg.dateCreated,
+//                 user: { _id: msg.author, name: msg.author },
+//               };
+//               setMessages((prev: any) => GiftedChat.append(prev, [incomingMsg]));
+//             });
 
-    // Secondary function to build the room once the connection layer is up
-    async function setupChatRoom(clientInstance) {
-      try {
-        const sortedIds = [MY_USER_ID, RECIPIENT_USER_ID].sort();
-        const uniqueRoomName = `room_${sortedIds[0]}_${sortedIds[1]}`;
+//           } catch (roomError) {
+//             console.error("Error accessing room:", roomError);
+//             if (isMounted) setLoading(false);
+//           }
+//         });
 
-        let conversation;
-        try {
-          // Fetch existing room state
-          conversation = await clientInstance.getConversationByUniqueName(uniqueRoomName);
-        } catch {
-          // Build room containers if they are logging in for the first time
-          conversation = await clientInstance.createConversation({ uniqueName: uniqueRoomName });
-          await conversation.join();
-        }
+//         twilioClient.on('initFailed', ({ error }: any) => {
+//           console.error("Twilio client init failed:", error);
+//           if (isMounted) setLoading(false);
+//         });
 
-        // Check if the secondary recipient is present to block 409 Conflicts
-        const participants = await conversation.getParticipants();
-        const isRecipientInRoom = participants.some(p => p.identity === RECIPIENT_USER_ID);
+//       } catch (err: any) {
+//         console.error("Pipeline failure:", err.message);
+//         if (isMounted) setLoading(false);
+//       }
+//     }
 
-        if (!isRecipientInRoom) {
-          try {
-            await conversation.add(RECIPIENT_USER_ID);
-          } catch (e) {
-            console.log("Safe addition fallback bypass:", e.message);
-          }
-        }
+//     startChatPipeline();
 
-        setActiveConversation(conversation);
+//     return () => {
+//       isMounted = false;
+//       if (twilioClient) {
+//         twilioClient.removeAllListeners();
+//       }
+//     };
+//   }, [MY_USER_ID, RECIPIENT_USER_ID]);
 
-        // Fetch logs
-        const twilioMessagesPage = await conversation.getMessages(30);
-        const formattedHistory = twilioMessagesPage.items.map((msg) => ({
-          _id: msg.sid,
-          text: msg.body,
-          createdAt: msg.dateCreated,
-          user: { _id: msg.author, name: msg.author },
-        })).reverse();
+//   const onSend = useCallback(async (newMessages = []) => {
+//     if (!activeConversation) return;
+//     setMessages((prev) => GiftedChat.append(prev, newMessages));
+//     await activeConversation.sendMessage(newMessages[0].text);
+//   }, [activeConversation]);
 
-        setMessages(formattedHistory);
-        setLoading(false);
+//   if (loading || isMyProfileLoading) {
+//     return (
+//       <View style={styles.center}>
+//         <ActivityIndicator size="large" color="#0000ff" />
+//       </View>
+//     );
+//   }
 
-        // Realtime sync updates hook
-        conversation.on('messageAdded', (msg) => {
-          if (msg.author !== MY_USER_ID) {
-            const incomingMsg = {
-              _id: msg.sid,
-              text: msg.body,
-              createdAt: msg.dateCreated,
-              user: { _id: msg.author, name: msg.author },
-            };
-            setMessages((prev) => GiftedChat.append(prev, [incomingMsg]));
-          }
-        });
+//   return (
 
-      } catch (roomError) {
-        console.error("Room generation map crashed:", roomError);
-        setLoading(false);
-      }
-    }
+//     <AppContainer includeBgImage >
+//       <View style={styles.header}>
+//         <Pressable onPress={() => router.back()}>
+//           <Text style={styles.headerText}>Chatting with: {RECIPIENT_USER_ID}</Text>
+//         </Pressable>
+//       </View>
+//       <GiftedChat
+//         messages={messages}
+//         onSend={(msgs) => onSend(msgs)}
+//         user={{ _id: MY_USER_ID, name: MY_USER_ID }}
+//       />
+//       <View style={{ paddingBottom: 100 }} />
+//     </AppContainer>
 
-    startChatPipeline();
+//   );
+// }
 
-    // Clean up instances when unmounting components
-    return () => {
-      if (twilioClient) {
-        twilioClient.removeAllListeners();
-      }
-    };
-  }, []);
+// const styles = StyleSheet.create({
+//   container: { flex: 1, backgroundColor: '#ffffff', paddingBottom: 100 },
+//   center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
+//   header: { padding: 16, backgroundColor: '#f5f5f5', borderBottomWidth: 1, borderBottomColor: '#ddd', alignItems: 'center' },
+//   headerText: { fontWeight: 'bold', fontSize: 16 }
+// });
 
-  const onSend = useCallback(async (newMessages = []) => {
-    if (!activeConversation) return;
-    setMessages((prev) => GiftedChat.append(prev, newMessages));
-    await activeConversation.sendMessage(newMessages[0].text);
-  }, [activeConversation]);
+import React from 'react'
+import { View } from 'react-native'
 
-  if (loading || isMyProfileLoading) {
-    return (
-      <View style={styles.center}>
-        <ActivityIndicator size="large" color="#0000ff" />
-      </View>
-    );
-  }
-
+const CharRoomScreem = () => {
   return (
-
-    <AppContainer includeBgImage >
-      <View style={styles.header}>
-        <Pressable onPress={() => router.back()}>
-          <Text style={styles.headerText}>Chatting with: {RECIPIENT_USER_ID}</Text>
-        </Pressable>
-      </View>
-      <GiftedChat
-        messages={messages}
-        onSend={(msgs) => onSend(msgs)}
-        user={{ _id: MY_USER_ID, name: MY_USER_ID }}
-      />
-      <View style={{ paddingBottom: 100 }} />
-    </AppContainer>
-
-  );
+    <View></View>
+  )
 }
 
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#ffffff', paddingBottom: 100 },
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: { padding: 16, backgroundColor: '#f5f5f5', borderBottomWidth: 1, borderBottomColor: '#ddd', alignItems: 'center' },
-  headerText: { fontWeight: 'bold', fontSize: 16 }
-});
+export default CharRoomScreem

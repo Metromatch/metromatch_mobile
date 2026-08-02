@@ -187,7 +187,8 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
                 {/* Tab row */}
                 <View style={styles.tabRow}>
                     {visibleRoutes.map((route) => {
-                        const isFocused = state.index === state.routes.indexOf(route);
+                        const routeIndex = state.routes.findIndex((r) => r.key === route.key);
+                        const isFocused = state.index === routeIndex;
 
                         const onPress = () => {
                             const event = navigation.emit({
