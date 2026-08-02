@@ -20,10 +20,10 @@ const Preference = ({ preference }: { preference: any }) => {
                 title='My Preferences'
                 list={[
                     { title: 'Interested In', value: preference?.interestedIn },
-                    { title: 'Age Range', value: preference?.minAge + '-' + preference?.maxAge },
-                    { title: 'Height Range', value: preference?.minHeight + '-' + preference?.maxHeight },
-                    { title: 'Religion', value: preference?.religion },
-                    { title: 'Diet', value: preference?.diet },
+                    { title: 'Age Range', value: preference?.prefMinAge + '-' + preference?.prefMaxAge },
+                    { title: 'Height Range', value: preference?.prefMinHeight + '-' + preference?.prefMaxHeight },
+                    { title: 'Religion', value: preference?.prefReligion },
+                    { title: 'Diet', value: preference?.prefDiet },
                 ]}
             />
 

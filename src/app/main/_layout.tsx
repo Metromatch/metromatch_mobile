@@ -1,109 +1,22 @@
 import { Tabs } from 'expo-router';
-import React, { useEffect } from 'react';
-import { COLORS } from '@/constants/theme';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { Platform, View, Text, StyleSheet, ColorValue } from 'react-native';
-// import { OverlayProvider, Chat } from 'stream-chat-expo';
-import { chatClient } from '@/utils/stream';
+import React from 'react';
+import { View } from 'react-native';
+import CustomTabBar from '@/components/navigation/CustomTabBar';
 
-
-export async function connectChatUser(user: {
-  profileId: string;
-  name: string;
-  image?: string;
-  token: string;
-}) {
-  if (chatClient.userID === user.profileId) {
-    return;
-  }
-
-  if (chatClient.userID) {
-    await chatClient.disconnectUser();
-  }
-
-  await chatClient.connectUser(
-    {
-      id: user.profileId,
-      name: user.name,
-      image: user.image,
-    },
-    user.token,
-  );
-}
-
-function TabIcon({
-  name,
-  focused,
-  color,
-  badge,
-}: {
-  name: keyof typeof Ionicons.glyphMap;
-  focused: boolean;
-  color: ColorValue;
-  badge?: number;
-}) {
-  return (
-    <View>
-      <Ionicons name={name} size={24} color={color} />
-      {badge != null && badge > 0 && (
-        <View style={badgeStyles.badge}>
-          <Text style={badgeStyles.badgeText}>{badge > 99 ? '99+' : badge}</Text>
-        </View>
-      )}
-    </View>
-  );
-}
-
-const badgeStyles = StyleSheet.create({
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#FF4458',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: {
-    color: 'white',
-    fontSize: 9,
-    fontFamily: 'Poppins_700Bold',
-    lineHeight: 14,
-  },
-});
 
 export default function MainLayout() {
-  useEffect(() => {
-    // connectChatUser(profileId, )
-  }, [])
   return (
     // <OverlayProvider>
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       {/* <Chat client={chatClient}> */}
       <Tabs
+        tabBar={(props) => {
+          console.log('props', props)
+          return <CustomTabBar {...props} />
+        }}
         screenOptions={{
           headerShown: false,
-          tabBarActiveTintColor: COLORS.primary,
-          tabBarInactiveTintColor: 'rgba(255,255,255,0.55)',
           headerTransparent: true,
-
-          tabBarStyle: {
-            // position: 'absolute',
-            backgroundColor: 'transparent',
-            borderTopWidth: 1,
-            borderTopColor: 'rgba(255,255,255,0.12)',
-            height: Platform.OS === 'ios' ? 85 : 65,
-            paddingBottom: Platform.OS === 'ios' ? 25 : 10,
-            paddingTop: 10,
-          },
-          tabBarLabelStyle: {
-            fontFamily: 'Poppins_500Medium',
-            fontSize: 10,
-            marginTop: 2,
-          },
         }}
       >
         <Tabs.Screen
@@ -111,79 +24,29 @@ export default function MainLayout() {
           options={{ href: null }}
         />
 
-        {/* Discover — main swipe screen */}
         <Tabs.Screen
           name="discover"
-          options={{
-            title: 'Discover',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                name={focused ? 'heart' : 'heart-outline'}
-                focused={focused}
-                color={color}
-              />
-            ),
-          }}
+          options={{ title: 'Discover' }}
         />
 
         <Tabs.Screen
           name="messages"
-          options={{
-            title: 'Messages',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                name={focused ? 'chatbubble-ellipses' : 'chatbubble-ellipses-outline'}
-                focused={focused}
-                color={color}
-              />
-            ),
-          }}
+          options={{ title: 'Messages' }}
         />
 
-        {/* Matches */}
         <Tabs.Screen
           name="matches"
-          options={{
-            title: 'Matches',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                name={focused ? 'star' : 'star-outline'}
-                focused={focused}
-                color={color}
-              />
-            ),
-          }}
+          options={{ title: 'Matches' }}
         />
 
-        {/* Sessions / Likes */}
         <Tabs.Screen
           name="sessions"
-          options={{
-            title: 'Likes',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                name={focused ? 'heart-circle' : 'heart-circle-outline'}
-                focused={focused}
-                color={color}
-                badge={12}
-              />
-            ),
-          }}
+          options={{ title: 'Likes' }}
         />
 
-        {/* Profile */}
         <Tabs.Screen
           name="profile"
-          options={{
-            title: 'Profile',
-            tabBarIcon: ({ color, focused }) => (
-              <TabIcon
-                name={focused ? 'person' : 'person-outline'}
-                focused={focused}
-                color={color}
-              />
-            ),
-          }}
+          options={{ title: 'Profile' }}
         />
 
         <Tabs.Screen
@@ -193,7 +56,7 @@ export default function MainLayout() {
 
         {/* Chat room — hidden from tab bar, navigated to from messages */}
         <Tabs.Screen
-          name="chat/[matchId]"
+          name="chat/[profileId]"
           options={{ href: null }}
         />
 

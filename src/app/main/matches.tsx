@@ -28,17 +28,23 @@ dayjs.extend(relativeTime);
 interface MatchItem {
   id: string,
   profileId: string,
-  name: string,
-  photoUrl?: string,
-  profession?: string,
   matchedAt: string,
+  profile: {
+    id: string,
+    name: string,
+    dob?: string,
+    gender?: string,
+    profession?: string,
+    photos?: string[],
+  },
+  photoUrl?: string,
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getInitials(name: string): string {
   return name
-    .split(' ')
+    ?.split(' ')
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase() ?? '')
     .join('');
@@ -86,10 +92,9 @@ function MatchCard({
     Animated.spring(scale, { toValue: 0.97, useNativeDriver: true }).start();
   const handlePressOut = () =>
     Animated.spring(scale, { toValue: 1, useNativeDriver: true }).start();
-
-  const name = item.name;
-  const photoUrl = item.photoUrl;
-  const profession = item.profession;
+  const name = item.profile.name;
+  const photoUrl = item.profile.photos?.[0] ?? item?.photoUrl;
+  const profession = item.profile.profession;
   const time = formatTime(item.matchedAt);
 
   const handleUnmatch = () => {
@@ -119,7 +124,7 @@ function MatchCard({
             style={styles.avatarRing}
           >
             <View style={styles.avatarInner}>
-              <Avatar uri={photoUrl} name={name} size={62} />
+              <Avatar uri={photoUrl || ''} name={name} size={62} />
             </View>
           </LinearGradient>
         </View>
@@ -231,7 +236,7 @@ export default function MatchesScreen() {
       // error toast is handled by http interceptor
     }
   };
-  console.log('matches', matches)
+  // console.log('matches', matches)
   return (
     <LinearGradient
       colors={[COLORS.backgroundStart, COLORS.backgroundMiddle, COLORS.backgroundEnd]}

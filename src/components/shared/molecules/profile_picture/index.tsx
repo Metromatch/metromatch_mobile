@@ -19,6 +19,7 @@ const ProfilePicture = ({
         return (
             <Image
                 source={{ uri: imageUri }}
+                // resizeMode="cover"
                 style={[styles.avatar, { height: size, width: size, borderRadius: size / 2 }]}
             />
         )

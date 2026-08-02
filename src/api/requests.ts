@@ -65,6 +65,8 @@ export const Chat = {
     http.get(CHAT_API.MESSAGES(matchId), { params }),
   sendMessage: (matchId: string, body: string) =>
     http.post(CHAT_API.MESSAGES(matchId), { body }),
+
+  getTwilioToken: REQUEST_TEMPLATES(CHAT_API.TWILIO_TOKEN).read
 };
 
 export const Favorites = {

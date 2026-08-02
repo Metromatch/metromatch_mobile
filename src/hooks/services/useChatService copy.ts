@@ -16,10 +16,25 @@ const useChatService = ({
         },
     });
 
+    const {
+        mutateAsync: getTwillioChatToken,
+        isPending: isTwillioChatTokenLoading,
+        data: twillioChatToken,
+    } = useMutation({
+        mutationFn: async ({ identity, recipientId }: { identity: string; recipientId: string }) => {
+            const res = await Chat.getTwilioToken('', { identity, recipientId })
+            return res.data.data
+        },
+    });
+
     return {
         getChatToken,
         chatToken,
         isChatTokenLoading,
+
+        getTwillioChatToken,
+        twillioChatToken,
+        isTwillioChatTokenLoading,
     }
 }
 

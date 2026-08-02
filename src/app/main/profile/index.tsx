@@ -192,7 +192,7 @@ export default function ProfileScreen() {
     );
 
     return (
-        <AppContainer>
+        <AppContainer includeBgImage>
 
             <Animated.ScrollView
                 style={styles.scrollView}
@@ -211,7 +211,7 @@ export default function ProfileScreen() {
                         dob={profile?.dob}
                         profession={profile?.profession}
                         gender={profile?.gender}
-                        profilePicture={profile?.profilePicture}
+                        profilePicture={myProfile?.photos?.[0]?.imageUrl}
                         photoCount={photos.length}
                         completionScore={score}
                         isEditing={isEditing}
@@ -328,6 +328,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingHorizontal: responsiveSize(20),
         marginTop: responsiveSize(16),
+        paddingBottom: responsiveSize(60)
     },
 
 

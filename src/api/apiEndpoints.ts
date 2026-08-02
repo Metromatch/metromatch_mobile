@@ -53,6 +53,7 @@ export const CHAT_API = {
   CREATE_TOKEN: `${CHAT}/create-chat-token`,
   CONVERSATION: (matchId: string) => `${CHAT}/matches/${matchId}/conversation`,
   MESSAGES: (matchId: string) => `${CHAT}/matches/${matchId}/messages`,
+  TWILIO_TOKEN: `${CHAT}/twilliotoken`,
 };
 
 export const FAVORITES_API = {
