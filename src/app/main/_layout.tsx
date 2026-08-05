@@ -37,8 +37,8 @@ export default function MainLayout() {
         />
 
         <Tabs.Screen
-          name="sessions"
-          options={{ title: 'Likes' }}
+          name="map"
+          options={{ title: 'Map' }}
         />
 
         <Tabs.Screen

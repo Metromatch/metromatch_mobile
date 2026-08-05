@@ -2,12 +2,15 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { COLORS } from '@/constants/theme';
+import AppContainer from '@/components/shared/layout/app_container';
 
 export default function MapsScreen() {
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Maps</Text>
-    </SafeAreaView>
+    <AppContainer includeBgImage>
+      <SafeAreaView>
+        <Text style={styles.title}>Maps</Text>
+      </SafeAreaView>
+    </AppContainer>
   );
 }
 

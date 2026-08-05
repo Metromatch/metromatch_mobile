@@ -8,7 +8,7 @@ import {
     Platform,
     Dimensions,
 } from 'react-native';
-import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
+// import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
@@ -43,8 +43,8 @@ const TAB_CONFIG: Record<
         icon: 'star-outline',
         activeIcon: 'star',
     },
-    sessions: {
-        label: 'Likes',
+    map: {
+        label: 'Map',
         icon: 'heart-circle-outline',
         activeIcon: 'heart-circle',
         badge: 12,
@@ -159,11 +159,11 @@ function TabItem({
 
 // ─── Custom Tab Bar ───────────────────────────────────────────────────────────
 
-export default function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+export default function CustomTabBar({ state, descriptors, navigation }: any) {
     const insets = useSafeAreaInsets();
 
     // Only render visible tabs (those in TAB_CONFIG)
-    const visibleRoutes = state.routes.filter((r) => TAB_CONFIG[r.name]);
+    const visibleRoutes = state.routes.filter((r: any) => TAB_CONFIG[r.name]);
 
     return (
         <View
@@ -186,8 +186,8 @@ export default function CustomTabBar({ state, descriptors, navigation }: BottomT
 
                 {/* Tab row */}
                 <View style={styles.tabRow}>
-                    {visibleRoutes.map((route) => {
-                        const routeIndex = state.routes.findIndex((r) => r.key === route.key);
+                    {visibleRoutes.map((route: any) => {
+                        const routeIndex = state.routes.findIndex((r: any) => r.key === route.key);
                         const isFocused = state.index === routeIndex;
 
                         const onPress = () => {
