@@ -22,9 +22,9 @@ import useDiscoverService, { NearbyProfile, SwipeType } from '@/hooks/services/u
 import useFavoriteService from '@/hooks/services/useFavoriteService';
 import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 import AppContainer from '@/components/shared/layout/app_container';
-import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card';
-import CountdownTimer from '@/components/general/atoms/countdown_timer';
 import RemainigTimeTab from '@/components/shared/organisms/remaining_time_tab';
+import PreferenceFilter from '@/components/shared/templates/preference_filter';
+import useProfileService from '@/hooks/services/useProfileService';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -472,6 +472,8 @@ function ActionButtons({
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function DiscoverScreen() {
+    const [showFilter, setShowFilter] = useState(false)
+    const [activeFilter, setActiveFilter] = useState({});
     const {
         nearbyProfiles,
         isDiscoveryLoading,
@@ -480,16 +482,18 @@ export default function DiscoverScreen() {
         locationStatus,
         swipe,
         isSwipePending,
-    } = useDiscoverService({ radius: 1000, limit: 20 });
+    } = useDiscoverService({ radius: 1000, limit: 20, filters: activeFilter });
 
     const [cardStack, setCardStack] = useState<NearbyProfile[]>([]);
     const [matchedProfile, setMatchedProfile] = useState<NearbyProfile | null>(null);
     const [showMatch, setShowMatch] = useState(false);
-    const [activeFilter, setActiveFilter] = useState<'Nearby' | 'New' | 'Premium'>('Nearby');
+
     const stackDepletedFetch = useRef(false);
 
     const { markFavorite } = useFavoriteService({});
     const { masterlist } = useMasterListQuery();
+
+    const { myProfile } = useProfileService({})
 
     React.useEffect(() => {
         if ((nearbyProfiles?.length || 0) > 0) {
@@ -613,7 +617,25 @@ export default function DiscoverScreen() {
         );
     };
 
-    // console.log('masterlist', masterlist)
+    const setDefaultFilters = () => {
+        const pref = myProfile?.preferences
+        if (!pref) return;
+        setActiveFilter({
+            prefMinAge: String(pref.prefMinAge),
+            prefMaxAge: String(pref.prefMaxAge),
+            prefMinHeight: pref.prefMinHeight,
+            prefMaxHeight: pref.prefMaxHeight,
+            prefReligion: pref.prefReligion,
+            prefDiet: pref.prefDiet,
+            prefDrinkingHabits: pref.drinkingHabits,
+            prefSmokingHabits: pref.smokingHabits
+        })
+    }
+
+    React.useEffect(() => {
+        if (!myProfile) return;
+        setDefaultFilters()
+    }, [myProfile]);
 
     return (
         <AppContainer includeBgImage>
@@ -636,7 +658,7 @@ export default function DiscoverScreen() {
                             />
                         </View>
 
-                        <TouchableOpacity style={styles.headerIcon}>
+                        <TouchableOpacity style={styles.headerIcon} onPress={() => setShowFilter(true)}>
                             <Ionicons name="options-outline" size={24} color="white" />
                         </TouchableOpacity>
                     </View>
@@ -735,6 +757,21 @@ export default function DiscoverScreen() {
                 onClose={() => setShowMatch(false)}
             />
 
+            {showFilter && (
+                <PreferenceFilter
+                    onClose={setShowFilter}
+                    onApply={(values) => {
+                        setActiveFilter(values);
+                        setShowFilter(false);
+                    }}
+                    onReset={() => {
+                        setDefaultFilters();
+                        setShowFilter(false);
+                    }}
+                    selectedFilters={activeFilter}
+                />
+            )}
+
             {/* </View> */}
         </AppContainer>
     );
@@ -823,7 +860,7 @@ const styles = StyleSheet.create({
     card: {
         position: 'absolute',
         width: CARD_WIDTH,
-        top: 100,
+        top: 40,
         height: CARD_WIDTH * 4 / 3,
         borderRadius: 24,
         overflow: 'hidden',
@@ -1021,7 +1058,7 @@ const styles = StyleSheet.create({
     },
     actionBtn: {
         position: 'relative',
-        top: 100 + CARD_WIDTH * 4 / 3,
+        top: 40 + CARD_WIDTH * 4 / 3,
         borderRadius: 50,
         justifyContent: 'center',
         alignItems: 'center',

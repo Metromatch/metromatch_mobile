@@ -114,115 +114,109 @@ export default function ProfileDetailScreen() {
     }
     const imageUrls = params?.imageUrl?.split?.(',') || []
     return (
-        <View style={styles.root}>
-            <LinearGradient
-                colors={[COLORS.backgroundStart, COLORS.backgroundMiddle, COLORS.backgroundEnd]}
-                style={StyleSheet.absoluteFill}
-            />
 
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={styles.scroll}
-                bounces
-            >
-                {/* ───────────────── HERO PHOTO ───────────────── */}
-                <View style={styles.heroWrap}>
-                    {params.imageUrl ? (
-                        <Image
-                            source={{ uri: params.primaryImage }}
-                            style={styles.heroPhoto}
-                            resizeMode="cover"
-                        />
-                    ) : (
-                        <LinearGradient colors={['#1A42D9', '#5C7BFF']} style={styles.heroPhoto}>
-                            <Ionicons name="person" size={90} color="rgba(255,255,255,0.25)" />
-                        </LinearGradient>
-                    )}
+        <ScrollView
+            style={{ flex: 1 }}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scroll}
+        >
 
-                    {/* Deep gradient fade at bottom of photo */}
-                    <LinearGradient
-                        colors={['transparent', 'rgba(7,22,80,0.6)', COLORS.backgroundStart]}
-                        style={styles.heroFade}
-                    />
-
-                    {/* Floating close button */}
-                    <SafeAreaView edges={['top']} style={styles.heroTopBar}>
-                        <TouchableOpacity style={styles.floatBtn} onPress={() => router.back()} hitSlop={10}>
-                            <Ionicons name="close" size={20} color="white" />
-                        </TouchableOpacity>
-                        {params.distanceMeters ? (
-                            <View style={styles.distancePill}>
-                                <Ionicons name="location-outline" size={12} color={COLORS.primaryLight} />
-                                <Text style={styles.distancePillText}>
-                                    {fmtDistance(Number(params.distanceMeters))} away
-                                </Text>
-                            </View>
-                        ) : <View />}
-                    </SafeAreaView>
-
-                    {/* Name / age / verified overlaid at photo bottom */}
-                    <View style={styles.heroNameRow}>
-                        <H3 type="bold" text={params.name} textColor='white' />
-                        <H4 type="semibold" text={`, ${age}`} textColor='white' />
-                        <View style={styles.verifiedBadge}>
-                            <Ionicons name="checkmark" size={11} color="white" />
-                        </View>
-                    </View>
-                </View>
-
-                <View style={styles.bioContainer}>
-                    <B2 type="semibold" text="ABOUT ME" textColor='rgba(255,255,255,0.4)' />
-                    <B2 type="regular" text={params.bio} textColor='white' />
-                </View>
-                {/* ───────────────── PILL BADGES ───────────────── */}
-                <View style={styles.pillRow}>
-                    {params.height ? (
-                        <View style={styles.pill}>
-                            <Ionicons name="body-outline" size={13} color={COLORS.primaryLight} />
-                            <Text style={styles.pillText}>{params.height}</Text>
-                        </View>
-                    ) : null}
-                    {params.relationshipPreference ? (
-                        <View style={styles.pill}>
-                            <Ionicons name="heart-outline" size={13} color={COLORS.primaryLight} />
-                            <Text style={styles.pillText}>{params.relationshipPreference}</Text>
-                        </View>
-                    ) : null}
-                    {params.gender ? (
-                        <View style={styles.pill}>
-                            <Ionicons name="person-outline" size={13} color={COLORS.primaryLight} />
-                            <Text style={styles.pillText}>{params.gender}</Text>
-                        </View>
-                    ) : null}
-                </View>
-                {/* //grid style */}
-                <View style={[styles.bioContainer, { gap: responsiveSize(4) }]}>
-                    <View style={{ flexDirection: 'row', gap: responsiveSize(16) }}>
-                        <InfoBox label='Profession' value={params.profession || ''} icon='briefcase' />
-                        <InfoBox label='Diet' value={params.diet || ''} icon='diet' />
-                    </View>
-                    <View style={{ flexDirection: 'row', gap: responsiveSize(16) }}>
-                        <InfoBox label='Smoking' value={params.smokingHabits || ''} icon='smoking' />
-                        <InfoBox label='Drinking' value={params.drinkingHabits || ''} icon='drinking' />
-                    </View>
-                    <View style={{ flexDirection: 'row', gap: responsiveSize(16) }}>
-                        <InfoBox label='Metro' value={params.travelTimeSlots ? JSON.parse(params.travelTimeSlots)[0] : '-'} icon='metro' />
-                        <InfoBox label='Commute' value={params.travelTimeSlots ? JSON.parse(params.travelTimeSlots)[1] : '-'} icon='commute' />
-                    </View>
-
-                </View>
-                {imageUrls?.map((image) => (
+            <View style={styles.heroWrap}>
+                {params.imageUrl ? (
                     <Image
-                        source={{ uri: image }}
+                        source={{ uri: params.primaryImage }}
                         style={styles.heroPhoto}
                         resizeMode="cover"
                     />
-                ))}
+                ) : (
+                    <LinearGradient colors={['#1A42D9', '#5C7BFF']} style={styles.heroPhoto}>
+                        <Ionicons name="person" size={90} color="rgba(255,255,255,0.25)" />
+                    </LinearGradient>
+                )}
 
-            </ScrollView>
+                {/* Deep gradient fade at bottom of photo */}
+                <LinearGradient
+                    colors={['transparent', 'rgba(7,22,80,0.6)', COLORS.backgroundStart]}
+                    style={styles.heroFade}
+                />
 
-            {/* ───────────────── BOTTOM ACTION BAR ───────────────── */}
-        </View>
+                {/* Floating close button */}
+                <SafeAreaView edges={['top']} style={styles.heroTopBar}>
+                    <TouchableOpacity style={styles.floatBtn} onPress={() => router.back()} hitSlop={10}>
+                        <Ionicons name="close" size={20} color="white" />
+                    </TouchableOpacity>
+                    {params.distanceMeters ? (
+                        <View style={styles.distancePill}>
+                            <Ionicons name="location-outline" size={12} color={COLORS.primaryLight} />
+                            <Text style={styles.distancePillText}>
+                                {fmtDistance(Number(params.distanceMeters))} away
+                            </Text>
+                        </View>
+                    ) : <View />}
+                </SafeAreaView>
+
+                {/* Name / age / verified overlaid at photo bottom */}
+                <View style={styles.heroNameRow}>
+                    <H3 type="bold" text={params.name} textColor='white' />
+                    <H4 type="semibold" text={`, ${age}`} textColor='white' />
+                    <View style={styles.verifiedBadge}>
+                        <Ionicons name="checkmark" size={11} color="white" />
+                    </View>
+                </View>
+            </View>
+
+            <View style={styles.bioContainer}>
+                <B2 type="semibold" text="ABOUT ME" textColor='rgba(255,255,255,0.4)' />
+                <B2 type="regular" text={params.bio} textColor='white' />
+            </View>
+
+            {/* ───────────────── PILL BADGES ───────────────── */}
+            <View style={styles.pillRow}>
+                {params.height ? (
+                    <View style={styles.pill}>
+                        <Ionicons name="body-outline" size={13} color={COLORS.primaryLight} />
+                        <Text style={styles.pillText}>{params.height}</Text>
+                    </View>
+                ) : null}
+                {params.relationshipPreference ? (
+                    <View style={styles.pill}>
+                        <Ionicons name="heart-outline" size={13} color={COLORS.primaryLight} />
+                        <Text style={styles.pillText}>{params.relationshipPreference}</Text>
+                    </View>
+                ) : null}
+                {params.gender ? (
+                    <View style={styles.pill}>
+                        <Ionicons name="person-outline" size={13} color={COLORS.primaryLight} />
+                        <Text style={styles.pillText}>{params.gender}</Text>
+                    </View>
+                ) : null}
+            </View>
+
+            <View style={[styles.bioContainer, { gap: responsiveSize(4) }]}>
+                <View style={{ flexDirection: 'row', gap: responsiveSize(16) }}>
+                    <InfoBox label='Profession' value={params.profession || ''} icon='briefcase' />
+                    <InfoBox label='Diet' value={params.diet || ''} icon='diet' />
+                </View>
+                <View style={{ flexDirection: 'row', gap: responsiveSize(16) }}>
+                    <InfoBox label='Smoking' value={params.smokingHabits || ''} icon='smoking' />
+                    <InfoBox label='Drinking' value={params.drinkingHabits || ''} icon='drinking' />
+                </View>
+                <View style={{ flexDirection: 'row', gap: responsiveSize(16) }}>
+                    <InfoBox label='Metro' value={params.travelTimeSlots ? JSON.parse(params.travelTimeSlots)[0] : '-'} icon='metro' />
+                    <InfoBox label='Commute' value={params.travelTimeSlots ? JSON.parse(params.travelTimeSlots)[1] : '-'} icon='commute' />
+                </View>
+
+            </View>
+            {imageUrls?.map((image) => (
+                <Image
+                    source={{ uri: image }}
+                    style={styles.heroPhoto}
+                    resizeMode="cover"
+                />
+            ))}
+
+        </ScrollView>
+
     );
 }
 
@@ -233,7 +227,7 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     scroll: {
-        paddingBottom: 0,
+        paddingBottom: 40,
     },
 
     // ── Hero photo ──────────────────────────────────────────────────

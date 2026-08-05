@@ -33,7 +33,8 @@ export const Profiles = {
 }
 
 export const Discovery = {
-  getNearby: (params = {}) => http.get(DISCOVERY_API.DISCOVER, { params }),
+  // getNearby: (params = {}) => http.get(DISCOVERY_API.DISCOVER, { params }),
+  getNearby: REQUEST_TEMPLATES(DISCOVERY_API.DISCOVER).create,
 };
 
 export const Swipes = {

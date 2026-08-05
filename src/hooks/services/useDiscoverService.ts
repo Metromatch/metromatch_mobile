@@ -38,9 +38,20 @@ export type LocationStatus =
 const useDiscoverService = ({
     radius = 1000,
     limit = 20,
+    filters,
 }: {
     radius?: number;
     limit?: number;
+    filters?: {
+        prefMinAge?: string;
+        prefMaxAge?: string;
+        prefMinHeight?: string;
+        prefMaxHeight?: string;
+        prefReligion?: string;
+        prefDiet?: string;
+        prefDrinkingHabits?: string;
+        prefSmokingHabits?: string;
+    }
 } = {}) => {
     const queryClient = useQueryClient();
     const [locationStatus, setLocationStatus] = useState<LocationStatus>('idle');
@@ -97,9 +108,9 @@ const useDiscoverService = ({
         isRefetching: isRefetchingDiscovery,
         error: discoveryError,
     } = useQuery<NearbyProfile[]>({
-        queryKey: ['discovery', radius, limit],
+        queryKey: ['discovery', radius, limit, filters],
         queryFn: async () => {
-            const res = await Discovery.getNearby({ radius, limit });
+            const res = await Discovery.getNearby('', { filters }, { radius, limit });
             return res.data?.data ?? [];
         },
         enabled: locationReady,

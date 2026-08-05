@@ -7,6 +7,7 @@ import {
     Animated,
     Dimensions,
     Alert,
+    Image,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,16 +30,12 @@ const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Completion Progress ──────────────────────────────────────────────────────
 function getCompletionScore(profile: any): { score: number; items: { label: string; done: boolean }[] } {
+    console.log('profile', profile)
     const items = [
-        { label: 'Name', done: !!profile?.name },
-        { label: 'Date of Birth', done: !!profile?.dob },
-        { label: 'Gender', done: !!profile?.gender },
-        { label: 'Bio', done: !!profile?.bio },
-        { label: 'Profession', done: !!profile?.profession },
-        { label: 'Height', done: !!profile?.height },
-        { label: 'Religion', done: !!profile?.religion },
-        { label: 'Diet', done: !!profile?.diet },
-        { label: 'Photos', done: !!profile?.photos?.length },
+        { label: 'Basic Info', done: true },
+        { label: 'About Me', done: true },
+        { label: 'Lifestyle', done: !!profile.height && !!profile.religion && !!profile.diet && !!profile.drinkingHabits && !!profile.smokingHabits },
+        { label: 'Photos', done: true },
     ];
     const done = items.filter((i) => i.done).length;
     return { score: Math.round((done / items.length) * 100), items };
@@ -64,19 +61,22 @@ function PhotoCard({ uri, onRemove, isEditing }: {
 }) {
     return (
         <View style={styles.photoCard}>
-            <LinearGradient
+            {uri ? <Image
+                source={{ uri }}
+                style={styles.photoCard}
+            /> : <LinearGradient
                 colors={['#1A42D9', '#5C7BFF']}
                 style={styles.photoGradient}
             >
                 <Ionicons name="image-outline" size={28} color="rgba(255,255,255,0.5)" />
-            </LinearGradient>
-            {isEditing && (
+            </LinearGradient>}
+            {/* {isEditing && (
                 <TouchableOpacity style={styles.photoRemoveBtn} onPress={onRemove} activeOpacity={0.8}>
                     <View style={styles.photoRemoveBg}>
                         <Ionicons name="close" size={12} color="white" />
                     </View>
                 </TouchableOpacity>
-            )}
+            )} */}
         </View>
     );
 }
@@ -121,6 +121,9 @@ export default function ProfileScreen() {
         extrapolate: 'clamp',
     });
 
+
+    console.log('photos', photos)
+
     const handleLogout = () => {
         logout()
         Alert.alert(
@@ -136,6 +139,7 @@ export default function ProfileScreen() {
             ]
         );
     };
+
     // ─── Photos Section ───────────────────────────────────────────────────────
     const renderPhotos = () => (
         <View style={styles.section}>
@@ -149,10 +153,10 @@ export default function ProfileScreen() {
                     </View>
                 )}
                 <View style={styles.photosGrid}>
-                    {photos.map((uri, i) => (
+                    {photos.map((photo, i) => (
                         <PhotoCard
                             key={i}
-                            uri={uri}
+                            uri={photo.imageUrl}
                             isEditing={isEditing}
                             onRemove={() =>
                                 Alert.alert('Remove Photo', 'Remove this photo from your profile?', [
@@ -226,7 +230,7 @@ export default function ProfileScreen() {
                     />
 
                     {activeSection === 'about' && <About profile={profile} />}
-                    {activeSection === 'preferences' && <Preference preference={preferences} />}
+                    {activeSection === 'preferences' && <Preference profile={profile} preference={preferences} />}
                     {activeSection === 'photos' && renderPhotos()}
 
                     {/* ─── Subscription Button ──────────────────────── */}

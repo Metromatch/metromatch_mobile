@@ -1,4 +1,5 @@
 import InfoBox from '@/components/general/molecules/info_box'
+import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 import dayjs from 'dayjs';
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
@@ -8,7 +9,11 @@ function formatDob(dob: string | null): string {
     return dayjs(dob).format('DD MMM YYYY');
 }
 
+
 const About = ({ profile }: { profile: any }) => {
+    const { masterlist } = useMasterListQuery();
+
+    const getLabel = (type: string, value: string) => masterlist?.[type]?.find((item: any) => item.value === value)?.label || '—'
     return (
         <View style={styles.section}>
             <InfoBox
@@ -18,8 +23,8 @@ const About = ({ profile }: { profile: any }) => {
                     { title: 'Full Name', value: profile?.name || '—' },
                     { title: 'Date of Birth', value: formatDob(profile?.dob) || '—' },
                     { title: 'Gender', value: profile?.gender || '—' },
-                    { title: 'Email', value: profile?.email || '—' },
-                    { title: 'Phone Number', value: profile?.phone || '—' },
+                    // { title: 'Email', value: profile?.email || '—' },
+                    // { title: 'Phone Number', value: profile?.phone || '—' },
                 ]}
             />
 
@@ -36,11 +41,11 @@ const About = ({ profile }: { profile: any }) => {
                 icon='sparkles-outline'
                 list={[
                     { title: 'Profession', value: profile?.profession || '—' },
-                    { title: 'Height', value: profile?.height || '—' },
-                    { title: 'Religion', value: profile?.religion || '—' },
-                    { title: 'Diet', value: profile?.diet || '—' },
-                    { title: 'Smoking', value: profile?.smoking || '—' },
-                    { title: 'Drinking', value: profile?.drinking || '—' },
+                    { title: 'Height', value: getLabel('height', profile?.height) },
+                    { title: 'Religion', value: getLabel('religion', profile?.religion) },
+                    { title: 'Diet', value: getLabel('diet', profile?.diet) },
+                    { title: 'Smoking', value: getLabel('smokingHabits', profile?.smokingHabits) },
+                    { title: 'Drinking', value: getLabel('drinkingHabits', profile?.drinkingHabits) },
                 ]}
             />
         </View>

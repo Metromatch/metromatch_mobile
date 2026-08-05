@@ -52,9 +52,9 @@ const BottomSheet = ({
                                 </View>
                             )}
 
-                            <View style={styles.content}>
-                                {children}
-                            </View>
+                            {/* <View style={styles.content}> */}
+                            {children}
+                            {/* </View> */}
                         </View>
                     </TouchableWithoutFeedback>
                 </TouchableOpacity>
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
         borderRadius: responsiveSize(30),
         paddingHorizontal: responsiveSize(24),
         marginHorizontal: responsiveSize(12),
-        paddingBottom: responsiveSize(40),
+        paddingBottom: responsiveSize(20),
         maxHeight: '85%',
     },
     dragHandleContainer: {
@@ -116,6 +116,9 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     content: {
+        flex: 1
+        // width: Dimensions.get('screen').width - responsiveSize(10),
+        // overflow: 'hidden'
         // Can add padding or styling for children here if needed
     }
 });

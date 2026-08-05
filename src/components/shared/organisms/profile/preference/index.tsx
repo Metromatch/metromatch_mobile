@@ -1,9 +1,26 @@
 import InfoBox from '@/components/general/molecules/info_box'
+import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 
-const Preference = ({ preference }: { preference: any }) => {
-    console.log(preference);
+const Preference = ({ preference, profile }: { preference: any, profile: any }) => {
+    const { masterlist } = useMasterListQuery();
+
+    const getLabel = (type: string, value: string) => masterlist?.[type]?.find((item: any) => item.value === value)?.label || '—'
+
+    const getHeightRange = () => {
+        if (!preference?.prefMinHeight && !preference?.prefMaxHeight) {
+            return '—'
+        }
+        if (preference?.prefMinHeight && !preference?.prefMaxHeight) {
+            return getLabel('height', preference?.prefMinHeight) + '+'
+        }
+        if (preference?.prefMaxHeight && !preference?.prefMinHeight) {
+            return 'Upto ' + getLabel('height', preference?.prefMaxHeight)
+        }
+        return getLabel('height', preference?.prefMinHeight) + ' - ' + getLabel('height', preference?.prefMaxHeight)
+
+    }
 
     return (
         <View style={styles.section}>
@@ -11,7 +28,7 @@ const Preference = ({ preference }: { preference: any }) => {
                 icon='heart-outline'
                 title='Looking For'
                 list={[
-                    { title: 'Relationship', value: preference?.relationshipPreference },
+                    { title: 'Relationship Type', value: getLabel('relationshipPreference', profile?.relationshipPreference) },
                 ]}
             />
 
@@ -19,11 +36,11 @@ const Preference = ({ preference }: { preference: any }) => {
                 icon='options-outline'
                 title='My Preferences'
                 list={[
-                    { title: 'Interested In', value: preference?.interestedIn },
-                    { title: 'Age Range', value: preference?.prefMinAge + '-' + preference?.prefMaxAge },
-                    { title: 'Height Range', value: preference?.prefMinHeight + '-' + preference?.prefMaxHeight },
-                    { title: 'Religion', value: preference?.prefReligion },
-                    { title: 'Diet', value: preference?.prefDiet },
+                    { title: 'Interested In', value: getLabel('interestedIn', profile?.interestedIn) },
+                    { title: 'Age Range', value: preference?.prefMinAge + ' - ' + preference?.prefMaxAge + ' years' },
+                    { title: 'Height Range', value: getHeightRange() },
+                    { title: 'Religion', value: getLabel('religion', preference?.prefReligion) },
+                    { title: 'Diet', value: getLabel('diet', preference?.prefDiet) },
                 ]}
             />
 
