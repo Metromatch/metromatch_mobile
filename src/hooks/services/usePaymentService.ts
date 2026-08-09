@@ -25,12 +25,25 @@ const usePaymentService = ({
         },
     });
 
+    const {
+        mutateAsync: cancelPayment,
+        isPending: isCancelPaymentLoading,
+    } = useMutation({
+        mutationFn: async (payload: { orderId: string }) => {
+            const res = await Payments.cancelPayment('', payload)
+            return res.data.data
+        },
+    });
+
     return {
         createPaymentOrder,
         isCreatePaymentOrderLoading,
 
         verifyPayment,
         isVerifyPaymentLoading,
+
+        cancelPayment,
+        isCancelPaymentLoading,
     }
 }
 

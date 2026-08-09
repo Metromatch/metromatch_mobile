@@ -82,8 +82,8 @@ const useDiscoverService = ({
             });
 
             await Presence.updatePresence({
-                latitude: loc.coords.latitude,
-                longitude: loc.coords.longitude,
+                latitude: 28.6328 || loc.coords.latitude,
+                longitude: 77.2197 || loc.coords.longitude,
                 online: true,
             });
 

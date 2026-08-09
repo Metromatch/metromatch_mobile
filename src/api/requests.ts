@@ -56,6 +56,7 @@ export const Presence = {
   setOffline: () => http.delete(PRESENCE_API.PRESENCE),
   getMyPresence: () => http.get(PRESENCE_API.ME),
   getNearby: (params = {}) => http.get(PRESENCE_API.NEARBY, { params }),
+  presenceList: REQUEST_TEMPLATES(PRESENCE_API.HEATMAP).create
 };
 
 export const Chat = {
@@ -78,5 +79,6 @@ export const Favorites = {
 export const Payments = {
   createPaymentOrder: REQUEST_TEMPLATES(PAYMENTS_API.CREATE_ORDER).create,
   verifyPayment: REQUEST_TEMPLATES(PAYMENTS_API.VERIFY).create,
+  cancelPayment: REQUEST_TEMPLATES(PAYMENTS_API.CANCEL).read,
 }
 

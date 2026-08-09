@@ -44,6 +44,7 @@ export const PRESENCE_API = {
   PRESENCE,
   ME: `${PRESENCE}/me`,
   NEARBY: `${PRESENCE}/nearby`,
+  HEATMAP: `${PRESENCE}/heatmap`,
 };
 
 const CHAT = `${API_V1}chat`;
@@ -63,6 +64,7 @@ export const FAVORITES_API = {
 export const PAYMENTS_API = {
   CREATE_ORDER: `${PAYMENTS}/create-order`,
   VERIFY: `${PAYMENTS}/verify`,
+  CANCEL: `${PAYMENTS}/cancel`,
 };
 
 

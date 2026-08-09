@@ -99,6 +99,10 @@ const styles = StyleSheet.create({
     fontSize: responsiveSize(14),
     fontFamily: TYPOGRAPHY.regular,
     borderColor: COLORS.border,
+    lineHeight: responsiveSize(14),
+    // textAlignVertical: 'bottom',
+    // backgroundColor: 'red'
+    // paddingTop: responsiveSize(10)
     // padding: responsiveSize(20)
   },
   error: {

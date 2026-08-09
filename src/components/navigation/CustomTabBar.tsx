@@ -159,7 +159,11 @@ function TabItem({
 
 // ─── Custom Tab Bar ───────────────────────────────────────────────────────────
 
-export default function CustomTabBar({ state, descriptors, navigation }: any) {
+export default function CustomTabBar({ state, descriptors, navigation }: {
+    state: any;
+    descriptors: any;
+    navigation: any;
+}) {
     const insets = useSafeAreaInsets();
 
     // Only render visible tabs (those in TAB_CONFIG)

@@ -26,11 +26,6 @@
       "output": "static",
       "favicon": "./assets/images/favicon.png"
     },
-    "splash": {
-      "image": "./assets/images/file.gif",
-      "resizeMode": "contain",
-      "backgroundColor": "#071C6B"
-    },
     "backgroundColor": "#071C6B",
     "plugins": [
       "expo-router",
@@ -38,14 +33,22 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#071C6B",
-          "image": "./assets/images/file.gif",
+          "image": "./assets/images/couple_bg.png",
           "imageWidth": 200,
-          "resizeMode": "contain"
+          "resizeMode": "cover"
+        }
+      ],
+      [
+        "react-native-maps",
+        {
+          "androidGoogleMapsApiKey": "AIzaSyYourAndroidApiKeyHere",
+          "iosGoogleMapsApiKey": "AIzaSyYourIosApiKeyHere"
         }
       ],
       "expo-font",
       "expo-secure-store",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

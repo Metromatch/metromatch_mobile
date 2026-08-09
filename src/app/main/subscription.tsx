@@ -185,50 +185,38 @@ export default function SubscriptionScreen() {
     const [selected, setSelected] = useState<string>('gold');
 
     const selectedPlan = PLANS.find((p) => p.id === selected)!;
-    const { createPaymentOrder, verifyPayment } = usePaymentService({});
+    const { createPaymentOrder, verifyPayment, cancelPayment } = usePaymentService({});
     const { myProfile } = useProfileService({})
 
     const makePaymnet = async (planId: string) => {
         setSelected(planId);
-        // const order = await createPaymentOrder({ planId: 'eec7f39d-f6f6-42aa-b37d-1b389c49ff55' });
+        const order = await createPaymentOrder({ planId: 'eec7f39d-f6f6-42aa-b37d-1b389c49ff55' });
+        // console.log('order', order)
 
-        // const options = {
-        //     key: order.key,
-        //     amount: order.amount,
-        //     currency: order.currency,
-        //     name: 'MetroGold',
-        //     description: 'Includes Chat',
-        //     order_id: order.orderId,
-        //     prefill: {
-        //         email: 'one@gmail.com',
-        //         contact: '+919947711917',
-        //         name: "One",
-        //     },
-        //     theme: { color: '#2563EB' },
-        // };
 
         const options = {
-            key: 'rzp_test_TINKRKzEdJuraU',
-            amount: 49900,
-            currency: 'INR',
+            key: order.key,
+            amount: order.amount,
+            currency: order.currency,
             name: 'MetroGold',
             description: 'Includes Chat',
-            order_id: 'order_TIXkgcYsr8Gozz',
-            prefill: {
-                email: 'one@gmail.com',
-                contact: '+919947711917',
-                name: "One",
-            },
-            theme: { color: '#2563EB' },
+            order_id: order.orderId,
+            // prefill: {
+            //     email: 'one@gmail.com',
+            //     contact: '+919947711917',
+            //     name: "One",
+            // },
+            // theme: { color: '#2563EB' },
         };
 
-        console.log(RazorpayCheckout);
+
         try {
-            const payment = await RazorpayCheckout.open(options);
-            console.log('payment', payment)
+            const payment: any = await RazorpayCheckout.open(options).catch((error) => {
+                console.log('error', error)
+            });
 
             await verifyPayment({
-                planId,
+                planId: 'eec7f39d-f6f6-42aa-b37d-1b389c49ff55',
                 razorpayOrderId: payment.razorpay_order_id,
                 razorpayPaymentId: payment.razorpay_payment_id,
                 razorpaySignature: payment.razorpay_signature,
@@ -242,6 +230,7 @@ export default function SubscriptionScreen() {
             Alert.alert(
                 `Payment Cancelled: ${error}`,
             );
+            cancelPayment({ orderId: order.orderId })
         }
 
     }

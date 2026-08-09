@@ -122,7 +122,7 @@ export default function ProfileScreen() {
     });
 
 
-    console.log('photos', photos)
+    // console.log('photos', photos)
 
     const handleLogout = () => {
         logout()
@@ -207,7 +207,7 @@ export default function ProfileScreen() {
                 )}
                 scrollEventThrottle={16}
             >
-                <SafeAreaView style={{ gap: responsiveSize(16), paddingBottom: responsiveSize(18) }} edges={['top']}>
+                <SafeAreaView style={{ gap: responsiveSize(16), paddingBottom: responsiveSize(90) }} edges={['top']}>
 
                     <ProfileHero
                         avatarScale={avatarScale}
