@@ -7,15 +7,16 @@ import { responsiveSize } from '@/utils/responsive'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { router } from 'expo-router'
 import React, { useState } from 'react'
-import { Keyboard, View } from 'react-native'
+import { Alert, Keyboard, View } from 'react-native'
 import { useFormValidation } from '@/hooks/useFormValidation'
+import * as Location from 'expo-location';
 
 const Login = () => {
     const [passwordVisible, setPasswordVisible] = useState(false)
 
     const { values, errors, handleChange, validateAll } = useFormValidation({
-        email: '',
-        password: ''
+        email: 'credituser@yopmail.com',
+        password: 'Vishal@1996'
     }, {
         email: {
             required: true,
@@ -38,6 +39,11 @@ const Login = () => {
 
     const onPressLogin = async () => {
         Keyboard.dismiss()
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status === 'denied') {
+            Alert.alert('Location permission denied', 'Please enable location permission to continue');
+            return;
+        }
         if (!validateAll()) return;
 
         const { deviceId, deviceName } = await getDeviceDetails();

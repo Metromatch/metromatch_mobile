@@ -19,6 +19,7 @@ export type UserCredits = {
     totalLiked: number;
     totalSessionExtended: number;
     lastModified: string;
+    lastExtended: Date;
 };
 
 export type CreditActionType = 'like' | 'extension';

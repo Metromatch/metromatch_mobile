@@ -99,7 +99,7 @@ export default function ProfileScreen() {
     const photos: string[] = myProfile?.photos || [];
 
     const { score, items: completionItems } = getCompletionScore({
-        ...preferences, ...profile, prefSmokingHabits: preferences.smokingHabits, prefDrinkingHabits: preferences.drinkingHabits
+        ...preferences, ...profile, prefSmokingHabits: preferences?.smokingHabits, prefDrinkingHabits: preferences?.drinkingHabits
     });
 
     const avatarScale = scrollY.interpolate({
@@ -109,7 +109,7 @@ export default function ProfileScreen() {
     });
 
     const handleLogout = () => {
-        logout()
+        // logout()
         Alert.alert(
             'Sign Out',
             'Are you sure you want to sign out?',

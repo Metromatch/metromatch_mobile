@@ -11,6 +11,7 @@ import {
     ActivityIndicator,
     Platform,
     ScrollView,
+    Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -26,6 +27,9 @@ import RemainigTimeTab from '@/components/shared/organisms/remaining_time_tab';
 import PreferenceFilter from '@/components/shared/templates/preference_filter';
 import useProfileService from '@/hooks/services/useProfileService';
 import MainHeader from '@/components/shared/molecules/main_header';
+import useSubscriptionService from '@/hooks/services/useSubscriptionService';
+import useCheckCredits from '@/hooks/general/useCheckCredits';
+import * as Location from 'expo-location';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -495,6 +499,8 @@ export default function DiscoverScreen() {
     const { masterlist } = useMasterListQuery();
 
     const { myProfile } = useProfileService({})
+    const { refetchCredits } = useSubscriptionService();
+    const { hasCredits, hasRemainingMinutes } = useCheckCredits()
 
     React.useEffect(() => {
         if ((nearbyProfiles?.length || 0) > 0) {
@@ -530,6 +536,9 @@ export default function DiscoverScreen() {
                         setShowMatch(true);
                     }
                 }
+                if (swipeType === 'like') {
+                    refetchCredits();
+                }
             } catch (_) {
                 // swipe errors are handled by http interceptor (toast)
             }
@@ -537,13 +546,19 @@ export default function DiscoverScreen() {
         [nearbyProfiles, swipe]
     );
 
-    const onMarkFavorite = () => {
+    const onMarkFavorite = async () => {
+        const remainMinutes = hasRemainingMinutes()
+        if (!remainMinutes) {
+            return;
+        }
         const top = cardStack[0];
         markFavorite(top.id)
     }
 
     const handleButtonSwipe = (type: SwipeType) => {
         if (cardStack.length === 0) return;
+        if (type === 'like' && !hasCredits()) return;
+        if (type === 'pass' && !hasRemainingMinutes()) return;
         const top = cardStack[0];
         handleSwipe(top.id, type);
     };
@@ -642,24 +657,6 @@ export default function DiscoverScreen() {
         <View style={{ flex: 1 }}>
 
             <ScrollView >
-                {/* <View style={styles.header}>
-                        <TouchableOpacity style={styles.headerIcon}>
-                            <Ionicons name="menu" size={24} color="white" />
-                        </TouchableOpacity>
-
-                        <View style={styles.logoRow}>
-                            <Image
-                                source={require('@/assets/images/metromatch_logo.png')}
-                                style={styles.headerLogo}
-                                resizeMode="contain"
-                            />
-                        </View>
-
-                        <TouchableOpacity style={styles.headerIcon} onPress={() => setShowFilter(true)}>
-                            <Ionicons name="options-outline" size={24} color="white" />
-                        </TouchableOpacity>
-                    </View> */}
-                {/* <MainHeader /> */}
 
                 <RemainigTimeTab />
 

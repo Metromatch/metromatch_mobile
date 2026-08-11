@@ -156,7 +156,7 @@ export default function PlanListScreen() {
     const navigate = useNavigation();
 
     const { createPaymentOrder, verifyPayment, cancelPayment } = usePaymentService({});
-    const { subscriptionPlans, isSubscriptionPlansLoading } = useSubscriptionService();
+    const { subscriptionPlans, isSubscriptionPlansLoading, refetchCredits } = useSubscriptionService();
 
     const makePayment = async (planId: string) => {
         setLoadingPlanId(planId);
@@ -184,7 +184,8 @@ export default function PlanListScreen() {
                 razorpayPaymentId: payment.razorpay_payment_id,
                 razorpaySignature: payment.razorpay_signature,
             });
-
+            refetchCredits();
+            navigate.goBack();
             Alert.alert('Success 🎉', 'Your plan is now active!');
         } catch (error) {
             Alert.alert('Payment Cancelled', 'Your payment was not completed.');

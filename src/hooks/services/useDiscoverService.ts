@@ -81,7 +81,7 @@ const useDiscoverService = ({
                 accuracy: Location.Accuracy.Balanced,
             });
 
-            await Presence.updatePresence({
+            Presence.updatePresence({
                 latitude: loc.coords.latitude,
                 longitude: loc.coords.longitude,
                 online: true,

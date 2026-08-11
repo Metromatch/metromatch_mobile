@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { router, Slot, usePathname } from 'expo-router'
 import { Image, ImageBackground, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from 'react-native'
 import { COLORS } from '@/constants/theme'
@@ -8,6 +8,7 @@ import { responsiveSize } from '@/utils/responsive'
 import { Span } from '@/components/general/atoms/span'
 import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card'
 import DoubleHeartIcon from '@/components/shared/atoms/double_heart'
+import * as Location from 'expo-location';
 
 const MainAuthLayout = () => {
     const tabList = [{
@@ -18,6 +19,10 @@ const MainAuthLayout = () => {
         label: 'Sign Up'
     }]
     const pathname = usePathname()
+
+    useEffect(() => {
+        Location.requestForegroundPermissionsAsync();
+    }, [])
 
     return (
         <View style={styles.container}>
