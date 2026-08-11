@@ -237,53 +237,33 @@ export default function MatchesScreen() {
     }
   };
   // console.log('matches', matches)
-  return (
-    <LinearGradient
-      colors={[COLORS.backgroundStart, COLORS.backgroundMiddle, COLORS.backgroundEnd]}
-      style={StyleSheet.absoluteFill}
-    >
-      <SafeAreaView style={styles.container} edges={['top']}>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Matches</Text>
-          {matches?.length > 0 && (
-            <View style={styles.headerBadge}>
-              <Text style={styles.headerBadgeText}>{matches.length}</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Content */}
-        {isMatchesLoading ? (
-          <View style={styles.loadingWrap}>
-            <ActivityIndicator size="large" color={COLORS.primaryLight} />
-          </View>
-        ) : (
-          <FlatList
-            data={matches}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <MatchCard
-                item={item}
-                onPress={() => router.push(`/main/chat/${item.profileId}` as any)}
-                onUnmatch={() => handleUnmatch(item.id)}
-              />
-            )}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
-            ListEmptyComponent={<EmptyState />}
-            contentContainerStyle={[styles.list, items.length === 0 && styles.listEmpty]}
-            refreshControl={
-              <RefreshControl
-                refreshing={isMatchesLoading}
-                onRefresh={onRefresh}
-                tintColor={COLORS.primaryLight}
-              />
-            }
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </SafeAreaView>
-    </LinearGradient>
+  return isMatchesLoading ? (
+    <View style={styles.loadingWrap}>
+      <ActivityIndicator size="large" color={COLORS.primaryLight} />
+    </View>
+  ) : (
+    <FlatList
+      data={matches}
+      keyExtractor={(item) => item.id}
+      renderItem={({ item }) => (
+        <MatchCard
+          item={item}
+          onPress={() => router.push(`/main/chat/${item.profileId}` as any)}
+          onUnmatch={() => handleUnmatch(item.id)}
+        />
+      )}
+      ItemSeparatorComponent={() => <View style={styles.separator} />}
+      ListEmptyComponent={<EmptyState />}
+      contentContainerStyle={[styles.list, items.length === 0 && styles.listEmpty]}
+      refreshControl={
+        <RefreshControl
+          refreshing={isMatchesLoading}
+          onRefresh={onRefresh}
+          tintColor={COLORS.primaryLight}
+        />
+      }
+      showsVerticalScrollIndicator={false}
+    />
   );
 }
 
@@ -342,7 +322,7 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderRadius: 20,
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',

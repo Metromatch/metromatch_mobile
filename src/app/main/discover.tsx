@@ -25,6 +25,7 @@ import AppContainer from '@/components/shared/layout/app_container';
 import RemainigTimeTab from '@/components/shared/organisms/remaining_time_tab';
 import PreferenceFilter from '@/components/shared/templates/preference_filter';
 import useProfileService from '@/hooks/services/useProfileService';
+import MainHeader from '@/components/shared/molecules/main_header';
 
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
@@ -197,7 +198,7 @@ function SwipeCard({
 
     const panResponder = useRef(
         PanResponder.create({
-            onStartShouldSetPanResponder: () => isTopRef.current,
+            onStartShouldSetPanResponder: () => false,
             onMoveShouldSetPanResponder: () => isTopRef.current,
             onPanResponderGrant: () => {
                 dragDistanceRef.current = 0;
@@ -638,14 +639,10 @@ export default function DiscoverScreen() {
     }, [myProfile]);
 
     return (
-        <AppContainer includeBgImage>
-            {/* <View style={styles.screen}> */}
-            {/* Extra overlay so discover cards have enough contrast */}
-            <View style={styles.bgOverlay} />
+        <View style={{ flex: 1 }}>
 
-            <SafeAreaView style={styles.safeArea} edges={['top']}>
-                <ScrollView >
-                    <View style={styles.header}>
+            <ScrollView >
+                {/* <View style={styles.header}>
                         <TouchableOpacity style={styles.headerIcon}>
                             <Ionicons name="menu" size={24} color="white" />
                         </TouchableOpacity>
@@ -661,94 +658,95 @@ export default function DiscoverScreen() {
                         <TouchableOpacity style={styles.headerIcon} onPress={() => setShowFilter(true)}>
                             <Ionicons name="options-outline" size={24} color="white" />
                         </TouchableOpacity>
-                    </View>
+                    </View> */}
+                {/* <MainHeader /> */}
 
-                    <RemainigTimeTab />
+                <RemainigTimeTab />
 
-                    <View style={styles.cardArea}>
-                        {isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating' ? (
-                            <View style={styles.loadingContainer}>
-                                <ActivityIndicator size="large" color="white" />
-                                <Text style={styles.loadingText}>
-                                    {locationStatus === 'requesting'
-                                        ? 'Requesting location access…'
-                                        : locationStatus === 'updating'
-                                            ? 'Updating your location…'
-                                            : 'Finding people near you…'}
-                                </Text>
-                            </View>
-                        ) : cardStack.length === 0 ? (
-                            renderEmpty()
-                        ) : (
-                            cardStack
-                                .slice(0, 3)
-                                .reverse()
-                                .map((profile, reverseIdx) => {
-                                    const stackIndex = Math.min(cardStack.slice(0, 3).length - 1 - reverseIdx, 2);
-                                    const isTop = stackIndex === 0;
-                                    return (
-                                        <SwipeCard
-                                            key={profile.id}
-                                            profile={{
-                                                name: profile.name,
-                                                id: profile.id,
-                                                dob: profile.dob ?? '',
-                                                profession: profile.profession ?? '',
-                                                gender: masterlist?.gender?.find((g: any) => g.value === profile.gender)?.label,
-                                                userId: profile.userId,
-                                                travelTimeSlots: profile.travelTimeSlots?.map((t: string) => masterlist?.travelTimeRange?.find((r: any) => r.value === t)?.label ?? ''),
-                                                diet: masterlist?.diet?.find((d: any) => d.value === profile.diet)?.label,
-                                                drinkingHabits: masterlist?.drinkingHabits?.find((d: any) => d.value === profile.drinkingHabits)?.label,
-                                                smokingHabits: masterlist?.smokingHabits?.find((s: any) => s.value === profile.smokingHabits)?.label,
-                                                travelFrequency: masterlist?.travelFrequency?.find((t: any) => t.value === profile.travelFrequency)?.label,
-                                                relationshipPreference: masterlist?.relationshipPreference?.find((r: any) => r.value === profile.relationshipPreference)?.label,
-                                                interestedIn: masterlist?.interestedIn?.find((i: any) => i.value === profile.interestedIn)?.label,
-                                                imageUrl: profile.photos?.find((p: any) => p.isPrimary)?.imageUrl ?? ''
-                                            }}
-                                            onSwipe={handleSwipe}
-                                            onPress={() => {
-                                                router.push({
-                                                    pathname: '/profile_details/[profileId]',
-                                                    params: {
-                                                        profileId: profile.id,
-                                                        name: profile.name,
-                                                        dob: profile.dob ?? '',
-                                                        gender: profile.gender ?? '',
-                                                        profession: profile.profession ?? '',
-                                                        religion: profile.religion ?? '',
-                                                        height: profile.height ?? '',
-                                                        diet: 'Non veg',
-                                                        drinkingHabits: profile.drinkingHabits ?? '',
-                                                        smokingHabits: profile.smokingHabits ?? '',
-                                                        travelFrequency: profile.travelFrequency ?? '',
-                                                        relationshipPreference: profile.relationshipPreference ?? '',
-                                                        interestedIn: profile.interestedIn ?? '',
-                                                        travelTimeSlots: JSON.stringify(profile.travelTimeSlots ?? []),
-                                                        distanceMeters: String(profile.distanceMeters ?? ''),
-                                                        imageUrl: profile.photos?.filter((photo: any) => !photo.isPrimary)?.map((photo: any) => photo.imageUrl) ?? [],
-                                                        primaryImage: profile.photos?.find((photo: any) => photo.isPrimary)?.imageUrl || '',
-                                                        bio: profile.bio,
-                                                    },
-                                                });
-                                            }}
-                                            isTop={isTop}
-                                            stackIndex={stackIndex}
-                                        />
-                                    );
-                                })
-                        )}
-                    </View>
-
-                    {cardStack.length > 0 && !isDiscoveryLoading && (
-                        <ActionButtons
-                            disabled={isSwipePending}
-                            onPass={() => handleButtonSwipe('pass')}
-                            onLike={() => handleButtonSwipe('like')}
-                            onMarkFavorite={() => onMarkFavorite()}
-                        />
+                <View style={styles.cardArea}>
+                    {isDiscoveryLoading || locationStatus === 'requesting' || locationStatus === 'updating' ? (
+                        <View style={styles.loadingContainer}>
+                            <ActivityIndicator size="large" color="white" />
+                            <Text style={styles.loadingText}>
+                                {locationStatus === 'requesting'
+                                    ? 'Requesting location access…'
+                                    : locationStatus === 'updating'
+                                        ? 'Updating your location…'
+                                        : 'Finding people near you…'}
+                            </Text>
+                        </View>
+                    ) : cardStack.length === 0 ? (
+                        renderEmpty()
+                    ) : (
+                        cardStack
+                            .slice(0, 3)
+                            .reverse()
+                            .map((profile, reverseIdx) => {
+                                const stackIndex = Math.min(cardStack.slice(0, 3).length - 1 - reverseIdx, 2);
+                                const isTop = stackIndex === 0;
+                                return (
+                                    <SwipeCard
+                                        key={profile.id}
+                                        profile={{
+                                            name: profile.name,
+                                            id: profile.id,
+                                            dob: profile.dob ?? '',
+                                            profession: profile.profession ?? '',
+                                            gender: masterlist?.gender?.find((g: any) => g.value === profile.gender)?.label,
+                                            userId: profile.userId,
+                                            travelTimeSlots: profile.travelTimeSlots?.map((t: string) => masterlist?.travelTimeRange?.find((r: any) => r.value === t)?.label ?? ''),
+                                            diet: masterlist?.diet?.find((d: any) => d.value === profile.diet)?.label,
+                                            drinkingHabits: masterlist?.drinkingHabits?.find((d: any) => d.value === profile.drinkingHabits)?.label,
+                                            smokingHabits: masterlist?.smokingHabits?.find((s: any) => s.value === profile.smokingHabits)?.label,
+                                            travelFrequency: masterlist?.travelFrequency?.find((t: any) => t.value === profile.travelFrequency)?.label,
+                                            relationshipPreference: masterlist?.relationshipPreference?.find((r: any) => r.value === profile.relationshipPreference)?.label,
+                                            interestedIn: masterlist?.interestedIn?.find((i: any) => i.value === profile.interestedIn)?.label,
+                                            imageUrl: profile.photos?.find((p: any) => p.isPrimary)?.imageUrl ?? ''
+                                        }}
+                                        onSwipe={handleSwipe}
+                                        onPress={() => {
+                                            router.push({
+                                                pathname: '/profile_details/[profileId]',
+                                                params: {
+                                                    profileId: profile.id,
+                                                    name: profile.name,
+                                                    dob: profile.dob ?? '',
+                                                    gender: profile.gender ?? '',
+                                                    profession: profile.profession ?? '',
+                                                    religion: profile.religion ?? '',
+                                                    height: profile.height ?? '',
+                                                    diet: 'Non veg',
+                                                    drinkingHabits: profile.drinkingHabits ?? '',
+                                                    smokingHabits: profile.smokingHabits ?? '',
+                                                    travelFrequency: profile.travelFrequency ?? '',
+                                                    relationshipPreference: profile.relationshipPreference ?? '',
+                                                    interestedIn: profile.interestedIn ?? '',
+                                                    travelTimeSlots: JSON.stringify(profile.travelTimeSlots ?? []),
+                                                    distanceMeters: String(profile.distanceMeters ?? ''),
+                                                    imageUrl: profile.photos?.filter((photo: any) => !photo.isPrimary)?.map((photo: any) => photo.imageUrl) ?? [],
+                                                    primaryImage: profile.photos?.find((photo: any) => photo.isPrimary)?.imageUrl || '',
+                                                    bio: profile.bio,
+                                                },
+                                            });
+                                        }}
+                                        isTop={isTop}
+                                        stackIndex={stackIndex}
+                                    />
+                                );
+                            })
                     )}
-                </ScrollView>
-            </SafeAreaView>
+                </View>
+
+                {cardStack.length > 0 && !isDiscoveryLoading && (
+                    <ActionButtons
+                        disabled={isSwipePending}
+                        onPass={() => handleButtonSwipe('pass')}
+                        onLike={() => handleButtonSwipe('like')}
+                        onMarkFavorite={() => onMarkFavorite()}
+                    />
+                )}
+            </ScrollView>
+
 
             {/* ─── Match modal ─────────────────────────────────────────── */}
             <MatchModal
@@ -772,8 +770,8 @@ export default function DiscoverScreen() {
                 />
             )}
 
-            {/* </View> */}
-        </AppContainer>
+
+        </View>
     );
 }
 

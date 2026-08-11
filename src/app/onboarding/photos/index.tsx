@@ -28,7 +28,7 @@ import { useCloudnaryService } from '@/hooks/services/useCloudnaryService';
 const OnboardingPhotos = () => {
     const router = useRouter();
     const [photos, setPhotos] = useState<{ fileName: string, imageUrl: string, publicId: string }[]>([]);
-    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    // const [isAnalyzing, setIsAnalyzing] = useState(false);
 
     const { onboardingSteps: { formValues } } = useMetromatchStore();
     const { createProfile, isCreateProfileLoading } = useProfileService({});

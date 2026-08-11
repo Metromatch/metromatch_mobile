@@ -7,7 +7,7 @@ import { clearStore } from '@/utils/authUtils';
 const http = axios.create({
   // baseURL: "https://metromatchindia.vercel.app",
   // baseURL: "http://localhost:3000",
-  baseURL: "http://10.202.75.167:3000",
+  baseURL: "http://10.165.61.167:3000",
   timeout: 20_000,
   headers: {
     'Content-Type': 'application/json',

@@ -3,7 +3,7 @@ import useMasterListQuery from '@/hooks/services/useMasterListQuery';
 import React from 'react'
 import { StyleSheet, View } from 'react-native'
 
-const Preference = ({ preference, profile }: { preference: any, profile: any }) => {
+const Preference = ({ preference, profile, onEdit }: { preference: any, profile: any, onEdit: any }) => {
     const { masterlist } = useMasterListQuery();
 
     const getLabel = (type: string, value: string) => masterlist?.[type]?.find((item: any) => item.value === value)?.label || '—'
@@ -30,6 +30,7 @@ const Preference = ({ preference, profile }: { preference: any, profile: any }) 
                 list={[
                     { title: 'Relationship Type', value: getLabel('relationshipPreference', profile?.relationshipPreference) },
                 ]}
+                onEdit={onEdit}
             />
 
             <InfoBox
@@ -42,6 +43,7 @@ const Preference = ({ preference, profile }: { preference: any, profile: any }) 
                     { title: 'Religion', value: getLabel('religion', preference?.prefReligion) },
                     { title: 'Diet', value: getLabel('diet', preference?.prefDiet) },
                 ]}
+                onEdit={onEdit}
             />
 
             <InfoBox

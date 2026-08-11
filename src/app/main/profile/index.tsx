@@ -9,32 +9,30 @@ import {
     Alert,
     Image,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router } from 'expo-router';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import useProfileService from '@/hooks/services/useProfileService';
 import useAuthService from '@/hooks/services/useAuthService';
-import Toast from 'react-native-toast-message';
-
-import AppContainer from '@/components/shared/layout/app_container';
 import { responsiveSize } from '@/utils/responsive';
 import ProfileHero from '@/components/shared/organisms/profile/hero';
 import ProfileCompletionCard from '@/components/shared/organisms/profile/completion_card';
 import VerticalTabs from '@/components/general/molecules/vertical_tabs';
 import About from '@/components/shared/organisms/profile/about';
 import Preference from '@/components/shared/organisms/profile/preference';
+import EditAbout from '@/components/shared/templates/my_profile/edit_about';
+import EditPreferences from '@/components/shared/templates/my_profile/edit_preferences';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Completion Progress ──────────────────────────────────────────────────────
 function getCompletionScore(profile: any): { score: number; items: { label: string; done: boolean }[] } {
-    console.log('profile', profile)
     const items = [
         { label: 'Basic Info', done: true },
         { label: 'About Me', done: true },
         { label: 'Lifestyle', done: !!profile.height && !!profile.religion && !!profile.diet && !!profile.drinkingHabits && !!profile.smokingHabits },
+        { label: 'Looking For', done: true },
+        { label: 'Preferences', done: !!profile.prefDiet && !!profile.prefMaxHeight && !!profile.prefMinHeight && !!profile.prefReligion },
         { label: 'Photos', done: true },
     ];
     const done = items.filter((i) => i.done).length;
@@ -54,10 +52,8 @@ function SectionHeader({ icon, title }: { icon: keyof typeof Ionicons.glyphMap; 
 }
 
 // ─── Photo Card ──────────────────────────────────────────────────────────────
-function PhotoCard({ uri, onRemove, isEditing }: {
+function PhotoCard({ uri }: {
     uri: string;
-    onRemove?: () => void;
-    isEditing: boolean;
 }) {
     return (
         <View style={styles.photoCard}>
@@ -81,16 +77,6 @@ function PhotoCard({ uri, onRemove, isEditing }: {
     );
 }
 
-function AddPhotoCard({ onPress }: { onPress: () => void }) {
-    return (
-        <TouchableOpacity style={styles.photoCard} onPress={onPress} activeOpacity={0.8}>
-            <View style={styles.addPhotoCard}>
-                <Ionicons name="add" size={28} color={COLORS.primary} />
-                <Text style={styles.addPhotoText}>Add</Text>
-            </View>
-        </TouchableOpacity>
-    );
-}
 
 const tabList: any = [
     { id: "about", label: "About", activeIcon: "person", inactiveIcon: "person-outline" },
@@ -101,11 +87,10 @@ const tabList: any = [
 
 // ─── Main Profile Screen ──────────────────────────────────────────────────────
 export default function ProfileScreen() {
-    const { myProfile, isMyProfileLoading, refetchMyProfile, updateProfile, isUpdateProfileLoading } =
-        useProfileService({ fetchMyProfile: true });
+    const { myProfile } = useProfileService({ fetchMyProfile: true });
     const { logout, isLogoutLoading } = useAuthService();
 
-    const [isEditing, setIsEditing] = useState(false);
+    const [editType, setEditType] = useState<null | string>(null);
     const [activeSection, setActiveSection] = useState<'about' | 'preferences' | 'photos'>('about');
     const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -113,16 +98,15 @@ export default function ProfileScreen() {
     const preferences = myProfile?.preferences;
     const photos: string[] = myProfile?.photos || [];
 
-    const { score, items: completionItems } = getCompletionScore({ ...profile, photos });
+    const { score, items: completionItems } = getCompletionScore({
+        ...preferences, ...profile, prefSmokingHabits: preferences.smokingHabits, prefDrinkingHabits: preferences.drinkingHabits
+    });
 
     const avatarScale = scrollY.interpolate({
         inputRange: [0, 100],
         outputRange: [1, 0.75],
         extrapolate: 'clamp',
     });
-
-
-    // console.log('photos', photos)
 
     const handleLogout = () => {
         logout()
@@ -145,7 +129,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
             <View style={styles.card}>
                 <SectionHeader icon="images-outline" title="My Photos" />
-                {!isEditing && photos.length === 0 && (
+                {photos.length === 0 && (
                     <View style={styles.noPhotosContainer}>
                         <Ionicons name="camera-outline" size={40} color={COLORS.textSecondary} />
                         <Text style={styles.noPhotosText}>No photos yet</Text>
@@ -157,24 +141,10 @@ export default function ProfileScreen() {
                         <PhotoCard
                             key={i}
                             uri={photo.imageUrl}
-                            isEditing={isEditing}
-                            onRemove={() =>
-                                Alert.alert('Remove Photo', 'Remove this photo from your profile?', [
-                                    { text: 'Cancel', style: 'cancel' },
-                                    { text: 'Remove', style: 'destructive', onPress: () => { } },
-                                ])
-                            }
                         />
                     ))}
-                    {isEditing && photos.length < 6 && (
-                        <AddPhotoCard onPress={() => Toast.show({ type: 'info', text1: 'Photo picker coming soon!' })} />
-                    )}
+
                 </View>
-                {isEditing && (
-                    <Text style={styles.photosHint}>
-                        <Ionicons name="information-circle-outline" size={12} /> Add up to 6 photos. Your first photo is your main profile picture.
-                    </Text>
-                )}
             </View>
 
             {/* Photo Tips */}
@@ -196,80 +166,62 @@ export default function ProfileScreen() {
     );
 
     return (
-        <AppContainer includeBgImage>
 
-            <Animated.ScrollView
-                style={styles.scrollView}
-                showsVerticalScrollIndicator={false}
-                onScroll={Animated.event(
-                    [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                    { useNativeDriver: false }
-                )}
-                scrollEventThrottle={16}
+        <Animated.ScrollView
+            style={styles.scrollView}
+            showsVerticalScrollIndicator={false}
+            onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: false }
+            )}
+            scrollEventThrottle={16}
+            contentContainerStyle={{ gap: responsiveSize(16), paddingBottom: responsiveSize(90) }}
+        >
+
+            <ProfileHero
+                avatarScale={avatarScale}
+                name={profile?.name}
+                dob={profile?.dob}
+                profession={profile?.profession}
+                gender={profile?.gender}
+                profilePicture={myProfile?.photos?.[0]?.imageUrl}
+                photoCount={photos.length}
+                completionScore={score}
+            // isEditing={isEditing}
+            />
+
+            <ProfileCompletionCard score={score} items={completionItems} />
+            <View style={{ height: responsiveSize(6) }} />
+            <VerticalTabs
+                tabList={tabList}
+                activeTab={activeSection}
+                onTabChange={(item) => setActiveSection(item as any)}
+            />
+
+            {activeSection === 'about' && <About profile={profile} onEdit={() => setEditType('about')} />}
+            {activeSection === 'preferences' && <Preference profile={profile} preference={preferences} onEdit={() => setEditType('preferences')} />}
+            {activeSection === 'photos' && renderPhotos()}
+
+
+            <TouchableOpacity
+                id="logout-button"
+                style={[styles.logoutBtn, isLogoutLoading && { opacity: 0.6 }]}
+                onPress={handleLogout}
+                disabled={isLogoutLoading}
+                activeOpacity={0.8}
             >
-                <SafeAreaView style={{ gap: responsiveSize(16), paddingBottom: responsiveSize(90) }} edges={['top']}>
+                <View style={styles.logoutBtnInner}>
+                    <Ionicons name="log-out-outline" size={18} color="white" />
+                    <Text style={styles.logoutBtnText}>
+                        {isLogoutLoading ? 'Signing out…' : 'Sign Out'}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+            {editType === 'about' && <EditAbout onClose={() => setEditType(null)} />}
+            {editType === 'preferences' && <EditPreferences onClose={() => setEditType(null)} />}
 
-                    <ProfileHero
-                        avatarScale={avatarScale}
-                        name={profile?.name}
-                        dob={profile?.dob}
-                        profession={profile?.profession}
-                        gender={profile?.gender}
-                        profilePicture={myProfile?.photos?.[0]?.imageUrl}
-                        photoCount={photos.length}
-                        completionScore={score}
-                        isEditing={isEditing}
-                    />
+        </Animated.ScrollView>
 
-                    <ProfileCompletionCard score={score} items={completionItems} />
-                    <View style={{ height: responsiveSize(6) }} />
-                    <VerticalTabs
-                        tabList={tabList}
-                        activeTab={activeSection}
-                        onTabChange={(item) => setActiveSection(item as any)}
-                    />
-
-                    {activeSection === 'about' && <About profile={profile} />}
-                    {activeSection === 'preferences' && <Preference profile={profile} preference={preferences} />}
-                    {activeSection === 'photos' && renderPhotos()}
-
-                    {/* ─── Subscription Button ──────────────────────── */}
-                    <TouchableOpacity
-                        id="subscription-button"
-                        activeOpacity={0.85}
-                        onPress={() => router.push('/main/subscription')}
-                        style={styles.subscriptionBtn}
-                    >
-                        <LinearGradient
-                            colors={['#C8952A', '#8B5E0A']}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={styles.subscriptionBtnInner}
-                        >
-                            <Ionicons name="flash" size={18} color="white" />
-                            <Text style={styles.subscriptionBtnText}>Upgrade to Premium</Text>
-                            <Ionicons name="chevron-forward" size={16} color="rgba(255,255,255,0.7)" />
-                        </LinearGradient>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        id="logout-button"
-                        style={[styles.logoutBtn, isLogoutLoading && { opacity: 0.6 }]}
-                        onPress={handleLogout}
-                        disabled={isLogoutLoading}
-                        activeOpacity={0.8}
-                    >
-                        <View style={styles.logoutBtnInner}>
-                            <Ionicons name="log-out-outline" size={18} color="white" />
-                            <Text style={styles.logoutBtnText}>
-                                {isLogoutLoading ? 'Signing out…' : 'Sign Out'}
-                            </Text>
-                        </View>
-                    </TouchableOpacity>
-
-                </SafeAreaView>
-            </Animated.ScrollView>
-        </AppContainer>
     );
 }
 
@@ -331,8 +283,8 @@ const styles = StyleSheet.create({
     scrollView: {
         flex: 1,
         paddingHorizontal: responsiveSize(20),
-        marginTop: responsiveSize(16),
-        paddingBottom: responsiveSize(60)
+        // marginTop: responsiveSize(16),
+        paddingBottom: responsiveSize(50)
     },
 
 

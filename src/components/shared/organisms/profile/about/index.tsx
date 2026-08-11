@@ -10,7 +10,7 @@ function formatDob(dob: string | null): string {
 }
 
 
-const About = ({ profile }: { profile: any }) => {
+const About = ({ profile, onEdit }: { profile: any, onEdit: () => void }) => {
     const { masterlist } = useMasterListQuery();
 
     const getLabel = (type: string, value: string) => masterlist?.[type]?.find((item: any) => item.value === value)?.label || '—'
@@ -34,6 +34,7 @@ const About = ({ profile }: { profile: any }) => {
                 list={[
                     { title: 'Bio', value: profile?.bio || 'No bio yet — tell the world about yourself!' },
                 ]}
+                onEdit={onEdit}
             />
 
             <InfoBox
@@ -47,6 +48,7 @@ const About = ({ profile }: { profile: any }) => {
                     { title: 'Smoking', value: getLabel('smokingHabits', profile?.smokingHabits) },
                     { title: 'Drinking', value: getLabel('drinkingHabits', profile?.drinkingHabits) },
                 ]}
+                onEdit={onEdit}
             />
         </View>
     )

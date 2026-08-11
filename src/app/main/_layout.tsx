@@ -1,86 +1,59 @@
-import { Tabs } from 'expo-router';
+import { Slot, Stack, Tabs, usePathname } from 'expo-router';
 import React from 'react';
 import { View } from 'react-native';
 import CustomTabBar from '@/components/navigation/CustomTabBar';
+import MainHeader from '@/components/shared/molecules/main_header';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 
 export default function MainLayout() {
+  const pathname = usePathname();
   return (
-    // <OverlayProvider>
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-      {/* <Chat client={chatClient}> */}
-      <Tabs
-        tabBar={(props) => <CustomTabBar {...props} />}
-        screenOptions={{
-          headerShown: false,
-          headerTransparent: true,
-        }}
-      >
-        <Tabs.Screen
-          name="index"
-          options={{ href: null }}
-          key='index'
-        />
+      {/* <SafeAreaView style={{ flex: 1 }}> */}
+      <MainHeader />
 
-        <Tabs.Screen
-          name="discover"
-          options={{ title: 'Discover' }}
-          key='discover'
-        />
+      <View style={{ flex: 1 }}>
+        {/* <Stack /> */}
+        <Slot />
 
-        <Tabs.Screen
-          name="messages"
-          options={{ title: 'Messages' }}
-          key='messages'
-        />
-
-        <Tabs.Screen
-          name="matches"
-          options={{ title: 'Matches' }}
-          key='matches'
-        />
-
-        <Tabs.Screen
-          name="map"
-          options={{ title: 'Map' }}
-          key='map'
-        />
-
-        <Tabs.Screen
-          name="profile"
-          options={{ title: 'Profile' }}
-          key='profile'
-        />
-
-        <Tabs.Screen
-          name="maps"
-          options={{ href: null }}
-          key='maps'
-        />
-
-        {/* Chat room — hidden from tab bar, navigated to from messages */}
-        <Tabs.Screen
-          name="chat/[profileId]"
-          options={{ href: null }}
-          key='chat/[profileId]'
-        />
-
-        {/* Profile detail — hidden, navigated to from discover cards */}
-        <Tabs.Screen
-          name="discover/[profileId]"
-          options={{ href: null }}
-          key='discover/[profileId]'
-        />
-
-        {/* Subscription — hidden, navigated to from profile screen */}
-        <Tabs.Screen
-          name="subscription"
-          options={{ href: null }}
-          key='subscription'
-        />
-      </Tabs>
-      {/* </Chat> */}
+      </View>
+      {/* </SafeAreaView> */}
+      <CustomTabBar
+        routes={[
+          {
+            key: 'discover',
+            name: 'discover',
+            params: {},
+            index: 1
+          },
+          {
+            key: 'messages',
+            name: 'messages',
+            params: {},
+            index: 2,
+          },
+          {
+            key: 'matches',
+            name: 'matches',
+            params: {},
+            index: 3,
+          },
+          {
+            key: 'map',
+            name: 'map',
+            params: {},
+            index: 4,
+          },
+          {
+            key: 'profile',
+            name: 'profile',
+            params: {},
+            index: 5,
+          },
+        ]}
+        activeRoute={pathname?.split('/')[2] || ''}
+      />
     </View>
-    // </OverlayProvider>
   );
 }

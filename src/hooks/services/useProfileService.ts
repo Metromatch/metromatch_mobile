@@ -13,6 +13,7 @@ const useProfileService = ({
         data: myProfile,
         isLoading: isMyProfileLoading,
         refetch: refetchMyProfile,
+        isRefetching: isMyProfileRefetching,
     } = useQuery({
         queryKey: ['my-profile', userId],
         queryFn: async () => {
@@ -54,7 +55,8 @@ const useProfileService = ({
 
         myProfile,
         isMyProfileLoading,
-        refetchMyProfile
+        refetchMyProfile,
+        isMyProfileRefetching
     }
 }
 

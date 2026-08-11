@@ -9,15 +9,16 @@ interface LabelProps extends TextProps {
     text: string
     style?: any
     required?: boolean
+    textColor?: string
 }
 
-const Label = ({ text, style, required, ...props }: LabelProps) => (
+const Label = ({ text, style, required, textColor = COLORS.textPrimary, ...props }: LabelProps) => (
     <View style={styles.container}>
         <B2
             text={text}
             type="medium"
             style={style}
-            textColor={COLORS.textPrimary}
+            textColor={textColor}
             {...props}
         />
         {required && <Text style={styles.required}>*</Text>}

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { DarkTheme, DefaultTheme, ThemeProvider, Stack, useSegments, useRouter, Slot } from 'expo-router';
+import { DarkTheme, DefaultTheme, ThemeProvider, Slot, Stack, useSegments, useRouter } from 'expo-router';
 import { useColorScheme, ActivityIndicator, View, StatusBar, StyleSheet, ImageBackground } from 'react-native';
 import { useFonts } from 'expo-font';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -68,8 +68,17 @@ export default function TabLayout() {
             style={styles.background}>
             <View style={styles.heroOverlay} />
           </ImageBackground>
-          <Slot />
-          {/* <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: 'transparent' } }} /> */}
+          <Stack
+            screenOptions={{
+              header: () => null,
+              headerShown: false,
+              headerBackVisible: false,
+              contentStyle: { backgroundColor: 'transparent' },
+              headerTransparent: true
+
+            }}
+          />
+          {/* <Slot /> */}
         </LinearGradient>
         <Toast />
       </ThemeProvider>

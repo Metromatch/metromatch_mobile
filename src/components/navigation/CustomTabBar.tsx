@@ -14,6 +14,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
+import { useNavigation, router } from 'expo-router';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -49,7 +50,7 @@ const TAB_CONFIG: Record<
         activeIcon: 'heart-circle',
         badge: 12,
     },
-    ['profile/index']: {
+    profile: {
         label: 'Profile',
         icon: 'person-outline',
         activeIcon: 'person',
@@ -159,15 +160,14 @@ function TabItem({
 
 // ─── Custom Tab Bar ───────────────────────────────────────────────────────────
 
-export default function CustomTabBar({ state, descriptors, navigation }: {
-    state: any;
-    descriptors: any;
-    navigation: any;
+export default function CustomTabBar({ routes, activeRoute }: {
+    routes: any;
+    activeRoute: any;
 }) {
     const insets = useSafeAreaInsets();
-
+    const navigation = useNavigation();
     // Only render visible tabs (those in TAB_CONFIG)
-    const visibleRoutes = state.routes.filter((r: any) => TAB_CONFIG[r.name]);
+    const visibleRoutes = routes.filter((r: any) => TAB_CONFIG[r.name]);
 
     return (
         <View
@@ -191,25 +191,17 @@ export default function CustomTabBar({ state, descriptors, navigation }: {
                 {/* Tab row */}
                 <View style={styles.tabRow}>
                     {visibleRoutes.map((route: any) => {
-                        const routeIndex = state.routes.findIndex((r: any) => r.key === route.key);
-                        const isFocused = state.index === routeIndex;
+                        const isFocused = activeRoute === route.key;
 
                         const onPress = () => {
-                            const event = navigation.emit({
-                                type: 'tabPress',
-                                target: route.key,
-                                canPreventDefault: true,
-                            });
-                            if (!isFocused && !event.defaultPrevented) {
-                                navigation.navigate(route.name);
-                            }
+                            router.navigate(`main/${route.name}`);
                         };
 
                         const onLongPress = () => {
-                            navigation.emit({
-                                type: 'tabLongPress',
-                                target: route.key,
-                            });
+                            // navigation.emit({
+                            //     type: 'tabLongPress',
+                            //     target: route.key,
+                            // });
                         };
 
                         return (

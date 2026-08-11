@@ -24,9 +24,10 @@ interface FormSelectProps {
     onChange: (value: string | number | null) => void;
     required?: boolean
     error?: string
+    labelColor?: string
 }
 
-const FormSelect = ({ label, placeholder, value, onChange, containerStyle, flex1, icon, options, required, error }: FormSelectProps) => {
+const FormSelect = ({ label, placeholder, value, onChange, containerStyle, flex1, icon, options, required, error, labelColor }: FormSelectProps) => {
     const [isVisible, setIsVisible] = useState(false);
 
     const renderOption = (option: SelectionOption) => {
@@ -65,7 +66,7 @@ const FormSelect = ({ label, placeholder, value, onChange, containerStyle, flex1
     return (
         <>
             <View style={[styles.container, flex1 ? { flex: 1 } : {}, containerStyle]}>
-                {label && <Label text={label} required={required} />}
+                {label && <Label text={label} required={required} textColor={labelColor} />}
                 <TouchableOpacity activeOpacity={0.7} onPress={() => setIsVisible(true)} style={[styles.select]}>
                     {icon ? <Ionicons name={icon} size={responsiveSize(18)} color={COLORS.textSecondary} /> : undefined}
                     {value ? <B2 text={options.find((option) => option.value === value)?.label} flex1 numberOfLines={1} /> : <B2 text={placeholder} textColor={COLORS.textSecondary} flex1 numberOfLines={1} />}

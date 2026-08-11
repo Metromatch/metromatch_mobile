@@ -3,15 +3,18 @@ import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import { responsiveSize } from '@/utils/responsive';
 import { Ionicons } from '@expo/vector-icons';
 import React from 'react'
-import { StyleSheet, Text, View } from 'react-native'
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
-function SectionHeader({ icon, title }: { icon: keyof typeof Ionicons.glyphMap; title: string }) {
+function SectionHeader({ icon, title, onEdit }: { icon: keyof typeof Ionicons.glyphMap; title: string, onEdit?: () => void }) {
   return (
     <View style={styles.sectionHeader}>
       <View style={styles.sectionIconWrap}>
-        <Ionicons name={icon} size={15} color={COLORS.primary} />
+        <Ionicons name={icon} size={15} color={'white'} />
       </View>
       <Text style={styles.sectionTitle}>{title}</Text>
+      {onEdit && <TouchableOpacity onPress={onEdit}>
+        <Ionicons name="settings-outline" size={15} color={'white'} />
+      </TouchableOpacity>}
     </View>
   );
 }
@@ -28,10 +31,10 @@ function InfoRow({ label, value }: {
   );
 }
 
-const InfoBox = ({ list, title, icon }: { title: string, icon: keyof typeof Ionicons.glyphMap; list: { title: string, value: string }[] }) => {
+const InfoBox = ({ list, title, icon, onEdit }: { title: string, icon: keyof typeof Ionicons.glyphMap; list: { title: string, value: string }[]; onEdit?: () => void }) => {
   return (
     <View style={styles.card}>
-      <SectionHeader icon={icon} title={title} />
+      <SectionHeader icon={icon} title={title} onEdit={onEdit} />
 
       {list.map((item, index) => (
         <React.Fragment key={item.title}>
@@ -51,7 +54,7 @@ export default InfoBox
 
 const styles = StyleSheet.create({
   card: {
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
     borderRadius: responsiveSize(18),
     padding: responsiveSize(16),
     borderWidth: 1,
@@ -85,6 +88,7 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.semibold,
     fontSize: responsiveSize(14),
     color: 'white',
+    flex: 1
   },
 
   infoRow: {
@@ -103,7 +107,7 @@ const styles = StyleSheet.create({
     fontFamily: TYPOGRAPHY.medium,
     fontSize: responsiveSize(13),
     color: 'white',
-    flex: 2,
+    flex: 1.7,
     textAlign: 'right',
   },
   infoInput: {
