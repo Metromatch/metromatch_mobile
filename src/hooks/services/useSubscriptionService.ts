@@ -68,24 +68,24 @@ const useSubscriptionService = () => {
             return res.data as UserCredits;
         },
         // Optimistically update the cached balance immediately
-        onMutate: async (payload) => {
-            await queryClient.cancelQueries({ queryKey: CREDITS_QUERY_KEY });
-            const previous = queryClient.getQueryData<UserCredits>(CREDITS_QUERY_KEY);
-            if (previous) {
-                const cost = payload.type === 'like' ? 2 : 10;
-                queryClient.setQueryData<UserCredits>(CREDITS_QUERY_KEY, {
-                    ...previous,
-                    availableCredits: Math.max(0, previous.availableCredits - cost),
-                });
-            }
-            return { previous };
-        },
+        // onMutate: async (payload) => {
+        //     await queryClient.cancelQueries({ queryKey: CREDITS_QUERY_KEY });
+        //     const previous = queryClient.getQueryData<UserCredits>(CREDITS_QUERY_KEY);
+        //     if (previous) {
+        //         const cost = payload.type === 'like' ? 2 : 10;
+        //         queryClient.setQueryData<UserCredits>(CREDITS_QUERY_KEY, {
+        //             ...previous,
+        //             availableCredits: Math.max(0, previous.availableCredits - cost),
+        //         });
+        //     }
+        //     return { previous };
+        // },
         // Roll back on error
-        onError: (_err, _payload, context: any) => {
-            if (context?.previous) {
-                queryClient.setQueryData(CREDITS_QUERY_KEY, context.previous);
-            }
-        },
+        // onError: (_err, _payload, context: any) => {
+        //     if (context?.previous) {
+        //         queryClient.setQueryData(CREDITS_QUERY_KEY, context.previous);
+        //     }
+        // },
         // Always sync with the server response
         onSuccess: () => refetchCredits(),
     });
