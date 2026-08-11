@@ -18,6 +18,7 @@ import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import usePaymentService from '@/hooks/services/usePaymentService';
 import useProfileService from '@/hooks/services/useProfileService';
 import RazorpayCheckout from 'react-native-razorpay';
+import useSubscriptionService from '@/hooks/services/useSubscriptionService';
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
 // ─── Plan Data ────────────────────────────────────────────────────────────────
@@ -188,8 +189,8 @@ export default function PlanListScreen() {
 
     const selectedPlan = PLANS.find((p) => p.id === selected)!;
     const { createPaymentOrder, verifyPayment, cancelPayment } = usePaymentService({});
-    const { myProfile } = useProfileService({})
-
+    const { subscriptionPlans } = useSubscriptionService();
+    console.log('subscriptionPlans', subscriptionPlans)
     const makePaymnet = async (planId: string) => {
         setSelected(planId);
         const order = await createPaymentOrder({ planId: 'eec7f39d-f6f6-42aa-b37d-1b389c49ff55' });

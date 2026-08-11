@@ -8,6 +8,7 @@ const PRESENCE = `${API_V1}presence`;
 const MASTER_LIST = `${API_V1}masterlist`;
 const FAVORITES = `${API_V1}favorites`;
 const PAYMENTS = `${API_V1}payments`;
+const SUBSCRIPTIONS = `${API_V1}subscriptions`;
 
 export const AUTH_API = {
   LOGIN: `${AUTH}login`,
@@ -65,6 +66,10 @@ export const PAYMENTS_API = {
   CREATE_ORDER: `${PAYMENTS}/create-order`,
   VERIFY: `${PAYMENTS}/verify`,
   CANCEL: `${PAYMENTS}/cancel`,
+};
+
+export const SUBSCRIPTIONS_API = {
+  PLANS: `${SUBSCRIPTIONS}/plans`,
 };
 
 
