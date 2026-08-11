@@ -84,5 +84,7 @@ export const Payments = {
 
 export const Subscriptions = {
   getPlans: REQUEST_TEMPLATES(SUBSCRIPTIONS_API.PLANS).read,
+  getCredits: REQUEST_TEMPLATES(SUBSCRIPTIONS_API.CREDITS).read,
+  deductCredits: REQUEST_TEMPLATES(SUBSCRIPTIONS_API.DEDUCT_CREDITS).create,
 }
 

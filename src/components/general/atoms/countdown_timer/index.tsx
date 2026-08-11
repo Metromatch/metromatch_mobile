@@ -18,10 +18,14 @@ const CountdownTimer = ({ remainingMinutes }: { remainingMinutes: number }) => {
 
     useEffect(() => {
         const timer = setInterval(() => {
-            setTimeLeft((prev) => prev - 2);
+            if (timeLeft > 0) {
+                setTimeLeft((prev) => prev - 2);
+            } else {
+                clearInterval(timer);
+            }
         }, 2000);
         return () => clearInterval(timer);
-    }, [])
+    }, [timeLeft])
     return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
             <Ionicons name="time" size={responsiveSize(24)} color="white" />

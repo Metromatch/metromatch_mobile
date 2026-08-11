@@ -9,174 +9,142 @@ import {
     Dimensions,
     Platform,
     Alert,
+    ActivityIndicator,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { router, useNavigation } from 'expo-router';
+import { useNavigation } from 'expo-router';
 import { COLORS, TYPOGRAPHY } from '@/constants/theme';
 import usePaymentService from '@/hooks/services/usePaymentService';
-import useProfileService from '@/hooks/services/useProfileService';
 import RazorpayCheckout from 'react-native-razorpay';
-import useSubscriptionService from '@/hooks/services/useSubscriptionService';
+import useSubscriptionService, { SubscriptionPlan } from '@/hooks/services/useSubscriptionService';
+import { responsiveSize } from '@/utils/responsive';
+
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ─── Plan Data ────────────────────────────────────────────────────────────────
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const PLANS = [
-    {
-        id: 'free',
-        name: 'Free',
-        badge: null,
-        price: '₹0',
-        period: 'Forever',
-        color: ['#2A3A7A', '#1A2461'] as const,
-        borderColor: 'rgba(255,255,255,0.12)',
-        features: [
-            { icon: 'heart-outline', label: '10 likes per day', included: true },
-            { icon: 'location-outline', label: 'Nearby discovery', included: true },
-            { icon: 'eye-outline', label: 'See who liked you', included: false },
-            { icon: 'flash-outline', label: 'Unlimited super likes', included: false },
-            { icon: 'refresh-outline', label: 'Rewind last swipe', included: false },
-            { icon: 'shield-checkmark-outline', label: 'Priority in discovery', included: false },
-            { icon: 'chatbubble-outline', label: 'Message before match', included: false },
-        ],
-    },
-    {
-        id: 'gold',
-        name: 'MetroGold',
-        badge: 'Most Popular',
-        price: '₹499',
-        period: 'per month',
-        color: ['#C8952A', '#8B5E0A'] as const,
-        borderColor: 'rgba(200,149,42,0.6)',
-        features: [
-            { icon: 'heart-outline', label: 'Unlimited likes', included: true },
-            { icon: 'location-outline', label: 'Nearby discovery', included: true },
-            { icon: 'eye-outline', label: 'See who liked you', included: true },
-            { icon: 'flash-outline', label: '5 super likes per day', included: true },
-            { icon: 'refresh-outline', label: 'Rewind last swipe', included: true },
-            { icon: 'shield-checkmark-outline', label: 'Priority in discovery', included: false },
-            { icon: 'chatbubble-outline', label: 'Message before match', included: false },
-        ],
-    },
-    {
-        id: 'platinum',
-        name: 'MetroPlatinum',
-        badge: 'Best Value',
-        price: '₹899',
-        period: 'per month',
-        color: ['#5C3DD8', '#1A42D9'] as const,
-        borderColor: 'rgba(110,168,255,0.6)',
-        features: [
-            { icon: 'heart-outline', label: 'Unlimited likes', included: true },
-            { icon: 'location-outline', label: 'Nearby discovery', included: true },
-            { icon: 'eye-outline', label: 'See who liked you', included: true },
-            { icon: 'flash-outline', label: 'Unlimited super likes', included: true },
-            { icon: 'refresh-outline', label: 'Rewind last swipe', included: true },
-            { icon: 'shield-checkmark-outline', label: 'Priority in discovery', included: true },
-            { icon: 'chatbubble-outline', label: 'Message before match', included: true },
-        ],
-    },
+/** Pick a gradient palette based on plan index so each card looks distinct */
+const PLAN_PALETTES: Array<{ colors: [string, string]; borderColor: string }> = [
+    { colors: ['#2A3A7A', '#1A2461'], borderColor: 'rgba(110,168,255,0.5)' },
+    { colors: ['#C8952A', '#8B5E0A'], borderColor: 'rgba(200,149,42,0.6)' },
+    { colors: ['#5C3DD8', '#1A42D9'], borderColor: 'rgba(92,61,216,0.6)' },
+    { colors: ['#1A7A5E', '#0A4A38'], borderColor: 'rgba(26,122,94,0.6)' },
 ];
 
-// ─── Feature Row ─────────────────────────────────────────────────────────────
+function getPalette(index: number) {
+    return PLAN_PALETTES[index % PLAN_PALETTES.length];
+}
+
+function formatPrice(price: number) {
+    return `₹${Number(price).toLocaleString('en-IN')}`;
+}
+
+// ─── Feature Row ──────────────────────────────────────────────────────────────
 
 function FeatureRow({
     icon,
     label,
-    included,
 }: {
     icon: keyof typeof Ionicons.glyphMap;
     label: string;
-    included: boolean;
 }) {
     return (
         <View style={styles.featureRow}>
-            <Ionicons
-                name={included ? 'checkmark-circle' : 'close-circle-outline'}
-                size={18}
-                color={included ? '#4CAF50' : 'rgba(255,255,255,0.25)'}
-            />
-            <Text style={[styles.featureText, !included && styles.featureTextOff]}>
-                {label}
-            </Text>
+            <Ionicons name={icon} size={16} color={COLORS.primaryLight} />
+            <Text style={styles.featureText}>{label}</Text>
         </View>
     );
 }
 
-// ─── Plan Card ───────────────────────────────────────────────────────────────
+// ─── Plan Card ────────────────────────────────────────────────────────────────
 
 function PlanCard({
     plan,
-    selected,
-    onSelect,
+    index,
+    onBuy,
+    loading,
 }: {
-    plan: typeof PLANS[0];
-    selected: boolean;
-    onSelect: () => void;
+    plan: SubscriptionPlan;
+    index: number;
+    onBuy: (planId: string) => void;
+    loading: boolean;
 }) {
     const scaleAnim = useRef(new Animated.Value(1)).current;
+    const palette = getPalette(index);
 
-
-    const handlePressIn = () => {
-        Animated.spring(scaleAnim, { toValue: 0.97, useNativeDriver: true, speed: 30 }).start();
-    };
-    const handlePressOut = () => {
+    const handlePressIn = () =>
+        Animated.spring(scaleAnim, { toValue: 0.98, useNativeDriver: true, speed: 30 }).start();
+    const handlePressOut = () =>
         Animated.spring(scaleAnim, { toValue: 1, useNativeDriver: true, speed: 30 }).start();
-    };
+
+    const durationLabel =
+        plan.durationDays >= 365
+            ? `${Math.round(plan.durationDays / 365)} year`
+            : plan.durationDays >= 30
+                ? `${Math.round(plan.durationDays / 30)} month`
+                : `${plan.durationDays} days`;
 
     return (
         <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
-            <TouchableOpacity
-                activeOpacity={0.9}
-                onPress={onSelect}
-                onPressIn={handlePressIn}
-                onPressOut={handlePressOut}
+            <View
+                style={[
+                    styles.planCard,
+                    { borderColor: palette.borderColor },
+                ]}
             >
-                <View
-                    style={[
-                        styles.planCard,
-                        { borderColor: selected ? plan.borderColor : 'rgba(255,255,255,0.1)' },
-                        selected && styles.planCardSelected,
-                    ]}
-                >
-                    {/* Header gradient */}
-                    <LinearGradient colors={plan.color} style={styles.planHeader}>
-                        <View style={styles.planHeaderTop}>
-                            <Text style={styles.planName}>{plan.name}</Text>
-                            {plan.badge && (
-                                <View style={styles.badgePill}>
-                                    <Text style={styles.badgeText}>{plan.badge}</Text>
-                                </View>
-                            )}
+                {/* Header gradient */}
+                <LinearGradient colors={palette.colors} style={styles.planHeader}>
+                    <View style={styles.planHeaderTop}>
+                        <View>
+                            <Text style={styles.planName}>{formatPrice(plan.price)}</Text>
+                            <Text style={styles.durationLabel}>Valid for {durationLabel}</Text>
                         </View>
-                        <View style={styles.priceRow}>
-                            <Text style={styles.priceText}>{plan.price}</Text>
-                            <Text style={styles.periodText}> / {plan.period}</Text>
+                        <View style={styles.creditsCircle}>
+                            <Text style={styles.creditsNumber}>{plan.credits}</Text>
+                            <Text style={styles.creditsLabel}>Credits</Text>
                         </View>
-                    </LinearGradient>
-
-                    {/* Features */}
-                    <View style={styles.featuresWrap}>
-                        {plan.features.map((f) => (
-                            <FeatureRow
-                                key={f.label}
-                                icon={f.icon as keyof typeof Ionicons.glyphMap}
-                                label={f.label}
-                                included={f.included}
-                            />
-                        ))}
                     </View>
+                </LinearGradient>
 
-                    {/* Selected indicator */}
-                    {selected && (
-                        <View style={styles.selectedDot}>
-                            <Ionicons name="checkmark-circle" size={22} color="#4CAF50" />
-                        </View>
-                    )}
+                {/* Feature list */}
+                <View style={styles.featuresWrap}>
+                    <FeatureRow icon="heart-outline" label={`${plan.noOfLikes} likes included`} />
+                    <FeatureRow icon="git-branch-outline" label={`${plan.noOfExtensions} profile extensions`} />
+                    <FeatureRow icon="flash-outline" label={`${plan.credits} credits`} />
+                    <FeatureRow icon="calendar-outline" label={`Active for ${durationLabel}`} />
                 </View>
-            </TouchableOpacity>
+
+                {/* Buy Now button */}
+                <View style={styles.buyWrap}>
+                    <TouchableOpacity
+                        activeOpacity={0.85}
+                        onPressIn={handlePressIn}
+                        onPressOut={handlePressOut}
+                        onPress={() => onBuy(plan.id)}
+                        disabled={loading}
+                        style={styles.buyBtn}
+                    >
+                        <LinearGradient
+                            colors={palette.colors}
+                            start={{ x: 0, y: 0 }}
+                            end={{ x: 1, y: 0 }}
+                            style={styles.buyBtnGradient}
+                        >
+                            {loading ? (
+                                <ActivityIndicator size="small" color="white" />
+                            ) : (
+                                <>
+                                    <Ionicons name="flash" size={16} color="white" />
+                                    <Text style={styles.buyBtnText}>
+                                        Buy Now · {formatPrice(plan.price)}
+                                    </Text>
+                                </>
+                            )}
+                        </LinearGradient>
+                    </TouchableOpacity>
+                </View>
+            </View>
         </Animated.View>
     );
 }
@@ -184,64 +152,50 @@ function PlanCard({
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function PlanListScreen() {
-    const [selected, setSelected] = useState<string>('gold');
+    const [loadingPlanId, setLoadingPlanId] = useState<string | null>(null);
     const navigate = useNavigation();
 
-    const selectedPlan = PLANS.find((p) => p.id === selected)!;
     const { createPaymentOrder, verifyPayment, cancelPayment } = usePaymentService({});
-    const { subscriptionPlans } = useSubscriptionService();
-    console.log('subscriptionPlans', subscriptionPlans)
-    const makePaymnet = async (planId: string) => {
-        setSelected(planId);
-        const order = await createPaymentOrder({ planId: 'eec7f39d-f6f6-42aa-b37d-1b389c49ff55' });
-        // console.log('order', order)
+    const { subscriptionPlans, isSubscriptionPlansLoading } = useSubscriptionService();
 
-
-        const options = {
-            key: order.key,
-            amount: order.amount,
-            currency: order.currency,
-            name: 'MetroGold',
-            description: 'Includes Chat',
-            order_id: order.orderId,
-            // prefill: {
-            //     email: 'one@gmail.com',
-            //     contact: '+919947711917',
-            //     name: "One",
-            // },
-            // theme: { color: '#2563EB' },
-        };
-
-
+    const makePayment = async (planId: string) => {
+        setLoadingPlanId(planId);
         try {
-            const payment: any = await RazorpayCheckout.open(options).catch((error) => {
-                console.log('error', error)
+            const order = await createPaymentOrder({ planId });
+
+            const options = {
+                key: order.key,
+                amount: order.amount,
+                currency: order.currency,
+                name: 'MetroMatch',
+                description: 'Subscription Plan',
+                order_id: order.orderId,
+            };
+
+            const payment: any = await RazorpayCheckout.open(options).catch((error: any) => {
+                console.log('Razorpay error', error);
             });
 
+            if (!payment) throw new Error('Payment cancelled');
+
             await verifyPayment({
-                planId: 'eec7f39d-f6f6-42aa-b37d-1b389c49ff55',
+                planId,
                 razorpayOrderId: payment.razorpay_order_id,
                 razorpayPaymentId: payment.razorpay_payment_id,
                 razorpaySignature: payment.razorpay_signature,
             });
 
-            Alert.alert(
-                'Success',
-                'Premium Activated',
-            );
+            Alert.alert('Success 🎉', 'Your plan is now active!');
         } catch (error) {
-            Alert.alert(
-                `Payment Cancelled: ${error}`,
-            );
-            cancelPayment({ orderId: order.orderId })
+            Alert.alert('Payment Cancelled', 'Your payment was not completed.');
+            cancelPayment({ orderId: '' });
+        } finally {
+            setLoadingPlanId(null);
         }
-
-    }
+    };
 
     return (
         <View style={styles.container}>
-            {/* <SafeAreaView style={styles.container}> */}
-
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity
@@ -255,61 +209,73 @@ export default function PlanListScreen() {
                 <Text style={styles.headerTitle}>Get More Credits</Text>
                 <View style={{ width: 40 }} />
             </View>
+
             <ScrollView
                 showsVerticalScrollIndicator={false}
                 contentContainerStyle={styles.scroll}
             >
+                {/* Hero — credit costs card */}
+                <View style={styles.heroCard}>
+                    <View style={styles.heroCardHeader}>
+                        <Ionicons name="flash" size={18} color={COLORS.primaryLight} />
+                        <Text style={styles.heroCardTitle}>How Credits Work</Text>
+                    </View>
 
-                {/* Hero blurb */}
-                <View style={styles.heroWrap}>
-                    <Text style={styles.heroEmoji}>🚇✨</Text>
-                    <Text style={styles.heroTitle}>Find Your Metro Match</Text>
-                    <Text style={styles.heroSub}>
-                        Unlock premium features and connect with more commuters on your route.
-                    </Text>
+                    <View style={styles.heroCardDivider} />
+
+                    <View style={styles.creditRow}>
+                        <View style={styles.creditIconWrap}>
+                            <Ionicons name="time-outline" size={18} color="#FFD166" />
+                        </View>
+                        <View style={styles.creditInfo}>
+                            <Text style={styles.creditAction}>Extend session</Text>
+                            <Text style={styles.creditDesc}>+10 min on your current commute</Text>
+                        </View>
+                        <View style={styles.creditCostPill}>
+                            <Text style={styles.creditCostText}>10 credits</Text>
+                        </View>
+                    </View>
+
+                    <View style={styles.creditRow}>
+                        <View style={[styles.creditIconWrap, { backgroundColor: 'rgba(255,107,107,0.15)' }]}>
+                            <Ionicons name="heart-outline" size={18} color="#FF6B6B" />
+                        </View>
+                        <View style={styles.creditInfo}>
+                            <Text style={styles.creditAction}>Like a profile</Text>
+                            <Text style={styles.creditDesc}>Send a like to someone nearby</Text>
+                        </View>
+                        <View style={[styles.creditCostPill, { backgroundColor: 'rgba(255,107,107,0.18)', borderColor: 'rgba(255,107,107,0.4)' }]}>
+                            <Text style={[styles.creditCostText, { color: '#FF6B6B' }]}>2 credits</Text>
+                        </View>
+                    </View>
                 </View>
-                {PLANS.map((plan) => (
-                    <PlanCard
-                        key={plan.id}
-                        plan={plan}
-                        selected={selected === plan.id}
-                        onSelect={() => makePaymnet(plan.id)}
-                    />
-                ))}
+
+                {/* Plans */}
+                {isSubscriptionPlansLoading ? (
+                    <View style={styles.loadingWrap}>
+                        <ActivityIndicator size="large" color={COLORS.primaryLight} />
+                        <Text style={styles.loadingText}>Loading plans…</Text>
+                    </View>
+                ) : (
+                    (subscriptionPlans ?? []).map((plan, index) => (
+                        <PlanCard
+                            key={plan.id}
+                            plan={plan}
+                            index={index}
+                            onBuy={() => makePayment(plan.id)}
+                            loading={loadingPlanId === plan.id}
+                        />
+                    ))
+                )}
 
                 {/* Fine print */}
                 <Text style={styles.finePrint}>
-                    Cancel anytime. Subscriptions renew automatically each month. Prices are in INR and include applicable taxes.
+                    Prices are in INR and include applicable taxes. Credits do not expire with your plan period.
                 </Text>
 
-                <View style={{ height: 120 }} />
+                <View style={{ height: 40 }} />
             </ScrollView>
-
-            {/* CTA bar */}
-            <View style={styles.ctaBar}>
-                {selected === 'free' ? (
-                    <TouchableOpacity style={styles.ctaFree} activeOpacity={0.7} onPress={() => router.back()}>
-                        <Text style={styles.ctaFreeText}>Continue with Free</Text>
-                    </TouchableOpacity>
-                ) : (
-                    <TouchableOpacity activeOpacity={0.85} onPress={() => { }}>
-                        <LinearGradient
-                            colors={selectedPlan.color}
-                            start={{ x: 0, y: 0 }}
-                            end={{ x: 1, y: 0 }}
-                            style={styles.ctaGradient}
-                        >
-                            <Ionicons name="flash" size={20} color="white" />
-                            <Text style={styles.ctaText}>
-                                Get {selectedPlan.name} — {selectedPlan.price}/mo
-                            </Text>
-                        </LinearGradient>
-                    </TouchableOpacity>
-                )}
-            </View>
-            {/* </SafeAreaView> */}
         </View>
-
     );
 }
 
@@ -342,36 +308,74 @@ const styles = StyleSheet.create({
         fontSize: 17,
     },
 
-    // Hero
-    heroWrap: {
+    // Hero card
+    heroCard: {
+        backgroundColor: 'rgba(255,255,255,0.08)',
+        borderRadius: 18,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.14)',
+        padding: 16,
+        gap: 12,
+    },
+    heroCardHeader: {
+        flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 24,
-        paddingBottom: 20,
-        paddingTop: 4,
+        gap: 8,
     },
-    heroEmoji: {
-        fontSize: 36,
-        marginBottom: 8,
-    },
-    heroTitle: {
+    heroCardTitle: {
         color: 'white',
-        fontFamily: TYPOGRAPHY.bold,
-        fontSize: 22,
-        marginBottom: 6,
-        textAlign: 'center',
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 15,
     },
-    heroSub: {
-        color: 'rgba(255,255,255,0.55)',
+    heroCardDivider: {
+        height: 1,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    creditRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+    creditIconWrap: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        backgroundColor: 'rgba(255,209,102,0.15)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    creditInfo: {
+        flex: 1,
+        gap: 2,
+    },
+    creditAction: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 13,
+    },
+    creditDesc: {
+        color: 'rgba(255,255,255,0.5)',
         fontFamily: TYPOGRAPHY.regular,
-        fontSize: 14,
-        textAlign: 'center',
-        lineHeight: 20,
+        fontSize: 12,
+    },
+    creditCostPill: {
+        backgroundColor: 'rgba(110,168,255,0.18)',
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(110,168,255,0.4)',
+        paddingHorizontal: 10,
+        paddingVertical: 4,
+    },
+    creditCostText: {
+        color: COLORS.primaryLight,
+        fontFamily: TYPOGRAPHY.semibold,
+        fontSize: 12,
     },
 
     // Scroll
     scroll: {
         paddingHorizontal: 16,
-        gap: 14,
+        gap: 16,
     },
 
     // Plan card
@@ -379,61 +383,55 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         borderWidth: 1.5,
         overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.05)',
-        position: 'relative',
-    },
-    planCardSelected: {
-        shadowColor: '#6EA8FF',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        elevation: 8,
+        backgroundColor: 'rgba(255,255,255,0.06)',
     },
     planHeader: {
         paddingHorizontal: 18,
-        paddingVertical: 16,
+        paddingVertical: 18,
     },
     planHeaderTop: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 8,
     },
     planName: {
         color: 'white',
         fontFamily: TYPOGRAPHY.bold,
-        fontSize: 18,
+        fontSize: 26,
+        marginBottom: 2,
     },
-    badgePill: {
-        backgroundColor: 'rgba(255,255,255,0.25)',
-        borderRadius: 20,
-        paddingHorizontal: 10,
-        paddingVertical: 3,
-    },
-    badgeText: {
-        color: 'white',
-        fontFamily: TYPOGRAPHY.semibold,
-        fontSize: 11,
-    },
-    priceRow: {
-        flexDirection: 'row',
-        alignItems: 'baseline',
-    },
-    priceText: {
-        color: 'white',
-        fontFamily: TYPOGRAPHY.bold,
-        fontSize: 28,
-    },
-    periodText: {
-        color: 'rgba(255,255,255,0.7)',
+    durationLabel: {
+        color: 'rgba(255,255,255,0.65)',
         fontFamily: TYPOGRAPHY.regular,
         fontSize: 13,
+    },
+    creditsCircle: {
+        width: responsiveSize(64),
+        height: responsiveSize(64),
+        borderRadius: responsiveSize(32),
+        backgroundColor: 'rgba(255,255,255,0.18)',
+        borderWidth: 1.5,
+        borderColor: 'rgba(255,255,255,0.35)',
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    creditsNumber: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 20,
+        lineHeight: 22,
+    },
+    creditsLabel: {
+        color: 'rgba(255,255,255,0.7)',
+        fontFamily: TYPOGRAPHY.regular,
+        fontSize: 10,
     },
 
     // Features
     featuresWrap: {
         paddingHorizontal: 18,
-        paddingVertical: 14,
+        paddingTop: 14,
+        paddingBottom: 6,
         gap: 10,
     },
     featureRow: {
@@ -442,20 +440,44 @@ const styles = StyleSheet.create({
         gap: 10,
     },
     featureText: {
-        color: 'rgba(255,255,255,0.9)',
+        color: 'rgba(255,255,255,0.85)',
         fontFamily: TYPOGRAPHY.regular,
         fontSize: 14,
     },
-    featureTextOff: {
-        color: 'rgba(255,255,255,0.3)',
-        textDecorationLine: 'line-through',
+
+    // Buy button
+    buyWrap: {
+        paddingHorizontal: 18,
+        paddingVertical: 14,
+    },
+    buyBtn: {
+        borderRadius: 14,
+        overflow: 'hidden',
+    },
+    buyBtnGradient: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 8,
+        paddingVertical: 14,
+        borderRadius: 14,
+    },
+    buyBtnText: {
+        color: 'white',
+        fontFamily: TYPOGRAPHY.bold,
+        fontSize: 15,
     },
 
-    // Selected checkmark
-    selectedDot: {
-        position: 'absolute',
-        top: 14,
-        right: 14,
+    // Loading
+    loadingWrap: {
+        alignItems: 'center',
+        paddingVertical: 40,
+        gap: 12,
+    },
+    loadingText: {
+        color: 'rgba(255,255,255,0.5)',
+        fontFamily: TYPOGRAPHY.regular,
+        fontSize: 14,
     },
 
     // Fine print
@@ -467,44 +489,5 @@ const styles = StyleSheet.create({
         lineHeight: 16,
         paddingHorizontal: 12,
         marginTop: 4,
-    },
-
-    // CTA
-    ctaBar: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        paddingHorizontal: 20,
-        paddingBottom: Platform.OS === 'ios' ? 34 : 20,
-        paddingTop: 16,
-        backgroundColor: 'rgba(7,22,80,0.9)',
-        borderTopWidth: 1,
-        borderTopColor: 'rgba(255,255,255,0.1)',
-    },
-    ctaGradient: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: 10,
-        paddingVertical: 16,
-        borderRadius: 16,
-    },
-    ctaText: {
-        color: 'white',
-        fontFamily: TYPOGRAPHY.bold,
-        fontSize: 16,
-    },
-    ctaFree: {
-        alignItems: 'center',
-        paddingVertical: 16,
-        borderRadius: 16,
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.2)',
-    },
-    ctaFreeText: {
-        color: 'rgba(255,255,255,0.6)',
-        fontFamily: TYPOGRAPHY.medium,
-        fontSize: 15,
     },
 });

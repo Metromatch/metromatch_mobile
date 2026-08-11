@@ -4,14 +4,16 @@ import { View } from 'react-native';
 import CustomTabBar from '@/components/navigation/CustomTabBar';
 import MainHeader from '@/components/shared/molecules/main_header';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import useSubscriptionService from '@/hooks/services/useSubscriptionService';
 
 
 export default function MainLayout() {
   const pathname = usePathname();
+  const { userCredits } = useSubscriptionService()
   return (
     <View style={{ flex: 1, backgroundColor: 'transparent' }}>
       {/* <SafeAreaView style={{ flex: 1 }}> */}
-      <MainHeader />
+      <MainHeader userCredits={userCredits?.availableCredits || 0} />
 
       <View style={{ flex: 1 }}>
         {/* <Stack /> */}

@@ -70,6 +70,8 @@ export const PAYMENTS_API = {
 
 export const SUBSCRIPTIONS_API = {
   PLANS: `${SUBSCRIPTIONS}/plans`,
+  CREDITS: `${SUBSCRIPTIONS}/credits`,
+  DEDUCT_CREDITS: `${SUBSCRIPTIONS}/deduct-credits`,
 };
 
 

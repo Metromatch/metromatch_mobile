@@ -7,7 +7,7 @@ import { responsiveSize } from '@/utils/responsive';
 import GlassmorphicCard from '@/components/general/molecules/glass_morphic_card';
 import { B2 } from '@/components/general/atoms/body_text';
 
-const MainHeader = () => {
+const MainHeader = ({ userCredits }: { userCredits: number }) => {
     return (
         <View style={styles.header}>
             <Image
@@ -18,7 +18,7 @@ const MainHeader = () => {
             <Pressable onPress={() => router.navigate('/subscription/planlist')}>
                 <GlassmorphicCard intensity={10} style={styles.creditsContainer}>
                     <Ionicons name="diamond-outline" size={responsiveSize(16)} color="white" />
-                    <B2 type="medium" text="50" textColor='white' />
+                    <B2 type="medium" text={userCredits} textColor='white' />
                 </GlassmorphicCard>
             </Pressable>
 
